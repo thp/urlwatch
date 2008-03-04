@@ -13,9 +13,12 @@
 #    filter(url, data) -> filtered_data function
 
 import sha
+import sys
 import os.path
 import urllib2
 import difflib
+
+os.chdir(os.path.dirname(sys.argv[0]))
 
 if os.path.exists('hooks.py'):
     from hooks import filter
