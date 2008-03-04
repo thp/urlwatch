@@ -1,0 +1,11 @@
+
+# This is an example urls.txt file for watch.py
+# Empty lines and lines starting with "#" are ignored
+
+http://www.algebra.tuwien.ac.at/panholzer/m2.html
+https://www.auto.tuwien.ac.at/courses/viewDetails/11/
+http://www.logic.at/lvas/til/
+http://www.inso.tuwien.ac.at/lectures/usability/
+http://wwwold.ecs.tuwien.ac.at/lehre/Microcontroller/MCLab.shtml
+http://wwwold.ecs.tuwien.ac.at/lehre/Microcontroller/ChangeLog.txt
+
