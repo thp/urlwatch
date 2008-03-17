@@ -1,0 +1,39 @@
+
+
+       -===============================-
+        urlwatch - A Simple URL Watcher
+       -===============================-
+
+
+~~ aBOUT ~~
+
+This is a simple URL watcher, designed to send
+you diffs of webpages as they change. Ideal for
+watching web pages of university courses, so 
+you always know when something has changed :)
+
+
+~~ fAQ ~~
+
+Q: Where do I configure URLs?
+A: Edit the file urls.txt.
+
+Q: A page changes some content on every reload. 
+   How do I prevent urlwatch from always 
+   displaying these changes?
+A: Edit the file hooks.py and add a handler for
+   the specific URL and strip the changing
+   parts. See hooks.py for more information.
+
+Q: How do I use it as a cron job?
+A: Simply add watch.py to your crontab. Make
+   sure the stdout of your cronjobs is mailed
+   to you, so you get the notifications.
+
+
+~~ cONTACT ~~
+
+Website: http://thpinfo.com/2008/urlwatch
+Contact: thp [thpinfo.com]
+Jabber: thp [jabber.org]
+

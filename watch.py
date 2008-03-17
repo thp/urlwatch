@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # Minimalistic Python URL watcher
 # 2008-03-04 Thomas Perl <thpinfo.com>
+# http://thpinfo.com/2008/urlwatch
 
 # 1. Create an "urls.txt" file and add one URL per
 #    line that you want to watch.
