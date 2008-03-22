@@ -1,0 +1,14 @@
+2008-03-04 Thomas Perl <thpinfo.com>
+	* Initial Version
+
+2008-03-17 Thomas Perl <thpinfo.com>
+	* Release version 1.0
+
+2008-03-20 Lukas Vana <fabian@fabian.cz>
+	* Add support for error handling missing URLs
+	* Notify users when NEW sites appear
+	* Option "display_errors" can be set in watch.py
+
+2008-03-22 Thomas Perl <thpinfo.com>
+	* Release version 1.1
+
