@@ -12,3 +12,9 @@
 2008-03-22 Thomas Perl <thpinfo.com>
 	* Release version 1.1
 
+2008-05-09 Lukas Upton <hagakure1@gmail.com>
+	* Fix problem with Mac OS X 10.5.2 and Ubuntu 8.04
+
+2008-05-10 Thomas Perl <thpinfo.com>
+	* Release version 1.2
+
