@@ -15,6 +15,7 @@
 
 # Configuration section
 display_errors = False
+user_agent = 'urlwatch/1.3 (+http://thpinfo.com/2008/urlwatch/info.html)'
 
 # Code section
 
@@ -26,6 +27,10 @@ import difflib
 
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
+headers = {
+        'User-agent': user_agent,
+}
+
 if os.path.exists('hooks.py'):
     from hooks import filter
 else:
@@ -34,7 +39,8 @@ else:
 for url in (x for x in open('urls.txt').read().splitlines() if not (x.startswith('#') or x.strip()=='')):
     filename = sha.new(url).hexdigest()
     try:
-        data = filter(url, urllib2.urlopen(url).read())
+        request = urllib2.Request(url, None, headers)
+        data = filter(url, urllib2.urlopen(request).read())
         if os.path.exists(filename):
             old_data = open(filename).read()
             diff = ''.join(difflib.unified_diff(old_data.splitlines(1), data.splitlines(1)))

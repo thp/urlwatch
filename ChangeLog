@@ -18,3 +18,9 @@
 2008-05-10 Thomas Perl <thpinfo.com>
 	* Release version 1.2
 
+2008-05-15 Craig Hoffman <craig.hoffmann@gmail.com>
+	* Add support for sending a User-Agent header
+
+2008-05-16 Thomas Perl <thpinfo.com>
+	* Release version 1.3
+
