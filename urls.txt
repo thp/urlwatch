@@ -2,10 +2,24 @@
 # This is an example urls.txt file for watch.py
 # Empty lines and lines starting with "#" are ignored
 
-http://www.algebra.tuwien.ac.at/panholzer/m2.html
-https://www.auto.tuwien.ac.at/courses/viewDetails/11/
-http://www.logic.at/lvas/til/
-http://www.inso.tuwien.ac.at/lectures/usability/
-http://wwwold.ecs.tuwien.ac.at/lehre/Microcontroller/MCLab.shtml
-http://wwwold.ecs.tuwien.ac.at/lehre/Microcontroller/ChangeLog.txt
+http://www.jamrock.at/termine_iframe.php
+http://www.mv-eberau.at/terminliste.php
+http://www.gaaser-dorfstube.at/suedburgenland/veranstaltungskalender.php
+http://grenzlandvagab.gr.funpic.de/events/
+http://www.dubclub-vienna.com/
+ftp://w0071209:iuner1@iuner.lukas-krispel.at/
+http://www.openpandora.org/developers.php
+http://www.statistik.tuwien.ac.at/lv-guide/u107.369/info.html
+http://www.statistik.tuwien.ac.at/lv-guide/u107.369/blatter.html
+http://www.dbai.tuwien.ac.at/education/dbs/current/index.html
+http://www.dbai.tuwien.ac.at/education/dbs/current/uebung.html
+http://ti.tuwien.ac.at/rts/teaching/courses/systems_programming
+http://ti.tuwien.ac.at/rts/teaching/courses/systems_programming/labor
+http://ti.tuwien.ac.at/rts/teaching/courses/betriebssysteme
+http://www.poleros.at/calender.htm
+http://www.black-dogs.com/BD_Neu/Pages/Termine_Text.htm
+http://www.bar-akira.com/events.php
+http://www.ads.tuwien.ac.at/teaching/LVA/186170.html
+http://www.complang.tuwien.ac.at/anton/lvas/effiziente-programme.html
+http://www.complang.tuwien.ac.at/anton/lvas/effizienz-aufgabe08/
 
