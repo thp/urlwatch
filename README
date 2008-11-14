@@ -30,10 +30,15 @@ A: Simply add watch.py to your crontab. Make
    sure the stdout of your cronjobs is mailed
    to you, so you get the notifications.
 
+Q: Is there an easy way to show changes of .ics files?
+A: Indeed there is. See hooks.py and ical2txt.py
+
+Q: What about badly-formed HTML (long lines, etc..)?
+A: Use python-utidylib. See hooks.py for an example
 
 ~~ cONTACT ~~
 
 Website: http://thpinfo.com/2008/urlwatch
-Contact: thp [thpinfo.com]
-Jabber: thp [jabber.org]
+Contact: thp [thpinfo.com/about]
+Jabber: thp [at jabber.org]
 
