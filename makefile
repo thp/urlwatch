@@ -1,7 +1,7 @@
 # makefile for urlwatch
 
 PACKAGE=urlwatch
-VERSION=1.4
+VERSION=`python -c 'import watch; print watch.__version__'`
 FILES=*.txt README *.py makefile ChangeLog
 
 all:

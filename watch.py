@@ -13,9 +13,11 @@
 #    changes, create a "hooks.py" file that has a
 #    filter(url, data) -> filtered_data function
 
+__version__ = 1.4
+
 # Configuration section
 display_errors = False
-user_agent = 'urlwatch/1.3 (+http://thpinfo.com/2008/urlwatch/info.html)'
+user_agent = 'urlwatch/%s (+http://thpinfo.com/2008/urlwatch/info.html)' % __version__
 
 # Code section
 
@@ -25,34 +27,35 @@ import os.path
 import urllib2
 import difflib
 
-os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+if __name__ == '__main__':
+    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
-headers = {
-        'User-agent': user_agent,
-}
+    headers = {
+            'User-agent': user_agent,
+    }
 
-if os.path.exists('hooks.py'):
-    from hooks import filter
-else:
-    filter = lambda x, y: y
+    if os.path.exists('hooks.py'):
+        from hooks import filter
+    else:
+        filter = lambda x, y: y
 
-for url in (x for x in open('urls.txt').read().splitlines() if not (x.startswith('#') or x.strip()=='')):
-    filename = sha.new(url).hexdigest()
-    try:
-        request = urllib2.Request(url, None, headers)
-        data = filter(url, urllib2.urlopen(request).read())
-        if os.path.exists(filename):
-            old_data = open(filename).read()
-            diff = ''.join(difflib.unified_diff(old_data.splitlines(1), data.splitlines(1)))
-            if len(diff) > 0:
-                print '%s\nCHANGED: %s\n%s\n%s\n%s\n\n' % ('*'*60, url, '*'*60, diff, '*'*60)
-        else:
-            print '%s\nNEW: %s\n%s\n\n' % ('*'*60, url, '*'*60)
-        open(filename, 'w').write(data)
-    except urllib2.HTTPError, error:
-        if display_errors:
-            print '%s\nERROR: %s\n%s\n%s\n%s\n\n' % ('*'*60, url, '*'*60, error, '*'*60)
-    except urllib2.URLError, error:
-        if display_errors:
-            print '%s\nERROR: %s\n%s\n%s\n%s\n\n' % ('*'*60, url, '*'*60, error, '*'*60)
+    for url in (x for x in open('urls.txt').read().splitlines() if not (x.startswith('#') or x.strip()=='')):
+        filename = sha.new(url).hexdigest()
+        try:
+            request = urllib2.Request(url, None, headers)
+            data = filter(url, urllib2.urlopen(request).read())
+            if os.path.exists(filename):
+                old_data = open(filename).read()
+                diff = ''.join(difflib.unified_diff(old_data.splitlines(1), data.splitlines(1)))
+                if len(diff) > 0:
+                    print '%s\nCHANGED: %s\n%s\n%s\n%s\n\n' % ('*'*60, url, '*'*60, diff, '*'*60)
+            else:
+                print '%s\nNEW: %s\n%s\n\n' % ('*'*60, url, '*'*60)
+            open(filename, 'w').write(data)
+        except urllib2.HTTPError, error:
+            if display_errors:
+                print '%s\nERROR: %s\n%s\n%s\n%s\n\n' % ('*'*60, url, '*'*60, error, '*'*60)
+        except urllib2.URLError, error:
+            if display_errors:
+                print '%s\nERROR: %s\n%s\n%s\n%s\n\n' % ('*'*60, url, '*'*60, error, '*'*60)
 
