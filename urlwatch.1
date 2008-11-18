@@ -1,0 +1,43 @@
+.TH URLWATCH "1" "November 2008" "urlwatch 1.5" "User Commands"
+.SH NAME
+urlwatch \- Watch web pages and arbitrary URLs for changes
+.SH SYNOPSIS
+.B urlwatch
+[\fIoptions\fR]
+.SH DESCRIPTION
+urlwatch watches a list of URLs for changes and prints out unified
+diffs of the changes. You can filter always-changing parts of websites
+by providing a "hooks.py" script.
+.SH OPTIONS
+.TP
+\fB\-\-version\fR
+show program's version number and exit
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show the help message and exit
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Show debug/log output
+.TP
+\fB\-\-urls\fR=\fIFILE\fR
+Read URLs from the specified file
+.TP
+\fB\-\-hooks\fR=\fIFILE\fR
+Use specified file as hooks.py module
+.TP
+\fB\-e\fR, \fB\-\-display\-errors\fR
+Include HTTP errors (404, etc..) in the output
+.SH "FILES"
+.TP
+.B ~/.urlwatch/urls.txt
+A list of HTTP/FTP URLs to watch (one URL per line)
+.TP
+.B ~/.urlwatch/lib/hooks.py
+A Python module that can be used to filter contents
+.TP
+.B ~/.urlwatch/cache/
+The state of web pages is saved in this folder
+.SH AUTHOR
+Thomas Perl <thp@thpinfo.com>
+.SH WEBSITE
+http://thpinfo.com/2008/urlwatch/

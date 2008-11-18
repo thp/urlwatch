@@ -63,6 +63,9 @@ setup(
             # Example files
             (os.path.join('share', package, 'examples'),
                 glob.glob(os.path.join('examples', '*'))),
+            # Manual page
+            (os.path.join('share', 'man', 'man1'),
+                ['urlwatch.1']),
         ],
 )
 

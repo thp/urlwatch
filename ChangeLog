@@ -40,5 +40,6 @@
 	* Verbose logging mode
 	* Example urls.txt and hooks.py
 	* Update README
+	* Add manpage (urlwatch.1)
 	* Release version 1.5
 
