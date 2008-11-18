@@ -1,0 +1,2 @@
+include ChangeLog COPYING
+recursive-include examples *

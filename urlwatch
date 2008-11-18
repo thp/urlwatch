@@ -1,8 +1,36 @@
 #!/usr/bin/python
+#
 # urlwatch is a minimalistic URL watcher written in Python
-# Started: 2008-03-04 Thomas Perl <thpinfo.com>
+#
+# Copyright (c) 2008 Thomas Perl <thp|thpinfo.com>
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+# NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
 
 """Watch web pages and arbitrary URLs for changes"""
+
+pkgname = 'urlwatch'
 
 __author__ = 'Thomas Perl <thpinfo.com>'
 __copyright__ = 'Copyright 2008 Thomas Perl'
@@ -10,8 +38,7 @@ __license__ = 'BSD'
 __homepage__ = 'http://thpinfo.com/2008/urlwatch/'
 __version__ = 1.5
 
-user_agent = 'urlwatch/%s (+http://thpinfo.com/2008/urlwatch/info.html)' % __version__
-
+user_agent = '%s/%s (+http://thpinfo.com/2008/urlwatch/info.html)' % (pkgname, __version__)
 
 # Configuration section
 display_errors = False
@@ -22,7 +49,7 @@ line_length = 75
 import sys
 import os.path
 
-urlwatch_dir = os.path.expanduser(os.path.join('~', '.urlwatch'))
+urlwatch_dir = os.path.expanduser(os.path.join('~', '.'+pkgname))
 urls_txt = os.path.join(urlwatch_dir, 'urls.txt')
 cache_dir = os.path.join(urlwatch_dir, 'cache')
 scripts_dir = os.path.join(urlwatch_dir, 'lib')
@@ -33,12 +60,14 @@ hooks_py = os.path.join(scripts_dir, 'hooks.py')
 
 if bindir == 'bin':
     # Assume we are installed in system
-    examples_dir = os.path.join(prefix, 'share', 'urlwatch', 'examples')
+    examples_dir = os.path.join(prefix, 'share', pkgname, 'examples')
 else:
     # Assume we are not yet installed
     examples_dir = os.path.join(prefix, bindir, 'examples')
+    sys.path.append(os.path.join(prefix, bindir, 'lib'))
 
 urls_txt_example = os.path.join(examples_dir, 'urls.txt.example')
+hooks_py_example = os.path.join(examples_dir, 'hooks.py.example')
 
 # Code section
 import sha
@@ -85,14 +114,20 @@ if __name__ == '__main__':
 
     # Check for required files
     if not os.path.isfile(urls_txt):
-        example_fn = os.path.join(os.path.dirname(urls_txt), os.path.basename(urls_txt_example))
+        urls_txt_fn = os.path.join(os.path.dirname(urls_txt), os.path.basename(urls_txt_example))
+        hooks_py_fn = os.path.join(os.path.dirname(hooks_py), os.path.basename(hooks_py_example))
         print 'Error: You need to create a urls.txt file first.'
         print ''
         print 'Place it in %s' % (urls_txt)
-        print 'An example is available in %s' % (example_fn)
+        print 'An example is available in %s' % (urls_txt_fn)
         print ''
-        if os.path.exists(urls_txt_example) and not os.path.exists(example_fn):
-            shutil.copy(urls_txt_example, example_fn)
+        print 'You can also create %s' % (hooks_py)
+        print 'An example is available in %s' % (hooks_py_fn)
+        print ''
+        if os.path.exists(urls_txt_example) and not os.path.exists(urls_txt_fn):
+            shutil.copy(urls_txt_example, urls_txt_fn)
+        if os.path.exists(hooks_py_example) and not os.path.exists(hooks_py_fn):
+            shutil.copy(hooks_py_example, hooks_py_fn)
         sys.exit(1)
 
     headers = {
@@ -148,7 +183,7 @@ if __name__ == '__main__':
     if len(details) > 1:
         print '\n'.join(details)
         print '-- '
-        print 'urlwatch %s, %s' % (__version__, __copyright__)
+        print '%s %s, %s' % (pkgname, __version__, __copyright__)
         print 'Website: %s' % (__homepage__,)
         print 'watched %d URLs in %d seconds\n' % (count, (end-start).seconds)
 
