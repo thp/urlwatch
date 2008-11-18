@@ -3,7 +3,7 @@
 # Requirements: python-vobject (http://vobject.skyhouseconsulting.com/)
 # This file is part of urlwatch
 #
-# Copyright (c) 2008 Thomas Perl <thp|thpinfo.com>
+# Copyright (c) 2008 Thomas Perl <thp@thpinfo.com>
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
