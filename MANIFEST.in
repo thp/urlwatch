@@ -1,2 +1,2 @@
-include ChangeLog COPYING
+include ChangeLog COPYING urlwatch.1
 recursive-include examples *
