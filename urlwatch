@@ -76,6 +76,18 @@ import os
 import urllib2
 import difflib
 import datetime
+import optparse
+import logging
+import imp
+
+log = logging.getLogger(pkgname)
+log.setLevel(logging.DEBUG)
+
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+
+log.addHandler(NullHandler())
 
 def foutput(type, url, content=None, summary=None, c='*', n=line_length):
     """Format output messages
@@ -94,11 +106,11 @@ def foutput(type, url, content=None, summary=None, c='*', n=line_length):
         if content is None:
             summary.append(summary_txt)
         else:
-            summary.append('%s (%d bytes)' % (summary_txt, len(content)))
+            summary.append('%s (%d bytes)' % (summary_txt, len(str(content))))
 
     result = [c*n, summary_txt]
     if content is not None:
-        result += [c*n, content]
+        result += [c*n, str(content)]
     result += [c*n, '', '']
 
     return result
@@ -107,6 +119,48 @@ def foutput(type, url, content=None, summary=None, c='*', n=line_length):
 if __name__ == '__main__':
     start = datetime.datetime.now()
 
+    # Option parser
+    parser = optparse.OptionParser(usage='%%prog [options]\n\n%s' % __doc__.strip(), version=pkgname+' '+__version__)
+    parser.add_option('-v', '--verbose', action='store_true', dest='verbose', help='Show debug/log output')
+    parser.add_option('', '--urls', dest='urls', metavar='FILE', help='Read URLs from the specified file')
+    parser.add_option('', '--hooks', dest='hooks', metavar='FILE', help='Use specified file as hooks.py module')
+    parser.add_option('-e', '--display-errors', action='store_true', dest='display_errors', help='Include HTTP errors (404, etc..) in the output')
+
+    parser.set_defaults(verbose=False, display_errors=False)
+
+    (options, args) = parser.parse_args(sys.argv)
+
+    if options.verbose:
+        # Enable logging to the console
+        console = logging.StreamHandler()
+        console.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
+        console.setFormatter(formatter)
+        log.addHandler(console)
+        log.info('turning on verbose logging mode')
+
+    if options.display_errors:
+        log.info('turning display of errors ON')
+        display_errors = True
+
+    if options.urls:
+        if os.path.isfile(options.urls):
+            urls_txt = options.urls
+            log.info('using %s as urls.txt' % options.urls)
+        else:
+            log.error('%s is not a file' % options.urls)
+            print 'Error: %s is not a file' % options.urls
+            sys.exit(1)
+
+    if options.hooks:
+        if os.path.isfile(options.hooks):
+            hooks_py = options.hooks
+            log.info('using %s as hooks.py' % options.hooks)
+        else:
+            log.error('%s is not a file' % options.hooks)
+            print 'Error: %s is not a file' % options.hooks
+            sys.exit(1)
+
     # Created all needed folders
     for needed_dir in (urlwatch_dir, cache_dir, scripts_dir):
         if not os.path.isdir(needed_dir):
@@ -114,6 +168,7 @@ if __name__ == '__main__':
 
     # Check for required files
     if not os.path.isfile(urls_txt):
+        log.warning('not a file: %s' % urls_txt)
         urls_txt_fn = os.path.join(os.path.dirname(urls_txt), os.path.basename(urls_txt_example))
         hooks_py_fn = os.path.join(os.path.dirname(hooks_py), os.path.basename(hooks_py_example))
         print 'Error: You need to create a urls.txt file first.'
@@ -121,12 +176,13 @@ if __name__ == '__main__':
         print 'Place it in %s' % (urls_txt)
         print 'An example is available in %s' % (urls_txt_fn)
         print ''
-        print 'You can also create %s' % (hooks_py)
-        print 'An example is available in %s' % (hooks_py_fn)
-        print ''
+        if not options.hooks:
+            print 'You can also create %s' % (hooks_py)
+            print 'An example is available in %s' % (hooks_py_fn)
+            print ''
         if os.path.exists(urls_txt_example) and not os.path.exists(urls_txt_fn):
             shutil.copy(urls_txt_example, urls_txt_fn)
-        if os.path.exists(hooks_py_example) and not os.path.exists(hooks_py_fn):
+        if not options.hooks and os.path.exists(hooks_py_example) and not os.path.exists(hooks_py_fn):
             shutil.copy(hooks_py_example, hooks_py_fn)
         sys.exit(1)
 
@@ -139,32 +195,44 @@ if __name__ == '__main__':
     count = 0
 
     if os.path.exists(hooks_py):
+        log.info('using hooks.py from %s' % hooks_py)
         hooks = imp.load_source('hooks', hooks_py)
         if hasattr(hooks, 'filter'):
+            log.info('found and enabled filter function from hooks.py')
             filter = hooks.filter
         else:
-            print 'WARNING: %s has no filter function - ignoring' % hooks_py
+            log.warning('hooks.py has no filter function - ignoring')
             filter = lambda x, y: y
     else:
+        log.info('not using hooks.py (file not found)')
         filter = lambda x, y: y
 
     for url in (x for x in open(urls_txt).read().splitlines() if not (x.startswith('#') or x.strip()=='')):
+        log.info('processing URL: %s' % url)
         filename = os.path.join(cache_dir, sha.new(url).hexdigest())
         try:
             request = urllib2.Request(url, None, headers)
             data = filter(url, urllib2.urlopen(request).read())
             if os.path.exists(filename):
+                log.info('%s exists - creating unified diff' % filename)
                 old_data = open(filename).read()
                 diff = ''.join(difflib.unified_diff(old_data.splitlines(1), data.splitlines(1)))
                 if len(diff) > 0:
+                    log.info('%s has changed - adding diff' % url)
                     details += foutput('changed', url, diff, summary)
+                else:
+                    log.info('%s has not changed' % url)
             else:
+                log.info('%s does not exist - url is considered "new"' % filename)
                 details += foutput('new', url, None, summary)
+            log.info('writing current content of %s to %s' % (url, filename))
             open(filename, 'w').write(data)
         except urllib2.HTTPError, error:
+            log.error('got HTTPError while loading url: %s' % error)
             if display_errors:
                 details += foutput('error', url, error, summary)
         except urllib2.URLError, error:
+            log.error('got URLError while loading url: %s' % error)
             if display_errors:
                 details += foutput('error', url, error, summary)
         count += 1
@@ -173,6 +241,7 @@ if __name__ == '__main__':
 
     # Output everything
     if len(summary) > 1:
+        log.info('printing summary with %d items' % len(summary))
         print '-'*line_length
         print 'summary: %d changes' % (len(summary),)
         print ''
@@ -180,10 +249,15 @@ if __name__ == '__main__':
             print '%02d. %s' % (id+1, line)
         print '-'*line_length
         print '\n\n\n'
+    else:
+        log.info('summary is too short - not printing')
     if len(details) > 1:
+        log.info('printing details with %d items' % len(details))
         print '\n'.join(details)
         print '-- '
         print '%s %s, %s' % (pkgname, __version__, __copyright__)
         print 'Website: %s' % (__homepage__,)
         print 'watched %d URLs in %d seconds\n' % (count, (end-start).seconds)
+    else:
+        log.info('no details collected - not printing')
 
