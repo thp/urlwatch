@@ -13,6 +13,18 @@ watching web pages of university courses, so
 you always know when something has changed :)
 
 
+QUICKSTART
+==========
+1. Create an "urls.txt" file and add one URL per
+   line that you want to watch.
+2. Add watch.py as a cronjob or run it manually.
+3. If something changed, you'll get a diff output
+   to stdout. If nothing changed, no output.
+4. If you want to filter the web pages, because
+   there is some dynamic content that _always_
+   changes, create a "hooks.py" file that has a
+   filter(url, data) -> filtered_data function
+
 ~~ fAQ ~~
 
 Q: Where do I configure URLs?

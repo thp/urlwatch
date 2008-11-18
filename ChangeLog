@@ -31,3 +31,9 @@
 	* More comments in hooks.py for better user documentation
 	* Release version 1.4
 
+2008-11-18 Thomas Perl <thpinfo.com>
+	* Support for installing into the system
+	* Use ~/.urlwatch/ for config, cache and hooks
+	* Apply BSD license
+	* Release version 1.5
+
