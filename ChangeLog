@@ -31,10 +31,14 @@
 	* More comments in hooks.py for better user documentation
 	* Release version 1.4
 
-2008-11-18 Thomas Perl <thpinfo.com>
+2008-11-18 Thomas Perl <thp@thpinfo.com>
 	* Support for installing into the system
 	* Use ~/.urlwatch/ for config, cache and hooks
 	* Apply BSD license
 	* Add setup.py (and remove makefile)
+	* Command-line options
+	* Verbose logging mode
+	* Example urls.txt and hooks.py
+	* Update README
 	* Release version 1.5
 
