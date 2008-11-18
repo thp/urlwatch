@@ -35,5 +35,6 @@
 	* Support for installing into the system
 	* Use ~/.urlwatch/ for config, cache and hooks
 	* Apply BSD license
+	* Add setup.py (and remove makefile)
 	* Release version 1.5
 
