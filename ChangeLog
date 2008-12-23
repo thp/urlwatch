@@ -43,3 +43,7 @@
 	* Add manpage (urlwatch.1)
 	* Release version 1.5
 
+2008-12-23 Thomas Perl <thp@thpinfo.com>
+	* Use hashlib in Python 2.5 and above for SHA-1 generation
+	* Release version 1.6
+
