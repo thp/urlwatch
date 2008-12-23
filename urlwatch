@@ -70,7 +70,17 @@ urls_txt_example = os.path.join(examples_dir, 'urls.txt.example')
 hooks_py_example = os.path.join(examples_dir, 'hooks.py.example')
 
 # Code section
-import sha
+
+try:
+    # Available in Python 2.5 and above and preferred if available
+    import hashlib
+    have_hashlib = True
+except ImportError:
+    # "sha" is deprecated since Python 2.5 (throws a warning in Python 2.6)
+    # Thanks to Frank Palvölgyi for reporting the warning in Python 2.6
+    import sha
+    have_hashlib = False
+
 import shutil
 import os
 import urllib2
@@ -209,7 +219,12 @@ if __name__ == '__main__':
 
     for url in (x for x in open(urls_txt).read().splitlines() if not (x.startswith('#') or x.strip()=='')):
         log.info('processing URL: %s' % url)
-        filename = os.path.join(cache_dir, sha.new(url).hexdigest())
+        if have_hashlib:
+            sha_hash = hashlib.new('sha1')
+            sha_hash.update(url)
+        else:
+            sha_hash = sha.new(url)
+        filename = os.path.join(cache_dir, sha_hash.hexdigest())
         try:
             request = urllib2.Request(url, None, headers)
             data = filter(url, urllib2.urlopen(request).read())
