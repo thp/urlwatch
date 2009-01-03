@@ -40,6 +40,10 @@ A: Indeed there is. See the example hooks.py file.
 Q: What about badly-formed HTML (long lines, etc..)?
 A: Use python-utidylib. See the example hooks.py file.
 
+Q: Is there a way to make the output more human-readable?
+Q: Is there a way to turn it into a diff of parsed HTML perhaps?
+A: Of course. See the example hooks.py file -> use html2txt.html2text(data)
+
 
 CONTACT
 -------

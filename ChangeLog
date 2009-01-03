@@ -47,3 +47,9 @@
 	* Use hashlib in Python 2.5 and above for SHA-1 generation
 	* Release version 1.6
 
+2009-01-03 Thomas Perl <thp@thpinfo.com>
+	* Add urlwatch.html2txt module to convert/format HTML to plaintext
+	* Add example of using html2txt in the example hooks file
+	* The html-to-plaintext feature has been suggested by Evert Meulie
+	* Release version 1.7
+

@@ -1,7 +1,9 @@
 #!/usr/bin/python
-# Generic setup.py file (for urlwatch)
+# Convert HTML data to plaintext using Lynx, html2text or a regex
+# Requirements: Either lynx (default) or html2text or simply Python (for regex)
+# This file is part of urlwatch
 #
-# Copyright (c) 2008-2009 Thomas Perl <thp@thpinfo.com>
+# Copyright (c) 2009 Thomas Perl <thp@thpinfo.com>
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -27,45 +29,44 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from distutils.core import setup
+def html2text(data, method='lynx'):
+    """
+    Convert a string consisting of HTML to plain text
+    for easy difference checking.
 
-import os
-import os.path
-import glob
-import imp
+    Method may be one of:
+     'lynx' (default) - Use "lynx -dump" for conversion
+     'html2text'      - Use "html2text -nobs" for conversion
+     're'             - A simple regex-based HTML tag stripper
+    
+    Dependencies: apt-get install lynx html2text
+    """
+    if method == 're':
+        import re
+        stripped_tags = re.sub(r'<[^>]*>', '', data)
+        d = '\n'.join((l.rstrip() for l in stripped_tags.splitlines() if l.strip() != ''))
+        return d
 
-# name of our package
-package = 'urlwatch'
+    if method == 'lynx':
+        cmd = ['lynx', '-dump', '-stdin']
+    elif method == 'html2text':
+        cmd = ['html2text', '-nobs']
+    else:
+        return data
 
-# name of the main script
-script = 'urlwatch'
+    import subprocess
+    html2text = subprocess.Popen(cmd, stdin=subprocess.PIPE, \
+            stdout=subprocess.PIPE)
+    (stdout, stderr) = html2text.communicate(data)
+    return stdout
 
-# get program info from urlwatch module
-s = imp.load_source('s', script)
-# remove compiled file created by imp.load_source
-os.unlink(script+'c')
 
-# s.__author__ has the format "Author Name <email>"
-author = s.__author__[:s.__author__.index('<')-1]
-author_email = s.__author__[s.__author__.index('<')+1:s.__author__.rindex('>')]
+if __name__ == '__main__':
+    import sys
 
-setup(
-        name = s.pkgname,
-        description = s.__doc__,
-        version = s.__version__,
-        author = author,
-        author_email = author_email,
-        url = s.__homepage__,
-        scripts = [script],
-        package_dir = {'': 'lib'},
-        packages = [s.pkgname],
-        data_files = [
-            # Example files
-            (os.path.join('share', package, 'examples'),
-                glob.glob(os.path.join('examples', '*'))),
-            # Manual page
-            (os.path.join('share', 'man', 'man1'),
-                ['urlwatch.1']),
-        ],
-)
+    if len(sys.argv) == 2:
+        print html2text(open(sys.argv[1]).read())
+    else:
+        print 'Usage: %s document.html' % (sys.argv[0])
+        sys.exit(1)
 
