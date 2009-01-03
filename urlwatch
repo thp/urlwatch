@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # urlwatch is a minimalistic URL watcher written in Python
 #
