@@ -29,6 +29,8 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+import re
+
 def html2text(data, method='lynx'):
     """
     Convert a string consisting of HTML to plain text
@@ -42,7 +44,6 @@ def html2text(data, method='lynx'):
     Dependencies: apt-get install lynx html2text
     """
     if method == 're':
-        import re
         stripped_tags = re.sub(r'<[^>]*>', '', data)
         d = '\n'.join((l.rstrip() for l in stripped_tags.splitlines() if l.strip() != ''))
         return d
@@ -58,6 +59,16 @@ def html2text(data, method='lynx'):
     html2text = subprocess.Popen(cmd, stdin=subprocess.PIPE, \
             stdout=subprocess.PIPE)
     (stdout, stderr) = html2text.communicate(data)
+
+    if method == 'lynx':
+        # Lynx translates relative links in the mode we use it to:
+        # file://localhost/tmp/[RANDOM STRING]/[RELATIVE LINK]
+        # Use the following regular expression to remove the unnecessary
+        # parts, so that [RANDOM STRING] (changing on each call) does not
+        # expose itself as change on the website (it's a Lynx-related thing
+        # Thanks to Evert Meulie for pointing that out
+        stdout = re.sub(r'file://localhost/tmp/[^/]*/', '', stdout)
+
     return stdout
 
 

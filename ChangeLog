@@ -53,3 +53,6 @@
 	* The html-to-plaintext feature has been suggested by Evert Meulie
 	* Release version 1.7
 
+2009-01-05 Thomas Perl <thp@thpinfo.com>
+	* Fix a problem with relative links in Lynx' "-dump" mode
+
