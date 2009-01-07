@@ -68,6 +68,8 @@ def html2text(data, method='lynx'):
         # expose itself as change on the website (it's a Lynx-related thing
         # Thanks to Evert Meulie for pointing that out
         stdout = re.sub(r'file://localhost/tmp/[^/]*/', '', stdout)
+        # Also remove file names like L9816-5928TMP.html
+        stdout = re.sub(r'L\d+-\d+TMP.html', '', stdout)
 
     return stdout
 

@@ -56,3 +56,6 @@
 2009-01-05 Thomas Perl <thp@thpinfo.com>
 	* Fix a problem with relative links in Lynx' "-dump" mode
 
+2009-01-07 Thomas Perl <thp@thpinfo.com>
+	* Fix another problem with file-relative links in html2text w/ Lynx
+
