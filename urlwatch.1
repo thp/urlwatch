@@ -27,6 +27,35 @@ Use specified file as hooks.py module
 .TP
 \fB\-e\fR, \fB\-\-display\-errors\fR
 Include HTTP errors (404, etc..) in the output
+.SH ADVANCED FEATURES
+urlwatch includes some advanced features that you have to activate by creating
+a hooks.py file that specifies for which URLs to use a specific feature. You
+can also use the hooks.py file to filter trivially-varying elements of a web
+page.
+.SS ICALENDAR FILE PARSING
+This module allows you to parse .ics files that are in iCalendar format and
+provide a very simplified text-based format for the diffs. Use it like this
+in your hooks.py file:
+
+  from urlwatch import ical2txt
+
+  def filter(url, data):
+      if url.endswith('.ics'):
+          return ical2txt.ical2text(data).encode('utf-8') + data
+      # ...you can add more hooks here...
+.SS HTML TO TEXT CONVERSION
+There are three methods of converting HTML to text in the current version of
+urlwatch: "lynx" (default), "html2text" and "re". The former two use
+command-line utilities of the same name to convert HTML to text, and the last
+one uses a simple regex-based tag stripping method (needs no extra tools).
+Here is an example of using it in your hooks.py file:
+
+  from urlwatch import html2txt
+
+  def filter(url, data):
+      if url.endswith('.html') or url.endswith('.htm'):
+          return html2txt.html2text(data, method='lynx')
+      # ...you can add more hooks here...
 .SH "FILES"
 .TP
 .B ~/.urlwatch/urls.txt

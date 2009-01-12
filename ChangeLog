@@ -59,3 +59,6 @@
 2009-01-07 Thomas Perl <thp@thpinfo.com>
 	* Fix another problem with file-relative links in html2text w/ Lynx
 
+2009-01-12 Thomas Perl <thp@thpinfo.com>
+	* Describe ical2txt and html2txt with examples in manpage
+
