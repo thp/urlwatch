@@ -1,0 +1,6 @@
+* Implement "shell pipe" URLs, like this (in urls.txt):
+
+|ls -al /home/thp/
+
+(would execute that command and use the output as "content" of that URL)
+
