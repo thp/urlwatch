@@ -85,11 +85,15 @@ except ImportError:
 import shutil
 import os
 import urllib2
+import socket
 import difflib
 import datetime
 import optparse
 import logging
 import imp
+
+# One minute (=60 seconds) timeout for each request to avoid hanging
+socket.setdefaulttimeout(60)
 
 log = logging.getLogger(pkgname)
 log.setLevel(logging.DEBUG)
