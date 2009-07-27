@@ -255,6 +255,10 @@ if __name__ == '__main__':
             log.error('got URLError while loading url: %s' % error)
             if display_errors:
                 details += foutput('error', url, error, summary)
+        except IOError, error:
+            log.error('got IOError while loading url: %s' % error)
+            if display_errors:
+                details += foutput('error', url, error, summary)
         count += 1
 
     end = datetime.datetime.now()
