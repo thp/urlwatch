@@ -259,6 +259,11 @@ if __name__ == '__main__':
             log.error('got IOError while loading url: %s' % error)
             if display_errors:
                 details += foutput('error', url, error, summary)
+        except socket.timeout, error:
+            log.error('got timeout while loading url: %s' % error)
+            if display_errors:
+                details += foutput('error', url, error, summary)
+
         count += 1
 
     end = datetime.datetime.now()
