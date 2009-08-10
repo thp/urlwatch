@@ -85,6 +85,7 @@ except ImportError:
 import shutil
 import os
 import urllib2
+import httplib
 import socket
 import difflib
 import datetime
@@ -263,6 +264,13 @@ if __name__ == '__main__':
             log.error('got timeout while loading url: %s' % error)
             if display_errors:
                 details += foutput('error', url, error, summary)
+        except httplib.error, error:
+            # This is to workaround a bug in urllib2, see
+            # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=529740
+            log.error('got httplib error while loading url: %s' % error)
+            if display_errors:
+                details += foutput('error', url, (repr(error) +
+                        '\n' + str(error)).strip(), summary)
 
         count += 1
 
