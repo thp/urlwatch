@@ -62,3 +62,20 @@
 2009-01-12 Thomas Perl <thp@thpinfo.com>
 	* Describe ical2txt and html2txt with examples in manpage
 
+2009-01-15 Thomas Perl <thp@thpinfo.com>
+	* Add TODO list
+
+2009-01-20 Thomas Perl <thp@thpinfo.com>
+	* Set the socket timeout to one minute to avoid hangs
+
+2009-07-27 Thomas Perl <thp@thpinfo.com>
+	* Catch and handle IOErrors from FTP timeouts
+
+2009-08-01 Thomas Perl <thp@thpinfo.com>
+	* Add error handling for socket timeouts (HTTP mode)
+
+2009-08-10 Thomas Perl <thp@thpinfo.com>
+	* Handle httplib errors (Debian bug 529740)
+	  (Thanks to Bastian Kleineidam and Franck Joncourt)
+	* urlwatch 1.8 released
+

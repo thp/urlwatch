@@ -37,7 +37,7 @@ __author__ = 'Thomas Perl <thp@thpinfo.com>'
 __copyright__ = 'Copyright 2008-2009 Thomas Perl'
 __license__ = 'BSD'
 __homepage__ = 'http://thpinfo.com/2008/urlwatch/'
-__version__ = '1.7'
+__version__ = '1.8'
 
 user_agent = '%s/%s (+http://thpinfo.com/2008/urlwatch/info.html)' % (pkgname, __version__)
 
