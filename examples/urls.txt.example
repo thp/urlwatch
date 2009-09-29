@@ -16,3 +16,6 @@ http://ti.tuwien.ac.at/rts/teaching/courses/betriebssysteme
 http://www.kukuk.at/ical/events
 http://guckes.net/cal/
 
+# You can use the pipe character to "watch" the output of shell commands
+|ls -al ~
+

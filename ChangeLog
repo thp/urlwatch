@@ -79,3 +79,10 @@
 	  (Thanks to Bastian Kleineidam and Franck Joncourt)
 	* urlwatch 1.8 released
 
+2009-09-29 Thomas Perl <thp@thpinfo.com>
+	* Support for shell pipe (|) in urls.txt
+	* Support for If-Modified-Since header + HTTP 304
+	* Show previous/current timestamp in diff output
+	* Remove TODO list
+	* urlwatch 1.9 released
+

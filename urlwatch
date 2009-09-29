@@ -37,7 +37,7 @@ __author__ = 'Thomas Perl <thp@thpinfo.com>'
 __copyright__ = 'Copyright 2008-2009 Thomas Perl'
 __license__ = 'BSD'
 __homepage__ = 'http://thpinfo.com/2008/urlwatch/'
-__version__ = '1.8'
+__version__ = '1.9'
 
 user_agent = '%s/%s (+http://thpinfo.com/2008/urlwatch/info.html)' % (pkgname, __version__)
 
@@ -72,26 +72,21 @@ hooks_py_example = os.path.join(examples_dir, 'hooks.py.example')
 
 # Code section
 
-try:
-    # Available in Python 2.5 and above and preferred if available
-    import hashlib
-    have_hashlib = True
-except ImportError:
-    # "sha" is deprecated since Python 2.5 (throws a warning in Python 2.6)
-    # Thanks to Frank Palvölgyi for reporting the warning in Python 2.6
-    import sha
-    have_hashlib = False
-
 import shutil
 import os
+import stat
 import urllib2
 import httplib
+import email.Utils
+import time
 import socket
 import difflib
 import datetime
 import optparse
 import logging
 import imp
+
+from urlwatch import handler
 
 # One minute (=60 seconds) timeout for each request to avoid hanging
 socket.setdefaulttimeout(60)
@@ -116,7 +111,7 @@ def foutput(type, url, content=None, summary=None, c='*', n=line_length):
 
     The return value is a list of strings (one item per line).
     """
-    summary_txt = ': '.join((type.upper(), url))
+    summary_txt = ': '.join((type.upper(), str(url)))
 
     if summary is not None:
         if content is None:
@@ -223,53 +218,66 @@ if __name__ == '__main__':
         log.info('not using hooks.py (file not found)')
         filter = lambda x, y: y
 
-    for url in (x for x in open(urls_txt).read().splitlines() if not (x.startswith('#') or x.strip()=='')):
-        log.info('processing URL: %s' % url)
-        if have_hashlib:
-            sha_hash = hashlib.new('sha1')
-            sha_hash.update(url)
-        else:
-            sha_hash = sha.new(url)
-        filename = os.path.join(cache_dir, sha_hash.hexdigest())
+    for job in handler.parse_urls_txt(urls_txt):
+        log.info('processing job: %s' % job.location)
+        filename = os.path.join(cache_dir, job.get_guid())
         try:
-            request = urllib2.Request(url, None, headers)
-            data = filter(url, urllib2.urlopen(request).read())
+            if os.path.exists(filename):
+                st = os.stat(filename)
+                timestamp = st[stat.ST_MTIME]
+            else:
+                timestamp = None
+
+            # Retrieve the data
+            data = job.retrieve(timestamp, filter, headers)
+
             if os.path.exists(filename):
                 log.info('%s exists - creating unified diff' % filename)
                 old_data = open(filename).read()
-                diff = ''.join(difflib.unified_diff(old_data.splitlines(1), data.splitlines(1)))
+                timestamp_old = email.Utils.formatdate(timestamp, localtime=1)
+                timestamp_new = email.Utils.formatdate(time.time(), localtime=1)
+                diff = ''.join(difflib.unified_diff(\
+                        old_data.splitlines(1), \
+                        data.splitlines(1), \
+                        '@', \
+                        '@', \
+                        timestamp_old, \
+                        timestamp_new))
                 if len(diff) > 0:
-                    log.info('%s has changed - adding diff' % url)
-                    details += foutput('changed', url, diff, summary)
+                    log.info('%s has changed - adding diff' % job)
+                    details += foutput('changed', job, diff, summary)
                 else:
-                    log.info('%s has not changed' % url)
+                    log.info('%s has not changed' % job)
             else:
-                log.info('%s does not exist - url is considered "new"' % filename)
-                details += foutput('new', url, None, summary)
-            log.info('writing current content of %s to %s' % (url, filename))
+                log.info('%s does not exist - is considered "new"' % filename)
+                details += foutput('new', job, None, summary)
+            log.info('writing current content of %s to %s' % (job, filename))
             open(filename, 'w').write(data)
         except urllib2.HTTPError, error:
-            log.error('got HTTPError while loading url: %s' % error)
-            if display_errors:
-                details += foutput('error', url, error, summary)
+            if error.code == 304:
+                log.info('%s has not changed (HTTP 304)' % job)
+            else:
+                log.error('got HTTPError while loading url: %s' % error)
+                if display_errors:
+                    details += foutput('error', job, error, summary)
         except urllib2.URLError, error:
             log.error('got URLError while loading url: %s' % error)
             if display_errors:
-                details += foutput('error', url, error, summary)
+                details += foutput('error', job, error, summary)
         except IOError, error:
             log.error('got IOError while loading url: %s' % error)
             if display_errors:
-                details += foutput('error', url, error, summary)
+                details += foutput('error', job, error, summary)
         except socket.timeout, error:
             log.error('got timeout while loading url: %s' % error)
             if display_errors:
-                details += foutput('error', url, error, summary)
+                details += foutput('error', job, error, summary)
         except httplib.error, error:
             # This is to workaround a bug in urllib2, see
             # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=529740
             log.error('got httplib error while loading url: %s' % error)
             if display_errors:
-                details += foutput('error', url, (repr(error) +
+                details += foutput('error', job, (repr(error) +
                         '\n' + str(error)).strip(), summary)
 
         count += 1
