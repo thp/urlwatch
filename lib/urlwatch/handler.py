@@ -45,6 +45,7 @@ import urllib2
 import os
 import stat
 import sys
+import re
 
 class JobBase(object):
     def __init__(self, location):
@@ -73,13 +74,31 @@ class ShellJob(JobBase):
         return filter(self.location, stdout_data)
 
 class UrlJob(JobBase):
+    CHARSET_RE = re.compile('text/(html|plain); charset=(.*)')
+
     def retrieve(self, timestamp=None, filter=None, headers=None):
         headers = dict(headers)
         if timestamp is not None:
             timestamp = email.Utils.formatdate(timestamp)
             headers['If-Modified-Since'] = timestamp
         request = urllib2.Request(self.location, None, headers)
-        data = filter(self.location, urllib2.urlopen(request).read())
+        response = urllib2.urlopen(request)
+        headers = response.info()
+        content = response.read()
+        encoding = None
+
+        # Determine content type via HTTP headers
+        content_type = headers.get('Content-type', '')
+        content_type_match = self.CHARSET_RE.match(content_type)
+        if content_type_match:
+            encoding = content_type_match.group(2)
+
+        if encoding is not None:
+            # Convert from specified encoding to utf-8
+            content_unicode = content.decode(encoding, 'ignore')
+            content = content_unicode.encode('utf-8')
+
+        data = filter(self.location, content)
         return data
 
 
