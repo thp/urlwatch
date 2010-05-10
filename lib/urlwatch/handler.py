@@ -3,7 +3,7 @@
 #
 # urlwatch is a minimalistic URL watcher written in Python
 #
-# Copyright (c) 2008-2009 Thomas Perl <thp@thpinfo.com>
+# Copyright (c) 2008-2010 Thomas Perl <thp@thpinfo.com>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
