@@ -86,3 +86,8 @@
 	* Remove TODO list
 	* urlwatch 1.9 released
 
+2010-05-10 Thomas Perl <thp@thpinfo.com>
+	* Get encoding from headers and convert to UTF-8
+	  (suggested by Ján Ondrej)
+	* urlwatch 1.10 released
+
