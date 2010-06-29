@@ -260,6 +260,10 @@ if __name__ == '__main__':
                 log.error('got HTTPError while loading url: %s' % error)
                 if display_errors:
                     details += foutput('error', job, error, summary)
+        except handler.ShellError, error:
+            log.error('Shell returned %d' % error.result)
+            if display_errors:
+                details += foutput('error', job, error, summary)
         except urllib2.URLError, error:
             log.error('got URLError while loading url: %s' % error)
             if display_errors:

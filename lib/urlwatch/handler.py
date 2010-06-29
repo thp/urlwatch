@@ -65,12 +65,25 @@ class JobBase(object):
     def retrieve(self, timestamp=None, filter=None, headers=None):
         raise Exception('Not implemented')
 
+class ShellError(Exception):
+    """Exception for shell commands with non-zero exit code"""
+
+    def __init__(self, result):
+        Exception.__init__(self)
+        self.result = result
+
+    def __str__(self):
+        return '%s: Exit status %d' % (self.__class__.__name__, self.result)
+
 class ShellJob(JobBase):
     def retrieve(self, timestamp=None, filter=None, headers=None):
         process = subprocess.Popen(self.location, \
                 stdout=subprocess.PIPE, \
                 shell=True)
         stdout_data, stderr_data = process.communicate()
+        result = process.wait()
+        if result != 0:
+            raise ShellError(result)
         return filter(self.location, stdout_data)
 
 class UrlJob(JobBase):
