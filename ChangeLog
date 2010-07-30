@@ -91,3 +91,7 @@
 	  (suggested by Ján Ondrej)
 	* urlwatch 1.10 released
 
+2010-07-30 Thomas Perl <thp@thpinfo.com>
+	* Detect non-zero shell command exit codes and raise an error
+	* urlwatch 1.11 released
+
