@@ -75,6 +75,20 @@ class ShellError(Exception):
     def __str__(self):
         return '%s: Exit status %d' % (self.__class__.__name__, self.result)
 
+
+def use_filter(filter, url, input):
+    """Apply a filter function to input from an URL"""
+    output = filter(url, input)
+
+    if output is None:
+        # If the filter does not return a value, it is
+        # assumed that the input does not need filtering.
+        # In this case, we simply return the input.
+        return input
+
+    return output
+
+
 class ShellJob(JobBase):
     def retrieve(self, timestamp=None, filter=None, headers=None):
         process = subprocess.Popen(self.location, \
@@ -84,7 +98,9 @@ class ShellJob(JobBase):
         result = process.wait()
         if result != 0:
             raise ShellError(result)
-        return filter(self.location, stdout_data)
+
+        return use_filter(filter, self.location, stdout_data)
+
 
 class UrlJob(JobBase):
     CHARSET_RE = re.compile('text/(html|plain); charset=(.*)')
@@ -111,8 +127,7 @@ class UrlJob(JobBase):
             content_unicode = content.decode(encoding, 'ignore')
             content = content_unicode.encode('utf-8')
 
-        data = filter(self.location, content)
-        return data
+        return use_filter(filter, self.location, content)
 
 
 def parse_urls_txt(urls_txt):

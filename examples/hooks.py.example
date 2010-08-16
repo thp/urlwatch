@@ -81,5 +81,9 @@ def filter(url, data):
         # "re" (does not need anything, but only strips tags
         # using a regular expression and does no formatting)
         return html2txt.html2text(data, method='lynx')
+
+    # The next line is optional - if the filter function returns
+    # None (or no value at all), the input data will be taken as
+    # the result -> None as return value means "don't filter".
     return data
 
