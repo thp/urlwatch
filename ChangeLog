@@ -95,3 +95,9 @@
 	* Detect non-zero shell command exit codes and raise an error
 	* urlwatch 1.11 released
 
+2011-02-10 Thomas Perl <thp.io/about>
+	* Allow None as return value for filters
+	  (if a filter returns None, interpret it as "don't filter")
+	* Update website URL, contact info and copyright years
+	* urlwatch 1.12 released
+
