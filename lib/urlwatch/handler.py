@@ -62,7 +62,7 @@ class JobBase(object):
         else:
             return sha.new(self.location).hexdigest()
 
-    def retrieve(self, timestamp=None, filter=None, headers=None):
+    def retrieve(self, timestamp=None, filter=None, headers=None, log=None):
         raise Exception('Not implemented')
 
 class ShellError(Exception):
@@ -90,7 +90,7 @@ def use_filter(filter, url, input):
 
 
 class ShellJob(JobBase):
-    def retrieve(self, timestamp=None, filter=None, headers=None):
+    def retrieve(self, timestamp=None, filter=None, headers=None, log=None):
         process = subprocess.Popen(self.location, \
                 stdout=subprocess.PIPE, \
                 shell=True)
@@ -105,12 +105,19 @@ class ShellJob(JobBase):
 class UrlJob(JobBase):
     CHARSET_RE = re.compile('text/(html|plain); charset=(.*)')
 
-    def retrieve(self, timestamp=None, filter=None, headers=None):
+    def retrieve(self, timestamp=None, filter=None, headers=None, log=None):
         headers = dict(headers)
         if timestamp is not None:
             timestamp = email.Utils.formatdate(timestamp)
             headers['If-Modified-Since'] = timestamp
-        request = urllib2.Request(self.location, None, headers)
+
+        if ' ' in self.location:
+            self.location, post_data = self.location.split(' ', 1)
+            log.info('Sending POST request to %s', self.location)
+        else:
+            post_data = None
+
+        request = urllib2.Request(self.location, post_data, headers)
         response = urllib2.urlopen(request)
         headers = response.info()
         content = response.read()

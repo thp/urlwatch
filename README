@@ -44,6 +44,13 @@ Q: Is there a way to make the output more human-readable?
 Q: Is there a way to turn it into a diff of parsed HTML perhaps?
 A: Of course. See the example hooks.py file -> use html2txt.html2text(data)
 
+Q: Why do I get an error with URLs with spaces in them?
+A: Please make sure to URL-encode the URLs properly. Use %20 for spaces.
+
+Q: The website I want to watch requires a POST request. How do I send one?
+A: Add the POST data in the same line, separated by a single space. The format
+   in urls.txt is: http://example.org/script.cgi value=5&q=search&button=Go
+
 
 CONTACT
 -------

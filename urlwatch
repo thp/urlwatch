@@ -229,7 +229,7 @@ if __name__ == '__main__':
                 timestamp = None
 
             # Retrieve the data
-            data = job.retrieve(timestamp, filter, headers)
+            data = job.retrieve(timestamp, filter, headers, log)
 
             if os.path.exists(filename):
                 log.info('%s exists - creating unified diff' % filename)
