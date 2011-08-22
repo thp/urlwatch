@@ -40,7 +40,7 @@ except ImportError:
     have_hashlib = False
 
 import subprocess
-import email.Utils
+import email.utils
 import urllib2
 import os
 import stat
@@ -57,12 +57,16 @@ class JobBase(object):
     def get_guid(self):
         if have_hashlib:
             sha_hash = hashlib.new('sha1')
-            sha_hash.update(self.location)
+            location = self.location
+            if isinstance(location, unicode):
+                location = location.encode('utf-8')
+            sha_hash.update(location)
             return sha_hash.hexdigest()
         else:
             return sha.new(self.location).hexdigest()
 
-    def retrieve(self, timestamp=None, filter=None, headers=None, log=None):
+    def retrieve(self, timestamp=None, filter_func=None, headers=None,
+            log=None):
         raise Exception('Not implemented')
 
 class ShellError(Exception):
@@ -76,9 +80,9 @@ class ShellError(Exception):
         return '%s: Exit status %d' % (self.__class__.__name__, self.result)
 
 
-def use_filter(filter, url, input):
+def use_filter(filter_func, url, input):
     """Apply a filter function to input from an URL"""
-    output = filter(url, input)
+    output = filter_func(url, input)
 
     if output is None:
         # If the filter does not return a value, it is
@@ -90,7 +94,8 @@ def use_filter(filter, url, input):
 
 
 class ShellJob(JobBase):
-    def retrieve(self, timestamp=None, filter=None, headers=None, log=None):
+    def retrieve(self, timestamp=None, filter_func=None, headers=None,
+            log=None):
         process = subprocess.Popen(self.location, \
                 stdout=subprocess.PIPE, \
                 shell=True)
@@ -99,16 +104,17 @@ class ShellJob(JobBase):
         if result != 0:
             raise ShellError(result)
 
-        return use_filter(filter, self.location, stdout_data)
+        return use_filter(filter_func, self.location, stdout_data)
 
 
 class UrlJob(JobBase):
     CHARSET_RE = re.compile('text/(html|plain); charset=(.*)')
 
-    def retrieve(self, timestamp=None, filter=None, headers=None, log=None):
+    def retrieve(self, timestamp=None, filter_func=None, headers=None,
+            log=None):
         headers = dict(headers)
         if timestamp is not None:
-            timestamp = email.Utils.formatdate(timestamp)
+            timestamp = email.utils.formatdate(timestamp)
             headers['If-Modified-Since'] = timestamp
 
         if ' ' in self.location:
@@ -121,7 +127,7 @@ class UrlJob(JobBase):
         response = urllib2.urlopen(request)
         headers = response.info()
         content = response.read()
-        encoding = None
+        encoding = 'utf-8'
 
         # Determine content type via HTTP headers
         content_type = headers.get('Content-type', '')
@@ -129,12 +135,11 @@ class UrlJob(JobBase):
         if content_type_match:
             encoding = content_type_match.group(2)
 
-        if encoding is not None:
-            # Convert from specified encoding to utf-8
-            content_unicode = content.decode(encoding, 'ignore')
-            content = content_unicode.encode('utf-8')
+        # Convert from specified encoding to unicode
+        if not isinstance(content, unicode):
+            content = content.decode(encoding, 'ignore')
 
-        return use_filter(filter, self.location, content)
+        return use_filter(filter_func, self.location, content)
 
 
 def parse_urls_txt(urls_txt):
