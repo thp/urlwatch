@@ -1,2 +1,3 @@
 include ChangeLog COPYING urlwatch.1
 recursive-include examples *
+include convert-to-python3.sh

@@ -101,3 +101,12 @@
 	* Update website URL, contact info and copyright years
 	* urlwatch 1.12 released
 
+2011-08-22 Thomas Perl <thp.io/about>
+	* Support for POST requests (suggested by Sébastien Fricker)
+	* Use concurrent.futures for parallel execution (needs Python 3.2
+	  or "futures" from PyPI for older Python versions, including 2.x)
+	* Various code changes to enhance compatibility with Python 3
+	* Add convert-to-python3.sh script to convert the codebase into
+	  Python 3 format using the "2to3" utility included with Python
+	* urlwatch 1.13 released
+
