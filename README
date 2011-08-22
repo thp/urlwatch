@@ -9,6 +9,19 @@ change. Ideal for watching web pages of university courses, so you always
 know when lecture dates have changed or new tasks are online :)
 
 
+DEPENDENCIES
+------------
+
+This package requires the "concurrent.futures" module as included in Python
+3.2. For Python versions < 3.2, you can install it using:
+
+    pip install futures
+
+or download and install it manually from its project page at
+
+    http://code.google.com/p/pythonfutures/
+
+
 QUICK START
 -----------
 
