@@ -110,3 +110,8 @@
 	  Python 3 format using the "2to3" utility included with Python
 	* urlwatch 1.13 released
 
+2011-11-15 Thomas Perl <thp.io/about>
+	* Fix an encoding issue related to the html2txt module (thanks to
+	  Thomas Dziedzic for reporting this issue and testing the patch)
+	* urlwatch 1.14 released
+
