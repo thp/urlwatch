@@ -265,7 +265,8 @@ if __name__ == '__main__':
                 log.info('%s exists - creating unified diff' % filename)
                 old_data = open(filename).read()
 
-                if not isinstance(old_data, unicode):
+                if (not isinstance(old_data, unicode) and
+                        isinstance(data, unicode)):
                     # Fix for Python 2's unicode/str woes
                     data = data.encode('utf-8')
 

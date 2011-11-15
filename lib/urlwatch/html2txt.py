@@ -43,6 +43,9 @@ def html2text(data, method='lynx'):
     
     Dependencies: apt-get install lynx html2text
     """
+    if isinstance(data, unicode):
+        data = data.encode('utf-8')
+
     if method == 're':
         stripped_tags = re.sub(r'<[^>]*>', '', data)
         d = '\n'.join((l.rstrip() for l in stripped_tags.splitlines() if l.strip() != ''))
