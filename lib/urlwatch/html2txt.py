@@ -31,7 +31,7 @@
 
 import re
 
-def html2text(data, method='lynx'):
+def html2text(data, method='lynx', utf8=False):
     """
     Convert a string consisting of HTML to plain text
     for easy difference checking.
@@ -40,7 +40,12 @@ def html2text(data, method='lynx'):
      'lynx' (default) - Use "lynx -dump" for conversion
      'html2text'      - Use "html2text -nobs" for conversion
      're'             - A simple regex-based HTML tag stripper
-    
+
+    If utf8 is True, the data will be handled as utf-8 by Lynx and
+    html2text (if possible). It seems like only the Debian-provided
+    version of html2text has support for the "-utf8" command line
+    flag, so this might not work on non-Debian systems.
+
     Dependencies: apt-get install lynx html2text
     """
     if isinstance(data, unicode):
@@ -53,8 +58,14 @@ def html2text(data, method='lynx'):
 
     if method == 'lynx':
         cmd = ['lynx', '-dump', '-stdin']
+
+        if utf8:
+            cmd.append('-assume_charset=UTF-8')
     elif method == 'html2text':
         cmd = ['html2text', '-nobs']
+
+        if utf8:
+            cmd.append('-utf8')
     else:
         return data
 
