@@ -115,3 +115,8 @@
 	  Thomas Dziedzic for reporting this issue and testing the patch)
 	* urlwatch 1.14 released
 
+2012-08-30 Thomas Perl <thp.io/about>
+	* Merge changes from Slavko <slavino@slavino.sk> related to UTF-8
+	  and html2txt, this has been tested on Debian-based systems
+	* urlwatch 1.15 released
+
