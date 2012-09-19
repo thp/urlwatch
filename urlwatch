@@ -91,6 +91,7 @@ import imp
 import concurrent.futures
 
 from urlwatch import handler
+from urlwatch import mailer
 
 # One minute (=60 seconds) timeout for each request to avoid hanging
 socket.setdefaulttimeout(60)
@@ -154,6 +155,9 @@ if __name__ == '__main__':
     parser.add_option('', '--urls', dest='urls', metavar='FILE', help='Read URLs from the specified file')
     parser.add_option('', '--hooks', dest='hooks', metavar='FILE', help='Use specified file as hooks.py module')
     parser.add_option('-e', '--display-errors', action='store_true', dest='display_errors', help='Include HTTP errors (404, etc..) in the output')
+    parser.add_option('-t', '--mailto', dest='email', metavar='ADDRESS', help='Send results via e-mail to ADDRESS')
+    parser.add_option('-f', '--mailfrom', dest='email_from', metavar='ADDRESS', help='Alternate From: address for e-mail (--mailto)')
+    parser.add_option('-s', '--smtp', dest='email_smtp', metavar='SERVER', help='SMTP server for e-mail (--mailto)')
 
     parser.set_defaults(verbose=False, display_errors=False)
 
@@ -171,6 +175,25 @@ if __name__ == '__main__':
     if options.display_errors:
         log.info('turning display of errors ON')
         display_errors = True
+
+    if options.email:
+        log.info('Send emails enabled')
+        enable_emails = True
+        email_smtp_server = options.email_smtp or 'localhost'
+        email_sender_address = options.email_from or options.email
+        email_receiver_address = options.email
+    else:
+        if options.email_from:
+            log.error('--mailfrom without --mailto')
+            print 'Error: --mailfrom needs --mailto'
+            sys.exit(1)
+
+        if options.email_smtp:
+            log.error('--smtp without --mailto')
+            print 'Error: --smtp needs --mailto'
+            sys.exit(1)
+
+        enable_emails = False
 
     if options.urls:
         if os.path.isfile(options.urls):
@@ -328,16 +351,18 @@ if __name__ == '__main__':
 
     end = datetime.datetime.now()
 
+    short_summary = ''
+
     # Output everything
     if len(summary) > 1:
         log.info('printing summary with %d items' % len(summary))
-        print '-'*line_length
-        print 'summary: %d changes' % (len(summary),)
-        print ''
+        short_summary = '-'*line_length + '\n'
+        short_summary += 'summary: %d changes' % (len(summary),) + '\n\n'
         for id, line in enumerate(summary):
-            print '%02d. %s' % (id+1, line)
-        print '-'*line_length
-        print '\n\n\n'
+            short_summary += '%02d. %s' % (id+1, line) + '\n'
+        short_summary += '-'*line_length + '\n'
+        short_summary += '\n\n\n'
+        print short_summary
     else:
         log.info('summary is too short - not printing')
     if len(details) > 1:
@@ -347,6 +372,16 @@ if __name__ == '__main__':
         print '%s %s, %s' % (pkgname, __version__, __copyright__)
         print 'Website: %s' % (__homepage__,)
         print 'watched %d URLs in %d seconds\n' % (count, (end-start).seconds)
+
+        if enable_emails:
+            try:
+                subject = 'Changes detected (%d)' % len(summary)
+                mailer.send(email_smtp_server, email_sender_address,
+                        email_receiver_address, subject,
+                        short_summary + '\n' + '\n'.join(details))
+                log.info('E-Mail to %s sent.', email_receiver_address)
+            except Exception, e:
+                log.warning('E-Mail delivery error: %s', e)
     else:
         log.info('no details collected - not printing')
 

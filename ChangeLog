@@ -120,3 +120,7 @@
 	  and html2txt, this has been tested on Debian-based systems
 	* urlwatch 1.15 released
 
+2012-09-13 Xavier Izard <ctrl.alt.sup@free.fr>
+	* Added basic support for email delivery, using internal SMTP lib.
+	  (see options --mailto, --mailfrom and --smtp)
+
