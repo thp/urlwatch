@@ -124,3 +124,8 @@
 	* Added basic support for email delivery, using internal SMTP lib.
 	  (see options --mailto, --mailfrom and --smtp)
 
+2013-03-11 Thomas Perl <thp.io/about>
+	* Minimalistic, automatic setup.py script (based on jabberbot)
+	* Move files around ({examples,urlwatch.1} -> share/...)
+	* Update Python 3 migration script and MANIFEST.in with new paths
+

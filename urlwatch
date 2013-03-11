@@ -29,14 +29,19 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-"""Watch web pages and arbitrary URLs for changes"""
+"""Watch web pages and arbitrary URLs for changes
+
+This script is intended to help you watch URLs and get notified (via email or
+in your terminal) of any changes. The change notification will include the URL
+that has changed and a unified diff of what has changed.
+"""
 
 pkgname = 'urlwatch'
+COPYRIGHT = 'Copyright 2008-2013 Thomas Perl'
 
 __author__ = 'Thomas Perl <m@thp.io>'
-__copyright__ = 'Copyright 2008-2011 Thomas Perl'
 __license__ = 'BSD'
-__homepage__ = 'http://thp.io/2008/urlwatch/'
+__url__ = 'http://thp.io/2008/urlwatch/'
 __version__ = '1.15'
 
 user_agent = '%s/%s (+http://thp.io/2008/urlwatch/info.html)' % (pkgname, __version__)
@@ -59,14 +64,11 @@ hooks_py = os.path.join(scripts_dir, 'hooks.py')
 # Check if we are installed in the system already
 (prefix, bindir) = os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))
 
-if bindir == 'bin':
-    # Assume we are installed in system
-    examples_dir = os.path.join(prefix, 'share', pkgname, 'examples')
-else:
+if bindir != 'bin':
     # Assume we are not yet installed
-    examples_dir = os.path.join(prefix, bindir, 'examples')
-    sys.path.append(os.path.join(prefix, bindir, 'lib'))
+    sys.path.insert(0, os.path.join(prefix, bindir, 'lib'))
 
+examples_dir = os.path.join(prefix, 'share', pkgname, 'examples')
 urls_txt_example = os.path.join(examples_dir, 'urls.txt.example')
 hooks_py_example = os.path.join(examples_dir, 'hooks.py.example')
 
@@ -369,7 +371,7 @@ if __name__ == '__main__':
         log.info('printing details with %d items' % len(details))
         print '\n'.join(details)
         print '-- '
-        print '%s %s, %s' % (pkgname, __version__, __copyright__)
+        print '%s %s, %s' % (pkgname, __version__, COPYRIGHT)
         print 'Website: %s' % (__homepage__,)
         print 'watched %d URLs in %d seconds\n' % (count, (end-start).seconds)
 
