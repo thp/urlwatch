@@ -64,11 +64,14 @@ hooks_py = os.path.join(scripts_dir, 'hooks.py')
 # Check if we are installed in the system already
 (prefix, bindir) = os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))
 
-if bindir != 'bin':
+if bindir == 'bin':
+    # Installed system-wide
+    examples_dir = os.path.join(prefix, 'share', pkgname, 'examples')
+else:
     # Assume we are not yet installed
     sys.path.insert(0, os.path.join(prefix, bindir, 'lib'))
+    examples_dir = os.path.join(prefix, bindir, 'share', pkgname, 'examples')
 
-examples_dir = os.path.join(prefix, 'share', pkgname, 'examples')
 urls_txt_example = os.path.join(examples_dir, 'urls.txt.example')
 hooks_py_example = os.path.join(examples_dir, 'hooks.py.example')
 
