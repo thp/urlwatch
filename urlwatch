@@ -375,7 +375,7 @@ if __name__ == '__main__':
         print '\n'.join(details)
         print '-- '
         print '%s %s, %s' % (pkgname, __version__, COPYRIGHT)
-        print 'Website: %s' % (__homepage__,)
+        print 'Website: %s' % (__url__,)
         print 'watched %d URLs in %d seconds\n' % (count, (end-start).seconds)
 
         if enable_emails:
