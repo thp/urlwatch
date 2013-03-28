@@ -111,7 +111,7 @@ class NullHandler(logging.Handler):
 log.addHandler(NullHandler())
 
 ERROR_MESSAGE_URLS_TXT = """
-Error: You need to create a urls.txt file first.'
+Error: You need to create a urls.txt file first.
 
 Place it in %s
 An example is available in %s
