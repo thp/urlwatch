@@ -108,7 +108,7 @@ class ShellJob(JobBase):
 
 
 class UrlJob(JobBase):
-    CHARSET_RE = re.compile('text/(html|plain); charset=(.*)')
+    CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
     def retrieve(self, timestamp=None, filter_func=None, headers=None,
             log=None):
