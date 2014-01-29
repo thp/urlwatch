@@ -77,6 +77,11 @@ def html2text(data, method='lynx', utf8=False):
     if method == 'lynx':
         # Lynx translates relative links in the mode we use it to:
         # file://localhost/tmp/[RANDOM STRING]/[RELATIVE LINK]
+
+        # Recent versions of lynx (seen in 2.8.8pre1-1) do not include the
+        # "localhost" in the file:// URLs; see Debian bug 732112
+        stdout = re.sub(r'file:///tmp/[^/]*/', '', stdout)
+
         # Use the following regular expression to remove the unnecessary
         # parts, so that [RANDOM STRING] (changing on each call) does not
         # expose itself as change on the website (it's a Lynx-related thing
