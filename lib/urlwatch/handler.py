@@ -137,7 +137,12 @@ class UrlJob(JobBase):
 
         # Convert from specified encoding to unicode
         if not isinstance(content, unicode):
-            content = content.decode(encoding, 'ignore')
+            try:
+                content = content.decode(encoding, 'ignore')
+            except LookupError:
+                # If this is an invalid encoding, decode as ascii
+                # (Debian bug 731931)
+                content = content.decode('ascii', 'ignore')
 
         return use_filter(filter_func, self.location, content)
 
