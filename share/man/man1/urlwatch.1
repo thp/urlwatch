@@ -1,4 +1,4 @@
-.TH URLWATCH "1" "August 2012" "urlwatch 1.15" "User Commands"
+.TH URLWATCH "1" "January 2014" "urlwatch 1.16" "User Commands"
 .SH NAME
 urlwatch \- Watch web pages and arbitrary URLs for changes
 .SH SYNOPSIS
@@ -27,6 +27,15 @@ Use specified file as hooks.py module
 .TP
 \fB\-e\fR, \fB\-\-display\-errors\fR
 Include HTTP errors (404, etc..) in the output
+.TP
+\fB\-t\fR, \fB\-\-mailto\fR=\fIADDRESS\fR
+Send results via e-mail to ADDRESS
+.TP
+\fB\-f\fR, \fB\-\-mailfrom\fR=\fIADDRESS\fR
+Alternate From: address for e-mail (--mailto)
+.TP
+\fB\-s\fR, \fB\-\-smtp\fR=\fISERVER\fR
+SMTP server for e-mail (--mailto)
 .SH ADVANCED FEATURES
 urlwatch includes some advanced features that you have to activate by creating
 a hooks.py file that specifies for which URLs to use a specific feature. You

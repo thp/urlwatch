@@ -129,3 +129,9 @@
 	* Move files around ({examples,urlwatch.1} -> share/...)
 	* Update Python 3 migration script and MANIFEST.in with new paths
 
+2013-11-23 Thomas Perl <thp.io/about>
+	* Fix a bug with parsing content-encoding headers
+
+2014-01-29 Thomas Perl <thp.io/about>
+	* Update manpage
+	* urlwatch 1.16 released
