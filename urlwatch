@@ -246,6 +246,7 @@ if __name__ == '__main__':
     count = 0
 
     filter_func = lambda x, y: y
+    pre_func = lambda w, x, y, z: y
 
     if os.path.exists(hooks_py):
         log.info('using hooks.py from %s' % hooks_py)
@@ -254,7 +255,12 @@ if __name__ == '__main__':
             log.info('found and enabled filter function from hooks.py')
             filter_func = hooks.filter
         else:
-            log.warning('hooks.py has no filter function - ignoring')
+            log.warning('hooks.py has no filter function')
+        if hasattr(hooks, 'pre'):
+            log.info('found and enabled pre function from hooks.py')
+            pre_func = hooks.pre
+        else:
+            log.warning('hooks.py has no pre function')
     else:
         log.info('not using hooks.py (file not found)')
 
@@ -266,7 +272,7 @@ if __name__ == '__main__':
         if os.path.exists(filename):
             timestamp = os.stat(filename)[stat.ST_MTIME]
 
-        data = job.retrieve(timestamp, filter_func, headers, log)
+        data = job.retrieve(timestamp, filter_func, pre_func, headers, log)
         return filename, timestamp, data
 
     jobs = handler.parse_urls_txt(urls_txt)
