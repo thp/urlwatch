@@ -156,7 +156,7 @@ def parse_urls_txt(urls_txt):
     shelljob_errors = []
     current_uid = os.getuid()
 
-    dirname = os.path.dirname(urls_txt)
+    dirname = os.path.dirname(urls_txt) or '.'
     dir_st = os.stat(dirname)
     if (dir_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
         shelljob_errors.append('%s is group/world-writable' % dirname)
