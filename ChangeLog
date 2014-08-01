@@ -135,3 +135,9 @@
 2014-01-29 Thomas Perl <thp.io/about>
 	* Update manpage
 	* urlwatch 1.16 released
+
+2014-08-01 Thomas Perl <thp.io/about>
+	* Handle invalid encoding sent by server (fixes Debian bug 731931)
+	* Fix lynx handing for relative URLs (fixes Debian bug 732112)
+	* Fix resolving of relative URL filenames (fixes Debian bug 748905)
+	* urlwatch 1.17 released
