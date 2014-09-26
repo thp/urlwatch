@@ -47,6 +47,16 @@ import stat
 import sys
 import re
 
+def get_current_user():
+    try:
+        return os.getlogin()
+    except OSError:
+        # If there is no controlling terminal, because urlwatch is launched by
+        # cron, or by a systemd.service for example, os.getlogin() fails with:
+        # OSError: [Errno 25] Inappropriate ioctl for device
+        import pwd
+        return pwd.getpwuid(os.getuid()).pw_name
+
 class JobBase(object):
     def __init__(self, location):
         self.location = location
@@ -162,7 +172,7 @@ def parse_urls_txt(urls_txt):
         shelljob_errors.append('%s is group/world-writable' % dirname)
         allow_shelljobs = False
     if dir_st.st_uid != current_uid:
-        shelljob_errors.append('%s not owned by %s' % (dirname, os.getlogin()))
+        shelljob_errors.append('%s not owned by %s' % (dirname, get_current_user()))
         allow_shelljobs = False
 
     file_st = os.stat(urls_txt)
@@ -170,7 +180,7 @@ def parse_urls_txt(urls_txt):
         shelljob_errors.append('%s is group/world-writable' % urls_txt)
         allow_shelljobs = False
     if file_st.st_uid != current_uid:
-        shelljob_errors.append('%s not owned by %s' % (urls_txt, os.getlogin()))
+        shelljob_errors.append('%s not owned by %s' % (urls_txt, get_current_user()))
         allow_shelljobs = False
 
     for line in open(urls_txt).read().splitlines():
