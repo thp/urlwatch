@@ -46,6 +46,7 @@ import os
 import stat
 import sys
 import re
+import zlib
 
 def get_current_user():
     try:
@@ -138,6 +139,13 @@ class UrlJob(JobBase):
         headers = response.info()
         content = response.read()
         encoding = 'utf-8'
+
+        # Handle HTTP compression
+        compression_type = headers.get('Content-Encoding')
+        if compression_type == 'gzip':
+            content = zlib.decompress(content, zlib.MAX_WBITS|32)
+        elif compression_type == 'deflate':
+            content = zlib.decompress(content, -zlib.MAX_WBITS)
 
         # Determine content type via HTTP headers
         content_type = headers.get('Content-type', '')
