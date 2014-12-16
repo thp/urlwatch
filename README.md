@@ -21,6 +21,15 @@ or download and install it manually from its project page at
 
     http://code.google.com/p/pythonfutures/
 
+If you need to use an authenticated SMTP connection, this package also relies
+on "keyring", it can be installed using:
+
+    pip install keyring
+
+or download and install manually from the project page at
+
+    https://bitbucket.org/kang/python-keyring-lib/
+
 
 QUICK START
 -----------
@@ -63,6 +72,15 @@ A: Please make sure to URL-encode the URLs properly. Use %20 for spaces.
 Q: The website I want to watch requires a POST request. How do I send one?
 A: Add the POST data in the same line, separated by a single space. The format
    in urls.txt is: http://example.org/script.cgi value=5&q=search&button=Go
+
+Q: The SMTP server I use requires TLS and authentication to port 587. How do I do that?
+A: Add your password to keyring using:
+
+    urlwatch -s smtp.example.com:587 -f alice@example.com --pass
+
+   Then run urlwatch with --tls and --auth supplied:
+
+    urlwatch -s smtp.example.com:587 -f alice@example.com -t bob@example.com --tls --auth ...
 
 
 CONTACT
