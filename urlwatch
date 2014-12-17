@@ -163,7 +163,10 @@ if __name__ == '__main__':
     parser.add_option('-t', '--mailto', dest='email', metavar='ADDRESS', help='Send results via e-mail to ADDRESS')
     parser.add_option('-f', '--mailfrom', dest='email_from', metavar='ADDRESS', help='Alternate From: address for e-mail (--mailto)')
     parser.add_option('-s', '--smtp', dest='email_smtp', metavar='SERVER', help='SMTP server for e-mail (--mailto)')
-
+    parser.add_option('-p', '--pass', dest='password', action='store_true', help='Interactively set password for SMTP')
+    parser.add_option('-T', '--tls', dest='tls', action='store_true', help='Enable STARTTLS for SMTP')
+    parser.add_option('-A', '--auth',dest='auth',action='store_true', default=False, help='Enable authentication from keyring for SMTP')
+    
     parser.set_defaults(verbose=False, display_errors=False)
 
     (options, args) = parser.parse_args(sys.argv)
@@ -181,12 +184,18 @@ if __name__ == '__main__':
         log.info('turning display of errors ON')
         display_errors = True
 
+    if options.password:
+        mailer.set_password(options.email_smtp,options.email_from)
+        sys.exit(0)
+        
     if options.email:
         log.info('Send emails enabled')
         enable_emails = True
         email_smtp_server = options.email_smtp or 'localhost'
         email_sender_address = options.email_from or options.email
         email_receiver_address = options.email
+        email_tls = options.tls
+        email_auth = options.auth
     else:
         if options.email_from:
             log.error('--mailfrom without --mailto')
@@ -199,6 +208,7 @@ if __name__ == '__main__':
             sys.exit(1)
 
         enable_emails = False
+
 
     if options.urls:
         if os.path.isfile(options.urls):
@@ -383,7 +393,8 @@ if __name__ == '__main__':
                 subject = 'Changes detected (%d)' % len(summary)
                 mailer.send(email_smtp_server, email_sender_address,
                         email_receiver_address, subject,
-                        short_summary + '\n' + '\n'.join(details))
+                            short_summary + '\n' + '\n'.join(details),
+                            auth=email_auth,tls=email_tls)
                 log.info('E-Mail to %s sent.', email_receiver_address)
             except Exception, e:
                 log.warning('E-Mail delivery error: %s', e)
