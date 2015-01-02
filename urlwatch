@@ -163,6 +163,7 @@ if __name__ == '__main__':
     parser.add_option('-t', '--mailto', dest='email', metavar='ADDRESS', help='Send results via e-mail to ADDRESS')
     parser.add_option('-f', '--mailfrom', dest='email_from', metavar='ADDRESS', help='Alternate From: address for e-mail (--mailto)')
     parser.add_option('-s', '--smtp', dest='email_smtp', metavar='SERVER', help='SMTP server for e-mail (--mailto)')
+    parser.add_option('-q', '--quiet', action='store_true', dest='quiet', help='Avoid diff output on stdout (--mailto)')
 
     parser.set_defaults(verbose=False, display_errors=False)
 
@@ -367,16 +368,19 @@ if __name__ == '__main__':
             short_summary += '%02d. %s' % (id+1, line) + '\n'
         short_summary += '-'*line_length + '\n'
         short_summary += '\n\n\n'
-        print short_summary
+        if not options.quiet:
+            print short_summary
     else:
         log.info('summary is too short - not printing')
+
     if len(details) > 1:
         log.info('printing details with %d items' % len(details))
-        print '\n'.join(details)
-        print '-- '
-        print '%s %s, %s' % (pkgname, __version__, COPYRIGHT)
-        print 'Website: %s' % (__url__,)
-        print 'watched %d URLs in %d seconds\n' % (count, (end-start).seconds)
+        if not options.quiet:
+            print '\n'.join(details)
+            print '-- '
+            print '%s %s, %s' % (pkgname, __version__, COPYRIGHT)
+            print 'Website: %s' % (__url__,)
+            print 'watched %d URLs in %d seconds\n' % (count, (end-start).seconds)
 
         if enable_emails:
             try:
