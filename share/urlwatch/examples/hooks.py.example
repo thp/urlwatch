@@ -82,6 +82,18 @@ def filter(url, data):
         # using a regular expression and does no formatting)
         return html2txt.html2text(data, method='lynx')
 
+    # In some cases, it might be necessary to decode the data from
+    # bytes to unicode. We don't always know the encoding of the
+    # remote file, so pick the right encoding (maybe depending on
+    # the remote URL), like so:
+
+    if type(data) == bytes:
+        data = data.decode('utf-8')
+
+    # You might want to replace DOS-style line endings (\r\n) with
+    # Unix-style line endings (\n), which is easy to do like so:
+    data = data.replace('\r', '')
+
     # The next line is optional - if the filter function returns
     # None (or no value at all), the input data will be taken as
     # the result -> None as return value means "don't filter".
