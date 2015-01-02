@@ -168,6 +168,7 @@ if __name__ == '__main__':
     parser.add_option('-T', '--tls', dest='tls', action='store_true', help='Enable STARTTLS for SMTP')
     parser.add_option('-q', '--quiet', action='store_true', dest='quiet', help='Avoid diff output on stdout (--mailto)')
     parser.add_option('-A', '--auth', dest='auth', action='store_true', default=False, help='Enable authentication from keyring for SMTP')
+    parser.add_option('-c', '--cache', dest='cache', metavar='DIR', help='Use specified DIR as cache directory.', default=None)
 
     parser.set_defaults(verbose=False, display_errors=False)
 
@@ -231,6 +232,12 @@ if __name__ == '__main__':
             print 'Error: %s is not a file' % options.hooks
             sys.exit(1)
 
+
+    if options.cache:
+            cache_dir = options.cache
+            log.info('using {} as cache directory'.format(cache_dir))
+                
+            
     # Created all needed folders
     for needed_dir in (urlwatch_dir, cache_dir, scripts_dir):
         if not os.path.isdir(needed_dir):
