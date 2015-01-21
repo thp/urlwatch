@@ -40,6 +40,28 @@ import re
 from urlwatch import ical2txt
 from urlwatch import html2txt
 
+# For doing logins in pre function
+import urllib, urllib2, cookielib
+
+# url and post_data are immutable but can be used for matching
+# changes to headers and cookiejar will be passed back to urlwatch
+def pre(url, post_data, headers, cookiejar):
+    # this url requires logging in
+    if url == 'http://example.org/stuff':
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
+
+        login_data = urllib.urlencode({'username' : 'user',
+                                       'password' : 'pass'
+                                      })
+
+        request = urllib2.Request('http://example.org/login', login_data, headers)
+        response = opener.open(request)
+        # Check response.read(), if not OK:
+        # raise urllib2.HTTPError(url, 401, "Pre-login failed.", None, None)
+        # Raising an exception here will stop the real URL from being fetched.
+
+    return None
+
 
 def filter(url, data):
     if url == 'http://www.inso.tuwien.ac.at/lectures/usability/':

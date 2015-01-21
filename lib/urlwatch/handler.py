@@ -42,6 +42,7 @@ except ImportError:
 import subprocess
 import email.utils
 import urllib2
+import cookielib
 import os
 import stat
 import sys
@@ -76,7 +77,7 @@ class JobBase(object):
         else:
             return sha.new(self.location).hexdigest()
 
-    def retrieve(self, timestamp=None, filter_func=None, headers=None,
+    def retrieve(self, timestamp=None, filter_func=None, pre_func=None, headers=None,
             log=None):
         raise Exception('Not implemented')
 
@@ -105,7 +106,7 @@ def use_filter(filter_func, url, input):
 
 
 class ShellJob(JobBase):
-    def retrieve(self, timestamp=None, filter_func=None, headers=None,
+    def retrieve(self, timestamp=None, filter_func=None, pre_func=None, headers=None,
             log=None):
         process = subprocess.Popen(self.location, \
                 stdout=subprocess.PIPE, \
@@ -121,7 +122,7 @@ class ShellJob(JobBase):
 class UrlJob(JobBase):
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
-    def retrieve(self, timestamp=None, filter_func=None, headers=None,
+    def retrieve(self, timestamp=None, filter_func=None, pre_func=None, headers=None,
             log=None):
         headers = dict(headers)
         if timestamp is not None:
@@ -134,8 +135,13 @@ class UrlJob(JobBase):
         else:
             post_data = None
 
+        cookiejar = cookielib.CookieJar()
+
+        pre_func(self.location, post_data, headers, cookiejar)
+
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
         request = urllib2.Request(self.location, post_data, headers)
-        response = urllib2.urlopen(request)
+        response = opener.open(request)
         headers = response.info()
         content = response.read()
         encoding = 'utf-8'
