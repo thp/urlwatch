@@ -42,6 +42,7 @@ except ImportError:
 import subprocess
 import email.utils
 import urllib2
+import urlparse
 import os
 import stat
 import sys
@@ -133,6 +134,14 @@ class UrlJob(JobBase):
             log.info('Sending POST request to %s', self.location)
         else:
             post_data = None
+
+        parts = urlparse.urlparse(self.location)
+        if parts.username or parts.password:
+            self.location = urlparse.urlunparse((parts.scheme, parts.hostname, parts.path,
+                                                 parts.params, parts.query, parts.fragment))
+            log.info('Using HTTP basic authentication for %s', self.location)
+            headers['Authorization'] = 'Basic %s' % (':'.join((parts.username,
+                                                               parts.password)).encode('base64').strip())
 
         request = urllib2.Request(self.location, post_data, headers)
         response = urllib2.urlopen(request)
