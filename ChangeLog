@@ -141,3 +141,12 @@
 	* Fix lynx handing for relative URLs (fixes Debian bug 732112)
 	* Fix resolving of relative URL filenames (fixes Debian bug 748905)
 	* urlwatch 1.17 released
+
+2015-02-27 Thomas Perl <thp.io/about>
+	* Fallback to using pwd if os.getlogin() fails (fixes #2)
+	* Handle HTTP compression (Content-encoding: gzip/deflate)
+	* Add option to suppress output on stdout (-q/--quiet)
+	* Allow customizing subject when sending e-mail (-S/--subject)
+	* Added support for TLS and SMTP auth (-p/--pass, -T/--tls, -A/--auth)
+	* Added support for specifying cache directory (-c/--cache)
+	* Add support for HTTP Auth to urlwatch.handler (fixes #10)
