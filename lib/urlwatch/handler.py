@@ -1,14 +1,13 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# urlwatch is a minimalistic URL watcher written in Python
-#
-# Copyright (c) 2008-2014 Thomas Perl <thp.io/about>
+# This file is part of urlwatch (https://thp.io/2008/urlwatch/).
+# Copyright (c) 2008-2015 Thomas Perl <thp.io/about>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
+#
 # 1. Redistributions of source code must retain the above copyright
 #    notice, this list of conditions and the following disclaimer.
 # 2. Redistributions in binary form must reproduce the above copyright
@@ -27,7 +26,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
 
 try:
     # Available in Python 2.5 and above and preferred if available

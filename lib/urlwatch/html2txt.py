@@ -1,14 +1,13 @@
-#!/usr/bin/python
-# Convert HTML data to plaintext using Lynx, html2text or a regex
-# Requirements: Either lynx (default) or html2text or simply Python (for regex)
-# This file is part of urlwatch
+# -*- coding: utf-8 -*-
 #
-# Copyright (c) 2009-2014 Thomas Perl <thp.io/about>
+# This file is part of urlwatch (https://thp.io/2008/urlwatch/).
+# Copyright (c) 2008-2015 Thomas Perl <thp.io/about>
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
+#
 # 1. Redistributions of source code must retain the above copyright
 #    notice, this list of conditions and the following disclaimer.
 # 2. Redistributions in binary form must reproduce the above copyright
@@ -16,7 +15,7 @@
 #    documentation and/or other materials provided with the distribution.
 # 3. The name of the author may not be used to endorse or promote products
 #    derived from this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
 # IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 # OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
