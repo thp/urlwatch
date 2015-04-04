@@ -35,7 +35,7 @@ except ImportError:
     keyring = None
 
 from email.mime.text import MIMEText
-
+from email.utils import formatdate
 
 def send(smtp_server, from_email, to_email, subject, body,
          tls=False, auth=False):
@@ -43,6 +43,7 @@ def send(smtp_server, from_email, to_email, subject, body,
     msg['Subject'] = subject
     msg['From'] = from_email
     msg['To'] = to_email
+    msg['Date'] = formatdate()
 
     if ':' in smtp_server:
         smtp_hostname, smtp_port = smtp_server.split(':')
