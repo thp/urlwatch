@@ -138,8 +138,8 @@ class UrlJob(JobBase):
             self.location = urlparse.urlunparse((parts.scheme, parts.hostname, parts.path,
                                                  parts.params, parts.query, parts.fragment))
             log.info('Using HTTP basic authentication for %s', self.location)
-            headers['Authorization'] = 'Basic %s' % (':'.join((parts.username,
-                                                               parts.password)).encode('base64').strip())
+            auth_token = urllib2.unquote(':'.join((parts.username, parts.password)))
+            headers['Authorization'] = 'Basic %s' % (auth_token.encode('base64').strip())
 
         request = urllib2.Request(self.location, post_data, headers)
         response = urllib2.urlopen(request)
