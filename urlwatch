@@ -59,6 +59,7 @@ urls_txt = os.path.join(urlwatch_dir, 'urls.txt')
 cache_dir = os.path.join(urlwatch_dir, 'cache')
 scripts_dir = os.path.join(urlwatch_dir, 'lib')
 hooks_py = os.path.join(scripts_dir, 'hooks.py')
+pushover_conf = os.path.join(urlwatch_dir, 'pushover.conf')
 
 # Check if we are installed in the system already
 (prefix, bindir) = os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))
@@ -89,6 +90,11 @@ import datetime
 import optparse
 import logging
 import imp
+import ConfigParser
+try:
+    import chump
+except ImportError:
+    chump = None
 
 # Python 3.2 includes "concurrent.futures", for older versions,
 # use "pip install futures" or http://code.google.com/p/pythonfutures/
@@ -134,7 +140,10 @@ def foutput(type, url, content=None, summary=None, c='*', n=line_length):
 
     The return value is a list of strings (one item per line).
     """
-    summary_txt = ': '.join((type.upper(), str(url)))
+    if options.pushover:
+        summary_txt = '%(type)s: <a href="%(url)s">%(url)s</a>' % {'type': type.upper(), 'url': str(url)}
+    else:
+	summary_txt = ': '.join((type.upper(), str(url)))
 
     if summary is not None:
         if content is None:
@@ -168,8 +177,10 @@ if __name__ == '__main__':
     parser.add_option('-q', '--quiet', action='store_true', dest='quiet', help='Avoid diff output on stdout (--mailto)')
     parser.add_option('-A', '--auth', dest='auth', action='store_true', default=False, help='Enable authentication from keyring for SMTP')
     parser.add_option('-c', '--cache', dest='cache', metavar='DIR', help='Use specified DIR as cache directory.', default=None)
+    parser.add_option('-P', '--pushover', dest='pushover_file', metavar='FILE', help='Read Pushover login details from [FILE]')
 
     parser.set_defaults(verbose=False, display_errors=False)
+    parser.set_defaults(verbose=False, display_errors=False, pushover=False)
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -236,12 +247,40 @@ if __name__ == '__main__':
             cache_dir = options.cache
             log.info('using {} as cache directory'.format(cache_dir))
                 
+    if options.pushover_file:
+	options.pushover = True
             
     # Created all needed folders
     for needed_dir in (urlwatch_dir, cache_dir, scripts_dir):
         if not os.path.isdir(needed_dir):
             os.makedirs(needed_dir)
 
+    if options.pushover:
+        if chump is None:
+            log.error('chump not installed')
+            print 'Error: You need chump installed to use the -P switch. Try "pip install chump"'
+            sys.exit(1)
+
+        if options.pushover_file:
+            if os.path.isfile(options.pushover_file):
+                pushover_conf = options.pushover_file
+            else:
+                log.error('No such file: %s', options.pushover_file)
+                print 'Error: No such file: %s' % options.pushover_file
+                sys.exit(1)
+
+        try:
+            config = ConfigParser.RawConfigParser()
+            config.read(pushover_conf)
+        except ConfigParser:
+            log.error('Failed to parse pushover config file %s', options.pushover_file)
+            print 'Error: Failed to parse pushover config file %s' % options.pushover_file
+            sys.exit(1)
+
+        pushover_app_key = config.get('App', 'Key')
+        pushover_user_key = config.get('User', 'Key')
+        log.info('Using Pushover to send messages to user %s' % pushover_user_key)
+	
     # Check for required files
     if not os.path.isfile(urls_txt):
         log.warning('not a file: %s' % urls_txt)
@@ -388,10 +427,24 @@ if __name__ == '__main__':
         short_summary += '\n\n\n'
         if not options.quiet:
             print short_summary
+
+        if options.pushover:
+            try:
+                app = chump.Application(pushover_app_key)
+                user = app.get_user(pushover_user_key)
+                message = user.create_message(
+                    title='Website Change Detected',
+                    message=short_summary,
+                    html=True,
+                    sound='spacealarm')
+                message.send()
+            except:
+                log.info('Failed to send update message via pushover')
+
     else:
         log.info('summary is too short - not printing')
 
-    if len(details) > 1:
+    if len(details) > 1 and not options.pushover:
         log.info('printing details with %d items' % len(details))
         if not options.quiet:
             print '\n'.join(details)

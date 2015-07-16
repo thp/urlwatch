@@ -82,6 +82,20 @@ A: Add your password to keyring using:
 
     urlwatch -s smtp.example.com:587 -f alice@example.com -t bob@example.com --tls --auth ...
 
+Q: How do I receive Pushover notifications that a website has changed
+A: You will need a pushover account, and to register this programme with your
+   Pushover account to receive a unique API key. Create a pushover.conf file
+   in ~/.urlwatch ( in standard Python config format) as follows:
+
+[App]
+key = [YOUR APP KEY]
+
+[User]
+key = [YOUR USER KEY]
+
+   and tell urlwatch to use this (enabling pushover notifications) with 
+   -P ~/.urlwatch/pushover.conf
+
 
 CONTACT
 -------
