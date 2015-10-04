@@ -37,8 +37,15 @@ except ImportError:
     import sha
     have_hashlib = False
 
+# Python 2 and 3 compatible string check
+try:
+    basestring
+except NameError:
+    basestring = str
+
 import subprocess
 import email.utils
+import urllib
 import urllib2
 import urlparse
 import os
@@ -46,6 +53,7 @@ import stat
 import sys
 import re
 import zlib
+import yaml
 
 def get_current_user():
     try:
@@ -58,8 +66,9 @@ def get_current_user():
         return pwd.getpwuid(os.getuid()).pw_name
 
 class JobBase(object):
-    def __init__(self, location):
+    def __init__(self, location, name=None):
         self.location = location
+        self.name = name
 
     def __str__(self):
         return self.location
@@ -120,6 +129,10 @@ class ShellJob(JobBase):
 class UrlJob(JobBase):
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
+    def __init__(self, location, data=None, **kwargs):
+        self.data = data
+        super(UrlJob, self).__init__(location, **kwargs)
+
     def retrieve(self, timestamp=None, filter_func=None, headers=None,
             log=None):
         headers = dict(headers)
@@ -127,11 +140,16 @@ class UrlJob(JobBase):
             timestamp = email.utils.formatdate(timestamp)
             headers['If-Modified-Since'] = timestamp
 
-        if ' ' in self.location:
-            self.location, post_data = self.location.split(' ', 1)
+        if self.data is not None:
             log.info('Sending POST request to %s', self.location)
-        else:
-            post_data = None
+            # data might be dict or urlencoded string
+            if isinstance(self.data, dict):
+                # convert to urlencoded string
+                self.data = urllib.urlencode(self.data)
+            elif not isinstance(self.data, basestring):
+                # nuke / ignore other data (no string, no dict)
+                log.warning("Ignoring invalid data parameter for url %s: %r", self.location, self.data)
+                self.data = None
 
         parts = urlparse.urlparse(self.location)
         if parts.username or parts.password:
@@ -141,7 +159,7 @@ class UrlJob(JobBase):
             auth_token = urllib2.unquote(':'.join((parts.username, parts.password)))
             headers['Authorization'] = 'Basic %s' % (auth_token.encode('base64').strip())
 
-        request = urllib2.Request(self.location, post_data, headers)
+        request = urllib2.Request(self.location, self.data, headers)
         response = urllib2.urlopen(request)
         headers = response.info()
         content = response.read()
@@ -172,30 +190,34 @@ class UrlJob(JobBase):
         return use_filter(filter_func, self.location, content)
 
 
+def shelljob_security_checks(urls_src):
+    shelljob_errors = []
+    current_uid = os.getuid()
+
+    dirname = os.path.dirname(urls_src) or '.'
+    dir_st = os.stat(dirname)
+    if (dir_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
+        shelljob_errors.append('%s is group/world-writable' % dirname)
+    if dir_st.st_uid != current_uid:
+        shelljob_errors.append('%s not owned by %s' % (dirname, get_current_user()))
+
+    file_st = os.stat(urls_src)
+    if (file_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
+        shelljob_errors.append('%s is group/world-writable' % urls_src)
+    if file_st.st_uid != current_uid:
+        shelljob_errors.append('%s not owned by %s' % (urls_src, get_current_user()))
+
+    return shelljob_errors
+
+
 def parse_urls_txt(urls_txt):
     jobs = []
 
     # Security checks for shell jobs - only execute if the current UID
     # is the same as the file/directory owner and only owner can write
     allow_shelljobs = True
-    shelljob_errors = []
-    current_uid = os.getuid()
-
-    dirname = os.path.dirname(urls_txt) or '.'
-    dir_st = os.stat(dirname)
-    if (dir_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
-        shelljob_errors.append('%s is group/world-writable' % dirname)
-        allow_shelljobs = False
-    if dir_st.st_uid != current_uid:
-        shelljob_errors.append('%s not owned by %s' % (dirname, get_current_user()))
-        allow_shelljobs = False
-
-    file_st = os.stat(urls_txt)
-    if (file_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
-        shelljob_errors.append('%s is group/world-writable' % urls_txt)
-        allow_shelljobs = False
-    if file_st.st_uid != current_uid:
-        shelljob_errors.append('%s not owned by %s' % (urls_txt, get_current_user()))
+    shelljob_errors = shelljob_security_checks(urls_txt)
+    if shelljob_errors:
         allow_shelljobs = False
 
     for line in open(urls_txt).read().splitlines():
@@ -216,3 +238,59 @@ def parse_urls_txt(urls_txt):
 
     return jobs
 
+def parse_urls_yaml(urls_yaml):
+    jobs = []
+
+    # Security checks for shell jobs - only execute if the current UID
+    # is the same as the file/directory owner and only owner can write
+    allow_shelljobs = True
+    shelljob_errors = shelljob_security_checks(urls_yaml)
+    if shelljob_errors:
+        allow_shelljobs = False
+
+    with open(urls_yaml, 'r') as f:
+        yaml_jobs = yaml.load_all(f)
+        for job in yaml_jobs:
+            # entries with all parameters commented out
+            if job is None:
+                continue
+            # set all supported keys here, so we don't need to care later
+            for key in ['name', 'data']:
+                if not key in job:
+                    job[key] = None
+
+            if "url" in job:
+                jobs.append(UrlJob(job['url'], name=job['name'], data=job['data']))
+            elif "command" in job:
+                if allow_shelljobs:
+                    jobs.append(ShellJob(job['command'], name=job['name']))
+                else:
+                    print >>sys.stderr, '\n  SECURITY WARNING - Cannot run shell jobs:\n'
+                    for error in shelljob_errors:
+                        print >>sys.stderr, '    ', error
+                    print >>sys.stderr, '\n  Please remove shell jobs or fix these problems.\n'
+                    sys.exit(1)
+            else:
+                log.warning("Entry has neither url nor command! Ignoring: %r", job)
+
+    return jobs
+
+def create_urls_yaml(jobs, urls_yaml):
+    yaml_jobs = []
+    with os.fdopen(os.open(urls_yaml, os.O_WRONLY | os.O_CREAT, 0o0644), 'w') as f:
+        for job in jobs:
+            if isinstance(job, ShellJob):
+                yaml_jobs.append({"command": job.location})
+            elif isinstance(job, UrlJob):
+                post_data = None
+                if ' ' in job.location:
+                    location, post_data = job.location.split(' ', 1)
+                else:
+                    location = job.location
+                yaml_job = {"url": location}
+                if post_data is not None:
+                    yaml_job["data"] = post_data
+                yaml_jobs.append(yaml_job)
+            else:
+                log.warning("import: invalid job %s" % job)
+        yaml.dump_all(yaml_jobs, stream=f, default_flow_style=False)
