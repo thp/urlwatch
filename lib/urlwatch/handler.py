@@ -172,12 +172,7 @@ class UrlJob(JobBase):
         return use_filter(filter_func, self.location, content)
 
 
-def parse_urls_txt(urls_txt):
-    jobs = []
-
-    # Security checks for shell jobs - only execute if the current UID
-    # is the same as the file/directory owner and only owner can write
-    allow_shelljobs = True
+def shelljob_security_checks(urls_src):
     shelljob_errors = []
     current_uid = os.getuid()
 
@@ -185,17 +180,26 @@ def parse_urls_txt(urls_txt):
     dir_st = os.stat(dirname)
     if (dir_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
         shelljob_errors.append('%s is group/world-writable' % dirname)
-        allow_shelljobs = False
     if dir_st.st_uid != current_uid:
         shelljob_errors.append('%s not owned by %s' % (dirname, get_current_user()))
-        allow_shelljobs = False
 
     file_st = os.stat(urls_txt)
     if (file_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
         shelljob_errors.append('%s is group/world-writable' % urls_txt)
-        allow_shelljobs = False
     if file_st.st_uid != current_uid:
         shelljob_errors.append('%s not owned by %s' % (urls_txt, get_current_user()))
+
+    return shelljob_errors
+
+
+def parse_urls_txt(urls_txt):
+    jobs = []
+
+    # Security checks for shell jobs - only execute if the current UID
+    # is the same as the file/directory owner and only owner can write
+    allow_shelljobs = True
+    shelljob_errors = shelljob_security_checks(urls_txt)
+    if shelljob_errors:
         allow_shelljobs = False
 
     for line in open(urls_txt).read().splitlines():
