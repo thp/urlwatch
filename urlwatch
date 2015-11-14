@@ -161,7 +161,7 @@ if __name__ == '__main__':
     parser.add_option('-v', '--verbose', action='store_true', dest='verbose', help='Show debug/log output')
     parser.add_option('', '--urls', dest='urls', metavar='FILE', help='Read URLs from the specified file')
     parser.add_option('', '--hooks', dest='hooks', metavar='FILE', help='Use specified file as hooks.py module')
-    parser.add_option('', '--diff-tool-command', dest='diff_tool_command', metavar='FILE', help='Use specified diff tool command instead of built-in one (use \'{OLD_DATA}\' and \'{NEW_DATA}\' to substitute filenames)')
+    parser.add_option('', '--diff-command', dest='diff_command', metavar='COMMAND', help='Use specified command instead of built-in diff (\'{OLD_DATA}\' and \'{NEW_DATA}\' substitute filenames)')
     parser.add_option('-e', '--display-errors', action='store_true', dest='display_errors', help='Include HTTP errors (404, etc..) in the output')
     parser.add_option('-t', '--mailto', dest='email', metavar='ADDRESS', help='Send results via e-mail to ADDRESS')
     parser.add_option('-f', '--mailfrom', dest='email_from', metavar='ADDRESS', help='Alternate From: address for e-mail (--mailto)')
@@ -235,9 +235,8 @@ if __name__ == '__main__':
             print 'Error: %s is not a file' % options.hooks
             sys.exit(1)
 
-    if options.diff_tool_command:
-        diff_tool_path = options.diff_tool_command
-        log.info('using %s as diff tool' % options.diff_tool_command)
+    if options.diff_command:
+        log.info('using %s command to diff files' % options.diff_command)
 
     if options.cache:
             cache_dir = options.cache
@@ -327,20 +326,20 @@ if __name__ == '__main__':
                 timestamp_old = email.utils.formatdate(timestamp, localtime=1)
                 timestamp_new = email.utils.formatdate(time.time(), localtime=1)
 
-                if options.diff_tool_command:
+                if options.diff_command:
                     temp_new_data = NamedTemporaryFile()
                     temp_new_data.write(data)
 
-                    parsed_diff_tool_command = options.diff_tool_command.format(OLD_DATA=filename, NEW_DATA=temp_new_data.name)
-                    args = shlex.split(parsed_diff_tool_command)
+                    parsed_diff_command = options.diff_command.format(OLD_DATA=filename, NEW_DATA=temp_new_data.name)
 
-                    log.info('now attempting to execute external diff command: %s' % args)
-                    diff_proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    status = diff_proc.communicate()
+                    log.info('now attempting to execute diff command: %s' % process_args)
+                    process_args = shlex.split(parsed_diff_command)
+                    process = subprocess.Popen(process_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    status = process.communicate()
                     temp_new_data.close()
 
                     if status[1]:
-                        raise subprocess.CalledProcessError(None, args, status[1])
+                        raise subprocess.CalledProcessError(None, process_args, status[1])
 
                     diff = status[0]
                 else:
@@ -400,11 +399,11 @@ if __name__ == '__main__':
             if display_errors:
                 details += foutput('error', job, error, summary)
         except KeyError, error:
-            log.error('got error while attempting to replace external diff command\'s placeholder(s): %s' % error)
+            log.error('got error while attempting to replace diff command\'s placeholder(s): %s' % error)
             if display_errors:
                 details += foutput('error', job, error, summary)
         except subprocess.CalledProcessError, error:
-            log.error('got error while executing external diff command %s: %s' % (error.cmd, error.output))
+            log.error('got error while executing diff command %s: %s' % (error.cmd, error.output))
             if display_errors:
                 details += foutput('error', job, error, summary)
 
