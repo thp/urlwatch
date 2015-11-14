@@ -62,6 +62,12 @@ A: Indeed there is. See the example hooks.py file.
 Q: What about badly-formed HTML (long lines, etc..)?
 A: Use python-utidylib. See the example hooks.py file.
 
+Q: Is there a way to compare the data using a different diff tool (eg. syntax-aware XML diff)?
+A: Use "--diff-command=COMMAND", where COMMAND is a full filesystem path to the
+   tool followed by its arguments. Substitute compared files' names with '{OLD_DATA}'
+   and '{NEW_DATA}' tokens. This doesn't support pipelining of multiple
+   commands - put these in a sh script and use this instead.
+
 Q: Is there a way to make the output more human-readable?
 Q: Is there a way to turn it into a diff of parsed HTML perhaps?
 A: Of course. See the example hooks.py file -> use html2txt.html2text(data)
