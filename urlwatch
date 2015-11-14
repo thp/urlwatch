@@ -332,8 +332,8 @@ if __name__ == '__main__':
 
                     parsed_diff_command = options.diff_command.format(OLD_DATA=filename, NEW_DATA=temp_new_data.name)
 
-                    log.info('now attempting to execute diff command: %s' % process_args)
                     process_args = shlex.split(parsed_diff_command)
+                    log.info('now attempting to execute diff command: %s' % process_args)
                     process = subprocess.Popen(process_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     status = process.communicate()
                     temp_new_data.close()
