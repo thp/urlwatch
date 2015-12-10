@@ -37,8 +37,15 @@ except ImportError:
     import sha
     have_hashlib = False
 
+# Python 2 and 3 compatible string check
+try:
+    basestring
+except NameError:
+    basestring = str
+
 import subprocess
 import email.utils
+from urllib import urlencode
 import urllib2
 import urlparse
 import os
@@ -121,6 +128,10 @@ class ShellJob(JobBase):
 class UrlJob(JobBase):
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
+    def __init__(self, location, data=None, **kwargs):
+        self.data = data
+        super(UrlJob, self).__init__(location, **kwargs)
+
     def retrieve(self, timestamp=None, filter_func=None, headers=None,
             log=None):
         headers = dict(headers)
@@ -128,11 +139,16 @@ class UrlJob(JobBase):
             timestamp = email.utils.formatdate(timestamp)
             headers['If-Modified-Since'] = timestamp
 
-        if ' ' in self.location:
-            self.location, post_data = self.location.split(' ', 1)
+        if self.data is not None:
             log.info('Sending POST request to %s', self.location)
-        else:
-            post_data = None
+            # data might be dict or urlencoded string
+            if isinstance(self.data, dict):
+                # convert to urlencoded string
+                self.data = urlencode(self.data)
+            elif not isinstance(self.data, basestring):
+                # nuke / ignore other data (no string, no dict)
+                log.warning("invalid data parameter for url %s" % self.location)
+                self.data = None
 
         parts = urlparse.urlparse(self.location)
         if parts.username or parts.password:
@@ -142,7 +158,7 @@ class UrlJob(JobBase):
             auth_token = urllib2.unquote(':'.join((parts.username, parts.password)))
             headers['Authorization'] = 'Basic %s' % (auth_token.encode('base64').strip())
 
-        request = urllib2.Request(self.location, post_data, headers)
+        request = urllib2.Request(self.location, self.data, headers)
         response = urllib2.urlopen(request)
         headers = response.info()
         content = response.read()
@@ -239,7 +255,7 @@ def parse_urls_yaml(urls_yaml):
             if job is None:
                 continue
             # set all supported keys here, so we don't need to care later
-            for key in ['name']:
+            for key in ['name', 'data']:
                 if not key in job:
                     job[key] = None
             if not "url" in job:
@@ -255,7 +271,7 @@ def parse_urls_yaml(urls_yaml):
                     print >>sys.stderr, '\n  Please remove shell jobs or fix these problems.\n'
                     sys.exit(1)
             else:
-                jobs.append(UrlJob(job['url'], name=job['name']))
+                jobs.append(UrlJob(job['url'], name=job['name'], data=job['data']))
 
     return jobs
 
