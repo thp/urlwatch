@@ -21,6 +21,10 @@ or download and install it manually from its project page at
 
     http://code.google.com/p/pythonfutures/
 
+It also needs the python-yaml module. Install it using:
+
+    pip install python-yaml
+
 If you need to use an authenticated SMTP connection, this package also relies
 on "keyring", it can be installed using:
 
