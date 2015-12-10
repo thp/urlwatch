@@ -53,6 +53,7 @@ import stat
 import sys
 import re
 import zlib
+import yaml
 
 def get_current_user():
     try:
@@ -238,7 +239,6 @@ def parse_urls_txt(urls_txt):
     return jobs
 
 def parse_urls_yaml(urls_yaml):
-    import yaml
     jobs = []
 
     # Security checks for shell jobs - only execute if the current UID
