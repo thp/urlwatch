@@ -72,7 +72,6 @@ else:
     sys.path.insert(0, os.path.join(prefix, bindir, 'lib'))
     examples_dir = os.path.join(prefix, bindir, 'share', pkgname, 'examples')
 
-urls_txt_example = os.path.join(examples_dir, 'urls.txt.example')
 urls_yaml_example = os.path.join(examples_dir, 'urls.yaml.example')
 hooks_py_example = os.path.join(examples_dir, 'hooks.py.example')
 
@@ -112,7 +111,7 @@ class NullHandler(logging.Handler):
 log.addHandler(NullHandler())
 
 ERROR_MESSAGE_URLS = """
-Error: You need to create either a urls.yaml or a urls.txt file first.
+Error: You need to create a urls.yaml file first.
 
 Place it in %s or %s
 An example is available in %s or %s
@@ -159,7 +158,6 @@ if __name__ == '__main__':
     parser = optparse.OptionParser(usage='%%prog [options]\n\n%s' % __doc__.strip(), version=pkgname+' '+__version__)
     parser.add_option('-v', '--verbose', action='store_true', dest='verbose', help='Show debug/log output')
     parser.add_option('', '--urls', dest='urls', metavar='FILE', help='Read URLs from the specified file')
-    parser.add_option('-y', '--yaml', action='store_true', dest='yaml', help='Interpret --urls file as yaml')
     parser.add_option('', '--hooks', dest='hooks', metavar='FILE', help='Use specified file as hooks.py module')
     parser.add_option('-e', '--display-errors', action='store_true', dest='display_errors', help='Include HTTP errors (404, etc..) in the output')
     parser.add_option('-t', '--mailto', dest='email', metavar='ADDRESS', help='Send results via e-mail to ADDRESS')
@@ -218,12 +216,8 @@ if __name__ == '__main__':
 
     if options.urls:
         if os.path.isfile(options.urls):
-            if options.yaml:
-                urls_yaml = options.urls
-                log.info('using %s as urls.yaml' % options.urls)
-            else:
-                urls_txt = options.urls
-                log.info('using %s as urls.txt' % options.urls)
+            urls_yaml = options.urls
+            log.info('using %s as urls.yaml' % options.urls)
         else:
             log.error('%s is not a file' % options.urls)
             print 'Error: %s is not a file' % options.urls
@@ -250,25 +244,20 @@ if __name__ == '__main__':
             os.makedirs(needed_dir)
 
     # Check for required files
-    if not (os.path.isfile(urls_yaml) or os.path.isfile(urls_txt)):
-        log.warning('not a file: %s' % urls_txt)
+    if not os.path.isfile(urls_yaml):
         log.warning('not a file: %s' % urls_yaml)
-        urls_txt_fn = os.path.join(os.path.dirname(urls_txt), os.path.basename(urls_txt_example))
-        urls_yaml_fn = os.path.join(os.path.dirname(urls_txt), os.path.basename(urls_yaml_example))
+        urls_yaml_fn = os.path.join(os.path.dirname(urls_yaml), os.path.basename(urls_yaml_example))
         hooks_py_fn = os.path.join(os.path.dirname(hooks_py), os.path.basename(hooks_py_example))
-        print ERROR_MESSAGE_URLS % (urls_yaml, urls_txt, urls_yaml_fn, urls_txt_fn)
+        # TODO check for urls_txt
+        #        jobs = handler.parse_urls_txt(urls_txt)
+        print ERROR_MESSAGE_URLS % (urls_yaml, urls_yaml_fn)
         if not options.hooks:
             print ERROR_MESSAGE_HOOKS_PY % (hooks_py, hooks_py_fn)
-        if os.path.exists(urls_txt_example) and not os.path.exists(urls_txt_fn):
-            shutil.copy(urls_txt_example, urls_txt_fn)
         if os.path.exists(urls_yaml_example) and not os.path.exists(urls_yaml_fn):
             shutil.copy(urls_yaml_example, urls_yaml_fn)
         if not options.hooks and os.path.exists(hooks_py_example) and not os.path.exists(hooks_py_fn):
             shutil.copy(hooks_py_example, hooks_py_fn)
         sys.exit(1)
-    # yaml as default
-    elif os.path.isfile(urls_yaml):
-            options.yaml = True
 
     headers = {
             'User-agent': user_agent,
@@ -302,10 +291,7 @@ if __name__ == '__main__':
         data = job.retrieve(timestamp, filter_func, headers, log)
         return filename, timestamp, data
 
-    if options.yaml:
-        jobs = handler.parse_urls_yaml(urls_yaml)
-    else:
-        jobs = handler.parse_urls_txt(urls_txt)
+    jobs = handler.parse_urls_yaml(urls_yaml)
     log.info('processing %d jobs', len(jobs))
 
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
