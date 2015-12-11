@@ -258,12 +258,12 @@ def parse_urls_yaml(urls_yaml):
             for key in ['name', 'data']:
                 if not key in job:
                     job[key] = None
-            if not "url" in job:
-                print >>sys.stderr, '\n  Entry has no url! Stopping!\n'
-                sys.exit(1)
-            if job['url'].startswith('|'):
+
+            if "url" in job:
+                jobs.append(UrlJob(job['url'], name=job['name'], data=job['data']))
+            elif "command" in job:
                 if allow_shelljobs:
-                    jobs.append(ShellJob(job['url'][1:], name=job['name']))
+                    jobs.append(ShellJob(job['command'], name=job['name']))
                 else:
                     print >>sys.stderr, '\n  SECURITY WARNING - Cannot run shell jobs:\n'
                     for error in shelljob_errors:
@@ -271,7 +271,8 @@ def parse_urls_yaml(urls_yaml):
                     print >>sys.stderr, '\n  Please remove shell jobs or fix these problems.\n'
                     sys.exit(1)
             else:
-                jobs.append(UrlJob(job['url'], name=job['name'], data=job['data']))
+                print >>sys.stderr, '\n  Entry has neither url nor command! Stopping!\n'
+                sys.exit(1)
 
     return jobs
 

@@ -37,7 +37,7 @@ url: "http://guckes.net/cal/"
 ---
 # You can use the pipe character to "watch" the output of shell commands
 name: "Home Listing"
-url: "|ls -al ~"
+command: "ls -al ~"
 ---
 
 # If you want to use spaces in URLs, you have to URL-encode them (e.g. %20)
