@@ -53,6 +53,7 @@ line_length = 75
 # File and folder paths
 import sys
 import os.path
+from os import rename
 
 urlwatch_dir = os.path.expanduser(os.path.join('~', '.'+pkgname))
 urls_txt = os.path.join(urlwatch_dir, 'urls.txt')
@@ -110,11 +111,18 @@ class NullHandler(logging.Handler):
 
 log.addHandler(NullHandler())
 
+IMPORT_MESSAGE_URLS = """
+Found old urls.txt and imported it into %s
+
+An example for urls.yaml is available in %s
+Old urls.txt has been renamed to urls.txt.imported
+"""
+
 ERROR_MESSAGE_URLS = """
 Error: You need to create a urls.yaml file first.
 
-Place it in %s or %s
-An example is available in %s or %s
+Place it in %s
+An example is available in %s
 """
 
 ERROR_MESSAGE_HOOKS_PY = """
@@ -248,9 +256,15 @@ if __name__ == '__main__':
         log.warning('not a file: %s' % urls_yaml)
         urls_yaml_fn = os.path.join(os.path.dirname(urls_yaml), os.path.basename(urls_yaml_example))
         hooks_py_fn = os.path.join(os.path.dirname(hooks_py), os.path.basename(hooks_py_example))
-        # TODO check for urls_txt
-        #        jobs = handler.parse_urls_txt(urls_txt)
-        print ERROR_MESSAGE_URLS % (urls_yaml, urls_yaml_fn)
+        if os.path.isfile(urls_txt):
+            # import old urls.txt file
+            handler.create_urls_yaml(handler.parse_urls_txt(urls_txt), urls_yaml)
+            # rename urls.txt after import
+            rename(urls_txt, "%s.imported" % urls_txt)
+            print IMPORT_MESSAGE_URLS % (urls_yaml, urls_yaml_fn)
+        else:
+            print ERROR_MESSAGE_URLS % (urls_yaml, urls_yaml_fn)
+
         if not options.hooks:
             print ERROR_MESSAGE_HOOKS_PY % (hooks_py, hooks_py_fn)
         if os.path.exists(urls_yaml_example) and not os.path.exists(urls_yaml_fn):
@@ -258,6 +272,9 @@ if __name__ == '__main__':
         if not options.hooks and os.path.exists(hooks_py_example) and not os.path.exists(hooks_py_fn):
             shutil.copy(hooks_py_example, hooks_py_fn)
         sys.exit(1)
+
+    if os.path.isfile(urls_txt):
+        log.warning('Old urls.txt found, but ignored.')
 
     headers = {
             'User-agent': user_agent,
