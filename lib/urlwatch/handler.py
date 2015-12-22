@@ -276,22 +276,21 @@ def parse_urls_yaml(urls_yaml):
     return jobs
 
 def create_urls_yaml(jobs, urls_yaml):
+    yaml_jobs = []
     with os.fdopen(os.open(urls_yaml, os.O_WRONLY | os.O_CREAT, 0o0644), 'w') as f:
         for job in jobs:
             if isinstance(job, ShellJob):
-                f.write("---\n")
-                f.write("command: \"%s\"\n" % job.location)
+                yaml_jobs.append({"command": job.location})
             elif isinstance(job, UrlJob):
                 post_data = None
                 if ' ' in job.location:
                     location, post_data = job.location.split(' ', 1)
                 else:
                     location = job.location
-
-                f.write("---\n")
-                f.write("url: \"%s\"\n" % location)
+                yaml_job = {"url": location}
                 if post_data is not None:
-                    f.write("data: \"%s\"\n" % post_data)
+                    yaml_job["data"] = post_data
+                yaml_jobs.append(yaml_job)
             else:
                 log.warning("import: invalid job %s" % job)
-        f.write("---\n")
+        yaml.dump_all(yaml_jobs, stream=f, default_flow_style=False)
