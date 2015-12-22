@@ -45,7 +45,7 @@ except NameError:
 
 import subprocess
 import email.utils
-from urllib import urlencode
+import urllib
 import urllib2
 import urlparse
 import os
@@ -145,10 +145,10 @@ class UrlJob(JobBase):
             # data might be dict or urlencoded string
             if isinstance(self.data, dict):
                 # convert to urlencoded string
-                self.data = urlencode(self.data)
+                self.data = urllib.urlencode(self.data)
             elif not isinstance(self.data, basestring):
                 # nuke / ignore other data (no string, no dict)
-                log.warning("invalid data parameter for url %s" % self.location)
+                log.warning("Ignoring invalid data parameter for url %s: %r", self.location, self.data)
                 self.data = None
 
         parts = urlparse.urlparse(self.location)
@@ -271,8 +271,7 @@ def parse_urls_yaml(urls_yaml):
                     print >>sys.stderr, '\n  Please remove shell jobs or fix these problems.\n'
                     sys.exit(1)
             else:
-                print >>sys.stderr, '\n  Entry has neither url nor command! Stopping!\n'
-                sys.exit(1)
+                log.warning("Entry has neither url nor command! Ignoring: %r", job)
 
     return jobs
 

@@ -53,7 +53,7 @@ line_length = 75
 # File and folder paths
 import sys
 import os.path
-from os import rename
+import os
 
 urlwatch_dir = os.path.expanduser(os.path.join('~', '.'+pkgname))
 urls_txt = os.path.join(urlwatch_dir, 'urls.txt')
@@ -260,7 +260,7 @@ if __name__ == '__main__':
             # import old urls.txt file
             handler.create_urls_yaml(handler.parse_urls_txt(urls_txt), urls_yaml)
             # rename urls.txt after import
-            rename(urls_txt, "%s.imported" % urls_txt)
+            os.rename(urls_txt, "%s.imported" % urls_txt)
             print IMPORT_MESSAGE_URLS % (urls_yaml, urls_yaml_fn)
         else:
             print ERROR_MESSAGE_URLS % (urls_yaml, urls_yaml_fn)
@@ -274,7 +274,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     if os.path.isfile(urls_txt):
-        log.warning('Old urls.txt found, but ignored.')
+        log.warning('Ignoring old urls.txt file at %s', urls_txt)
 
     headers = {
             'User-agent': user_agent,
