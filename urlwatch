@@ -365,7 +365,7 @@ if __name__ == '__main__':
                 details += foutput('error', job, error, summary)
         except httplib.error, error:
             # This is to workaround a bug in urllib2, see
-            # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=529740
+            # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=529740
             log.error('got httplib error while loading url: %s' % error)
             if display_errors:
                 details += foutput('error', job, (repr(error) +
