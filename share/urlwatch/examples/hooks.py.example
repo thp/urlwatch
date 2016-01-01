@@ -39,7 +39,33 @@ import re
 # Additional modules installed with urlwatch
 from urlwatch import ical2txt
 from urlwatch import html2txt
+import urllib, urllib2, cookielib, json
 
+def diff_after_hook(url) :
+    opener = urllib2.build_opener(urllib2.HTTPHandler)
+    request = urllib2.Request(url, data='')
+    request.get_method = lambda: 'PURGE'
+    url = opener.open(request)
+
+def request_hook(url, data, headers):
+    cj = cookielib.CookieJar()
+    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
+    opener.addheaders = [('X-Requested-With', 'XMLHttpRequest'), ('Content-Type', 'application/json')]
+    resp = opener.open('http://website/user/login')
+    json_string = json.loads(resp.read())
+    csrf_token = json_string['csrfToken']
+    username = 'username'
+    password = 'password'
+    login_data = urllib.urlencode({'_csrf_token' : csrf_token, 'remember_me': 'on', '_username' : username, '_password' : password})
+    resp = opener.open('http://website/user/login_check', login_data)
+    login_string = resp.read()
+    h_list = []
+    for key, value in headers.iteritems():
+        h_list.append((key,value))
+    opener.addheaders = h_list
+    resp = opener.open(url, data)
+    content = resp.read()
+    return content
 
 def filter(url, data):
     if url == 'http://www.inso.tuwien.ac.at/lectures/usability/':
