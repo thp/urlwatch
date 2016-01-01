@@ -265,6 +265,13 @@ if __name__ == '__main__':
     count = 0
 
     filter_func = lambda x, y: y
+    def request_hook( url,  data, header):
+        request = urllib2.Request(url, data, header)
+        response = urllib2.urlopen(request)
+        #headers = response.info()
+        content = response.read()
+        return content
+    def diff_after_hook( location ): pass
 
     if os.path.exists(hooks_py):
         log.info('using hooks.py from %s' % hooks_py)
@@ -274,6 +281,16 @@ if __name__ == '__main__':
             filter_func = hooks.filter
         else:
             log.warning('hooks.py has no filter function - ignoring')
+        if hasattr(hooks, 'request_hook'):
+            log.info('found and enabled request_hook function from hooks.py')
+            request_hook = hooks.request_hook
+        else:
+            log.warning('hooks.py has no request_hook function - ignoring')
+        if hasattr(hooks, 'diff_after_hook'):
+            log.info('found and enabled diff_after_hook function from hooks.py')
+            diff_after_hook = hooks.diff_after_hook
+        else:
+            log.warning('hooks.py has no diff_after_hook function - ignoring')
     else:
         log.info('not using hooks.py (file not found)')
 
@@ -285,7 +302,7 @@ if __name__ == '__main__':
         if os.path.exists(filename):
             timestamp = os.stat(filename)[stat.ST_MTIME]
 
-        data = job.retrieve(timestamp, filter_func, headers, log)
+        data = job.retrieve(timestamp, filter_func, headers, request_hook, log)
         return filename, timestamp, data
 
     jobs = handler.parse_urls_txt(urls_txt)
@@ -327,6 +344,8 @@ if __name__ == '__main__':
                         timestamp_old, \
                         timestamp_new))
                 if len(diff) > 0:
+                    log.info('diff_after_hook')
+                    diff_after_hook(job.location)
                     log.info('%s has changed - adding diff' % job)
                     details += foutput('changed', job, diff, summary)
                 else:

@@ -76,7 +76,7 @@ class JobBase(object):
             return sha.new(self.location).hexdigest()
 
     def retrieve(self, timestamp=None, filter_func=None, headers=None,
-            log=None):
+            request_hook=None, log=None):
         raise Exception('Not implemented')
 
 class ShellError(Exception):
@@ -121,7 +121,7 @@ class UrlJob(JobBase):
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
     def retrieve(self, timestamp=None, filter_func=None, headers=None,
-            log=None):
+            request_hook=None, log=None):
         headers = dict(headers)
         if timestamp is not None:
             timestamp = email.utils.formatdate(timestamp)
@@ -141,10 +141,8 @@ class UrlJob(JobBase):
             auth_token = urllib2.unquote(':'.join((parts.username, parts.password)))
             headers['Authorization'] = 'Basic %s' % (auth_token.encode('base64').strip())
 
-        request = urllib2.Request(self.location, post_data, headers)
-        response = urllib2.urlopen(request)
-        headers = response.info()
-        content = response.read()
+        log.info('request_hook')
+        content = request_hook(self.location, post_data, headers)
         encoding = 'utf-8'
 
         # Handle HTTP compression
