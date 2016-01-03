@@ -46,6 +46,7 @@ import stat
 import sys
 import re
 import zlib
+import base64
 
 def get_current_user():
     try:
@@ -139,7 +140,7 @@ class UrlJob(JobBase):
                                                  parts.params, parts.query, parts.fragment))
             log.info('Using HTTP basic authentication for %s', self.location)
             auth_token = urllib2.unquote(':'.join((parts.username, parts.password)))
-            headers['Authorization'] = 'Basic %s' % (auth_token.encode('base64').strip())
+            headers['Authorization'] = 'Basic %s' % (base64.b64encode(auth_token).strip())
 
         request = urllib2.Request(self.location, post_data, headers)
         response = urllib2.urlopen(request)
