@@ -238,7 +238,7 @@ def parse_urls_txt(urls_txt):
 
     return jobs
 
-def parse_urls_yaml(urls_yaml):
+def parse_urls_yaml(urls_yaml, log=None):
     jobs = []
 
     # Security checks for shell jobs - only execute if the current UID
@@ -275,7 +275,7 @@ def parse_urls_yaml(urls_yaml):
 
     return jobs
 
-def create_urls_yaml(jobs, urls_yaml):
+def create_urls_yaml(jobs, urls_yaml, log=None):
     yaml_jobs = []
     with open(urls_yaml, 'w') as fp:
         for job in jobs:

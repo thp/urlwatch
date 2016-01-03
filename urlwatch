@@ -258,7 +258,7 @@ if __name__ == '__main__':
         hooks_py_fn = os.path.join(os.path.dirname(hooks_py), os.path.basename(hooks_py_example))
         if os.path.isfile(urls_txt):
             # import old urls.txt file
-            handler.create_urls_yaml(handler.parse_urls_txt(urls_txt), urls_yaml)
+            handler.create_urls_yaml(handler.parse_urls_txt(urls_txt), urls_yaml, log)
             # rename urls.txt after import
             os.rename(urls_txt, "%s.imported" % urls_txt)
             print IMPORT_MESSAGE_URLS % (urls_yaml, urls_yaml_fn)
@@ -308,7 +308,7 @@ if __name__ == '__main__':
         data = job.retrieve(timestamp, filter_func, headers, log)
         return filename, timestamp, data
 
-    jobs = handler.parse_urls_yaml(urls_yaml)
+    jobs = handler.parse_urls_yaml(urls_yaml, log)
     log.info('processing %d jobs', len(jobs))
 
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
