@@ -277,7 +277,7 @@ def parse_urls_yaml(urls_yaml):
 
 def create_urls_yaml(jobs, urls_yaml):
     yaml_jobs = []
-    with os.fdopen(os.open(urls_yaml, os.O_WRONLY | os.O_CREAT, 0o0644), 'w') as f:
+    with open(urls_yaml, 'w') as fp:
         for job in jobs:
             if isinstance(job, ShellJob):
                 yaml_jobs.append({"command": job.location})
@@ -293,4 +293,4 @@ def create_urls_yaml(jobs, urls_yaml):
                 yaml_jobs.append(yaml_job)
             else:
                 log.warning("import: invalid job %s" % job)
-        yaml.dump_all(yaml_jobs, stream=f, default_flow_style=False)
+        yaml.dump_all(yaml_jobs, stream=fp, default_flow_style=False)
