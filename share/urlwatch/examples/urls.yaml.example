@@ -47,13 +47,13 @@ url: "http://example.org/With%20Spaces/"
 # You can do POST requests by providing data parameter.
 # POST data can be a URL-encoded string or a dict (see next example).
 url: "http://example.com/search.cgi"
-data: "button=Search&q=something&category=4"
+post: "button=Search&q=something&category=4"
 ---
 
 # You can do POST requests by providing data parameter.
 # POST data can be a URL-encoded string (see last example) or a dict.
 url: "http://example.com/search.cgi"
-data:
+post:
   button: Search
   q: something
   category: 4

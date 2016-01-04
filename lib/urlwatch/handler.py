@@ -65,28 +65,6 @@ def get_current_user():
         import pwd
         return pwd.getpwuid(os.getuid()).pw_name
 
-class JobBase(object):
-    def __init__(self, location, name=None):
-        self.location = location
-        self.name = name
-
-    def __str__(self):
-        return self.location
-
-    def get_guid(self):
-        if have_hashlib:
-            sha_hash = hashlib.new('sha1')
-            location = self.location
-            if isinstance(location, unicode):
-                location = location.encode('utf-8')
-            sha_hash.update(location)
-            return sha_hash.hexdigest()
-        else:
-            return sha.new(self.location).hexdigest()
-
-    def retrieve(self, timestamp=None, filter_func=None, headers=None,
-            log=None):
-        raise Exception('Not implemented')
 
 class ShellError(Exception):
     """Exception for shell commands with non-zero exit code"""
@@ -99,67 +77,197 @@ class ShellError(Exception):
         return '%s: Exit status %d' % (self.__class__.__name__, self.result)
 
 
-def use_filter(filter_func, url, input):
-    """Apply a filter function to input from an URL"""
-    output = filter_func(url, input)
+class JobState(object):
+    def __init__(self, timestamp=None, filter_func=None, headers=None, log=None):
+        self.timestamp = timestamp
+        self.filter_func = filter_func
+        self.headers = headers
+        self.log = log
 
-    if output is None:
-        # If the filter does not return a value, it is
-        # assumed that the input does not need filtering.
-        # In this case, we simply return the input.
-        return input
-
-    return output
+    def process(self, job):
+        location = job.get_location()
+        data = job.retrieve(self)
+        return (self.filter_func(location, data) or data) if self.filter_func is not None else data
 
 
-class ShellJob(JobBase):
-    def retrieve(self, timestamp=None, filter_func=None, headers=None,
-            log=None):
-        process = subprocess.Popen(self.location, \
-                stdout=subprocess.PIPE, \
-                shell=True)
+class TrackSubClasses(type):
+    """A metaclass that stores subclass name-to-class mappings in the base class"""
+
+    def __init__(cls, name, bases, namespace):
+        for base in bases:
+            if base == object:
+                continue
+
+            for attr in ('__required__', '__optional__'):
+                inherited = getattr(base, attr, ())
+                new_value = tuple(namespace.get(attr, ())) + tuple(inherited)
+                namespace[attr] = new_value
+                setattr(cls, attr, new_value)
+
+        if hasattr(cls, '__kind__'):
+            for base in bases:
+                if base == object:
+                    continue
+
+                subclasses = getattr(base, '__subclasses__', None)
+                if subclasses is not None:
+                    subclasses[cls.__kind__] = cls
+                    break
+
+        super(TrackSubClasses, cls).__init__(name, bases, namespace)
+
+
+class JobBase(object):
+    __metaclass__ = TrackSubClasses
+    __subclasses__ = {}
+
+    def __init__(self, **kwargs):
+        # Set optional keys to None
+        for k in self.__optional__:
+            if k not in kwargs:
+                setattr(self, k, None)
+
+        # Fail if any required keys are not provided
+        for k in self.__required__:
+            if k not in kwargs:
+                raise ValueError('Required field %s missing: %r' % (k, kwargs))
+
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    @classmethod
+    def job_documentation(cls):
+        result = []
+        for sc in cls.__subclasses__.values():
+            result.extend((
+                '  * %s - %s' % (sc.__kind__, sc.__doc__),
+                '    Required keys: %s; optional: %s' % (', '.join(sc.__required__), ', '.join(sc.__optional__)),
+                '',
+            ))
+        return '\n'.join(result)
+
+    def get_location(self):
+        raise NotImplementedError()
+
+    def serialize(self):
+        d = {'kind': self.__kind__}
+        d.update(self.to_dict())
+        return d
+
+    @classmethod
+    def unserialize(cls, data):
+        if 'kind' not in data:
+            # Try to auto-detect the kind of job based on the available keys
+            kinds = [subclass.__kind__ for subclass in cls.__subclasses__.values()
+                     if all(required in data for required in subclass.__required__) and
+                     not any(key not in subclass.__required__ and key not in subclass.__optional__ for key in data)]
+
+            if len(kinds) == 1:
+                kind = kinds[0]
+            elif len(kinds) == 0:
+                raise ValueError('Kind is not specified, and no job matches: %r' % (data,))
+            else:
+                raise ValueError('Multiple kinds of jobs match %r: %r' % (data, kinds))
+        else:
+            kind = data['kind']
+
+        return cls.__subclasses__[kind].from_dict(data)
+
+    def to_dict(self):
+        return {k: getattr(self, k) for keys in (self.__required__, self.__optional__) for k in keys
+                if getattr(self, k) is not None}
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**{k: v for k, v in data.items() if k in cls.__required__ or k in cls.__optional__})
+
+    def __repr__(self):
+        return '<%s %s>' % (self.__kind__, ' '.join('%s=%r' % (k, v) for k, v in self.to_dict().items()))
+
+    def get_guid(self):
+        location = self.get_location()
+
+        if have_hashlib:
+            sha_hash = hashlib.new('sha1')
+            if isinstance(location, unicode):
+                location = location.encode('utf-8')
+            sha_hash.update(location)
+            return sha_hash.hexdigest()
+        else:
+            return sha.new(location).hexdigest()
+
+    def retrieve(self, job_state):
+        raise NotImplementedError()
+
+
+class Job(JobBase):
+    __required__ = ()
+    __optional__ = ('name',)
+
+
+class ShellJob(Job):
+    """Run a shell command and get its standard output"""
+
+    __kind__ = 'shell'
+
+    __required__ = ('command',)
+    __optional__ = ()
+
+    def get_location(self):
+        return self.command
+
+    def retrieve(self, job_state):
+        process = subprocess.Popen(self.command, stdout=subprocess.PIPE, shell=True)
         stdout_data, stderr_data = process.communicate()
         result = process.wait()
         if result != 0:
             raise ShellError(result)
 
-        return use_filter(filter_func, self.location, stdout_data)
+        return stdout_data
 
 
-class UrlJob(JobBase):
+class UrlJob(Job):
+    """Retrieve an URL from a web server"""
+
+    __kind__ = 'url'
+
+    __required__ = ('url',)
+    __optional__ = ('post',)
+
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
-    def __init__(self, location, data=None, **kwargs):
-        self.data = data
-        super(UrlJob, self).__init__(location, **kwargs)
+    def get_location(self):
+        return self.url
 
-    def retrieve(self, timestamp=None, filter_func=None, headers=None,
-            log=None):
-        headers = dict(headers)
-        if timestamp is not None:
-            timestamp = email.utils.formatdate(timestamp)
-            headers['If-Modified-Since'] = timestamp
+    def retrieve(self, job_state):
+        headers = dict(job_state.headers) if job_state.headers else {}
+        if job_state.timestamp is not None:
+            headers['If-Modified-Since'] = email.utils.formatdate(job_state.timestamp)
 
-        if self.data is not None:
-            log.info('Sending POST request to %s', self.location)
+        postdata = None
+        if self.post is not None:
+            job_state.log.info('Sending POST request to %s', self.url)
             # data might be dict or urlencoded string
-            if isinstance(self.data, dict):
+            if isinstance(self.post, dict):
                 # convert to urlencoded string
-                self.data = urllib.urlencode(self.data)
-            elif not isinstance(self.data, basestring):
+                postdata = urllib.urlencode(self.post)
+            elif isinstance(self.post, basestring):
+                postdata = self.post
+            else:
                 # nuke / ignore other data (no string, no dict)
-                log.warning("Ignoring invalid data parameter for url %s: %r", self.location, self.data)
-                self.data = None
+                job_state.log.warning("Ignoring invalid data parameter for url %s: %r", self.url, self.post)
 
-        parts = urlparse.urlparse(self.location)
+        parts = urlparse.urlparse(self.url)
         if parts.username or parts.password:
-            self.location = urlparse.urlunparse((parts.scheme, parts.hostname, parts.path,
-                                                 parts.params, parts.query, parts.fragment))
-            log.info('Using HTTP basic authentication for %s', self.location)
+            url = urlparse.urlunparse((parts.scheme, parts.hostname, parts.path,
+                                       parts.params, parts.query, parts.fragment))
+            job_state.log.info('Using HTTP basic authentication for %s', url)
             auth_token = urllib2.unquote(':'.join((parts.username, parts.password)))
             headers['Authorization'] = 'Basic %s' % (auth_token.encode('base64').strip())
+        else:
+            url = self.url
 
-        request = urllib2.Request(self.location, self.data, headers)
+        request = urllib2.Request(url, postdata, headers)
         response = urllib2.urlopen(request)
         headers = response.info()
         content = response.read()
@@ -187,110 +295,78 @@ class UrlJob(JobBase):
                 # (Debian bug 731931)
                 content = content.decode('ascii', 'ignore')
 
-        return use_filter(filter_func, self.location, content)
+        return content
 
 
-def shelljob_security_checks(urls_src):
-    shelljob_errors = []
-    current_uid = os.getuid()
+class UrlsStorage(object):
+    def __init__(self, filename):
+        self.filename = filename
 
-    dirname = os.path.dirname(urls_src) or '.'
-    dir_st = os.stat(dirname)
-    if (dir_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
-        shelljob_errors.append('%s is group/world-writable' % dirname)
-    if dir_st.st_uid != current_uid:
-        shelljob_errors.append('%s not owned by %s' % (dirname, get_current_user()))
+    def shelljob_security_checks(self):
+        shelljob_errors = []
+        current_uid = os.getuid()
 
-    file_st = os.stat(urls_src)
-    if (file_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
-        shelljob_errors.append('%s is group/world-writable' % urls_src)
-    if file_st.st_uid != current_uid:
-        shelljob_errors.append('%s not owned by %s' % (urls_src, get_current_user()))
+        dirname = os.path.dirname(self.filename) or '.'
+        dir_st = os.stat(dirname)
+        if (dir_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
+            shelljob_errors.append('%s is group/world-writable' % dirname)
+        if dir_st.st_uid != current_uid:
+            shelljob_errors.append('%s not owned by %s' % (dirname, get_current_user()))
 
-    return shelljob_errors
+        file_st = os.stat(self.filename)
+        if (file_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
+            shelljob_errors.append('%s is group/world-writable' % self.filename)
+        if file_st.st_uid != current_uid:
+            shelljob_errors.append('%s not owned by %s' % (self.filename, get_current_user()))
+
+        return shelljob_errors
+
+    def load_secure(self):
+        jobs = self.load()
+
+        # Security checks for shell jobs - only execute if the current UID
+        # is the same as the file/directory owner and only owner can write
+        shelljob_errors = self.shelljob_security_checks()
+        if shelljob_errors and any(isinstance(job, ShellJob) for job in jobs):
+            print('Removing shell jobs, because %s' % (' and '.join(shelljob_errors),))
+            jobs = [job for job in jobs if not isinstance(job, ShellJob)]
+
+        return jobs
+
+    def save(self, jobs):
+        raise NotImplementedError()
+
+    def load(self):
+        raise NotImplementedError()
 
 
-def parse_urls_txt(urls_txt):
-    jobs = []
+class UrlsYaml(UrlsStorage):
+    def save(self, jobs):
+        with open(self.filename, 'w') as fp:
+            yaml.dump_all([job.serialize() for job in jobs], fp, default_flow_style=False)
 
-    # Security checks for shell jobs - only execute if the current UID
-    # is the same as the file/directory owner and only owner can write
-    allow_shelljobs = True
-    shelljob_errors = shelljob_security_checks(urls_txt)
-    if shelljob_errors:
-        allow_shelljobs = False
+    def load(self):
+        with open(self.filename) as fp:
+            return [JobBase.unserialize(job) for job in yaml.load_all(fp) if job is not None]
 
-    for line in open(urls_txt).read().splitlines():
-        if line.strip().startswith('#') or line.strip() == '':
-            continue
 
-        if line.startswith('|'):
-            if allow_shelljobs:
-                jobs.append(ShellJob(line[1:]))
-            else:
-                print >>sys.stderr, '\n  SECURITY WARNING - Cannot run shell jobs:\n'
-                for error in shelljob_errors:
-                    print >>sys.stderr, '    ', error
-                print >>sys.stderr, '\n  Please remove shell jobs or fix these problems.\n'
-                sys.exit(1)
-        else:
-            jobs.append(UrlJob(line))
-
-    return jobs
-
-def parse_urls_yaml(urls_yaml):
-    jobs = []
-
-    # Security checks for shell jobs - only execute if the current UID
-    # is the same as the file/directory owner and only owner can write
-    allow_shelljobs = True
-    shelljob_errors = shelljob_security_checks(urls_yaml)
-    if shelljob_errors:
-        allow_shelljobs = False
-
-    with open(urls_yaml, 'r') as f:
-        yaml_jobs = yaml.load_all(f)
-        for job in yaml_jobs:
-            # entries with all parameters commented out
-            if job is None:
+class UrlsTxt(UrlsStorage):
+    def _parse(self, fp):
+        for line in fp:
+            line = line.strip()
+            if not line or line.startswith('#'):
                 continue
-            # set all supported keys here, so we don't need to care later
-            for key in ['name', 'data']:
-                if not key in job:
-                    job[key] = None
 
-            if "url" in job:
-                jobs.append(UrlJob(job['url'], name=job['name'], data=job['data']))
-            elif "command" in job:
-                if allow_shelljobs:
-                    jobs.append(ShellJob(job['command'], name=job['name']))
-                else:
-                    print >>sys.stderr, '\n  SECURITY WARNING - Cannot run shell jobs:\n'
-                    for error in shelljob_errors:
-                        print >>sys.stderr, '    ', error
-                    print >>sys.stderr, '\n  Please remove shell jobs or fix these problems.\n'
-                    sys.exit(1)
+            if line.startswith('|'):
+                yield ShellJob(command=line[1:])
             else:
-                log.warning("Entry has neither url nor command! Ignoring: %r", job)
-
-    return jobs
-
-def create_urls_yaml(jobs, urls_yaml):
-    yaml_jobs = []
-    with os.fdopen(os.open(urls_yaml, os.O_WRONLY | os.O_CREAT, 0o0644), 'w') as f:
-        for job in jobs:
-            if isinstance(job, ShellJob):
-                yaml_jobs.append({"command": job.location})
-            elif isinstance(job, UrlJob):
-                post_data = None
-                if ' ' in job.location:
-                    location, post_data = job.location.split(' ', 1)
+                args = line.split(None, 2)
+                if len(args) == 1:
+                    yield UrlJob(url=args[0])
+                elif len(args) == 2:
+                    yield UrlJob(url=args[0], post=args[1])
                 else:
-                    location = job.location
-                yaml_job = {"url": location}
-                if post_data is not None:
-                    yaml_job["data"] = post_data
-                yaml_jobs.append(yaml_job)
-            else:
-                log.warning("import: invalid job %s" % job)
-        yaml.dump_all(yaml_jobs, stream=f, default_flow_style=False)
+                    raise ValueError('Unsupported line format: %r' % (line,))
+
+    def load(self):
+        return list(self._parse(open(self.filename)))

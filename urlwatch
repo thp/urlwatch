@@ -91,6 +91,7 @@ import datetime
 import optparse
 import logging
 import imp
+import subprocess
 
 # Python 3.2 includes "concurrent.futures", for older versions,
 # use "pip install futures" or http://code.google.com/p/pythonfutures/
@@ -162,6 +163,8 @@ def foutput(type, url, content=None, summary=None, c='*', n=line_length):
 if __name__ == '__main__':
     start = datetime.datetime.now()
 
+    __doc__ += '\nSupported job kinds:\n\n' + handler.JobBase.job_documentation()
+
     # Option parser
     parser = optparse.OptionParser(usage='%%prog [options]\n\n%s' % __doc__.strip(), version=pkgname+' '+__version__)
     parser.add_option('-v', '--verbose', action='store_true', dest='verbose', help='Show debug/log output')
@@ -177,6 +180,11 @@ if __name__ == '__main__':
     parser.add_option('-q', '--quiet', action='store_true', dest='quiet', help='Avoid diff output on stdout (--mailto)')
     parser.add_option('-A', '--auth', dest='auth', action='store_true', default=False, help='Enable authentication from keyring for SMTP')
     parser.add_option('-c', '--cache', dest='cache', metavar='DIR', help='Use specified DIR as cache directory.', default=None)
+    parser.add_option('-l', '--list', action='store_true', dest='list', help='List jobs.')
+    parser.add_option('-a', '--add', dest='add_job', metavar='JOB', help='Add job (key1=value1,key2=value2,...).')
+    parser.add_option('-d', '--delete', dest='delete_job', metavar='JOB', help='Delete job by location or index.',
+                      default=None)
+    parser.add_option('-E', '--edit', action='store_true', dest='edit', help='Edit jobs in $EDITOR/$VISUAL.')
 
     parser.set_defaults(verbose=False, display_errors=False)
 
@@ -258,7 +266,7 @@ if __name__ == '__main__':
         hooks_py_fn = os.path.join(os.path.dirname(hooks_py), os.path.basename(hooks_py_example))
         if os.path.isfile(urls_txt):
             # import old urls.txt file
-            handler.create_urls_yaml(handler.parse_urls_txt(urls_txt), urls_yaml)
+            handler.UrlsYaml(urls_yaml).save(handler.UrlsTxt(urls_txt).load_secure())
             # rename urls.txt after import
             os.rename(urls_txt, "%s.imported" % urls_txt)
             print IMPORT_MESSAGE_URLS % (urls_yaml, urls_yaml_fn)
@@ -298,17 +306,83 @@ if __name__ == '__main__':
         log.info('not using hooks.py (file not found)')
 
     def process_job(job):
-        log.info('now processing: %s', job.location)
+        log.info('now processing: %s', job)
         filename = os.path.join(cache_dir, job.get_guid())
         timestamp = None
 
         if os.path.exists(filename):
             timestamp = os.stat(filename)[stat.ST_MTIME]
 
-        data = job.retrieve(timestamp, filter_func, headers, log)
+        job_state = handler.JobState(timestamp, filter_func, headers, log)
+        data = job_state.process(job)
         return filename, timestamp, data
 
-    jobs = handler.parse_urls_yaml(urls_yaml)
+    if options.edit:
+        editor = os.environ.get('EDITOR', None)
+        if editor is None:
+            editor = os.environ.get('VISUAL', None)
+        if editor is None:
+            print 'Please set $VISUAL or $EDITOR.'
+            sys.exit(1)
+
+        urls_yaml_edit = urls_yaml + '.edit'
+        try:
+            shutil.copy(urls_yaml, urls_yaml_edit)
+            subprocess.check_call([editor, urls_yaml_edit])
+            # Check if we can still parse it
+            jobs = handler.UrlsYaml(urls_yaml_edit).load()
+            os.rename(urls_yaml_edit, urls_yaml)
+            print 'Saving edit changes with %d jobs in %s.' % (len(jobs), urls_yaml)
+        except Exception as e:
+            print 'Parsing failed:'
+            print '======'
+            print e
+            print '======'
+            print ''
+            print 'The jobs file', urls_yaml, 'was NOT updated.'
+            print 'Your changes have been saved in', urls_yaml_edit
+            sys.exit(1)
+
+        sys.exit(0)
+
+    jobs = handler.UrlsYaml(urls_yaml).load_secure()
+
+    if options.list:
+        for idx, job in enumerate(jobs):
+            print '%d: %s' % (idx+1, job.get_location(),)
+        sys.exit(0)
+    elif options.add_job is not None or options.delete_job is not None:
+        save = True
+        if options.delete_job is not None:
+            try:
+                index = int(options.delete_job) - 1
+                try:
+                    job = jobs.pop(index)
+                    print 'Removed %r' % (job,)
+                except IndexError:
+                    print 'Not found: %r' % (index,)
+                    save = False
+            except ValueError:
+                job = next((job for job in jobs if job.get_location() == options.delete_job), None)
+                try:
+                    jobs.remove(job)
+                    print 'Removed %r' % (job,)
+                except ValueError:
+                    print 'Not found: %r' % (options.delete_job,)
+                    save = False
+
+        if options.add_job is not None:
+            d = {k: v for k, v in (item.split('=', 2) for item in options.add_job.split(','))}
+            job = handler.JobBase.unserialize(d)
+            print 'Adding %r' % (job,)
+            jobs.append(job)
+
+        if save:
+            print 'Saving updated list to %r' % (urls_yaml,)
+            handler.UrlsYaml(urls_yaml).save(jobs)
+
+        sys.exit(0)
+
     log.info('processing %d jobs', len(jobs))
 
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
@@ -319,7 +393,7 @@ if __name__ == '__main__':
     for future in concurrent.futures.as_completed(future_to_job):
         job = future_to_job[future]
 
-        log.info('job finished: %s' % job.location)
+        log.info('job finished: %s' % job)
 
         try:
             exception = future.exception()
