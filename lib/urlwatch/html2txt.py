@@ -47,7 +47,7 @@ def html2text(data, method='lynx', utf8=False):
 
     Dependencies: apt-get install lynx html2text
     """
-    if isinstance(data, unicode):
+    if isinstance(data, str):
         data = data.encode('utf-8')
 
     if method == 're':
@@ -96,8 +96,8 @@ if __name__ == '__main__':
     import sys
 
     if len(sys.argv) == 2:
-        print html2text(open(sys.argv[1]).read())
+        print(html2text(open(sys.argv[1]).read()))
     else:
-        print 'Usage: %s document.html' % (sys.argv[0])
+        print('Usage: %s document.html' % (sys.argv[0]))
         sys.exit(1)
 

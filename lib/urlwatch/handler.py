@@ -39,15 +39,15 @@ except ImportError:
 
 # Python 2 and 3 compatible string check
 try:
-    basestring
+    str
 except NameError:
-    basestring = str
+    str = str
 
 import subprocess
 import email.utils
-import urllib
-import urllib2
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 import os
 import stat
 import sys
@@ -118,8 +118,7 @@ class TrackSubClasses(type):
         super(TrackSubClasses, cls).__init__(name, bases, namespace)
 
 
-class JobBase(object):
-    __metaclass__ = TrackSubClasses
+class JobBase(object, metaclass=TrackSubClasses):
     __subclasses__ = {}
 
     def __init__(self, **kwargs):
@@ -133,13 +132,13 @@ class JobBase(object):
             if k not in kwargs:
                 raise ValueError('Required field %s missing: %r' % (k, kwargs))
 
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
     @classmethod
     def job_documentation(cls):
         result = []
-        for sc in cls.__subclasses__.values():
+        for sc in list(cls.__subclasses__.values()):
             result.extend((
                 '  * %s - %s' % (sc.__kind__, sc.__doc__),
                 '    Required keys: %s; optional: %s' % (', '.join(sc.__required__), ', '.join(sc.__optional__)),
@@ -159,7 +158,7 @@ class JobBase(object):
     def unserialize(cls, data):
         if 'kind' not in data:
             # Try to auto-detect the kind of job based on the available keys
-            kinds = [subclass.__kind__ for subclass in cls.__subclasses__.values()
+            kinds = [subclass.__kind__ for subclass in list(cls.__subclasses__.values())
                      if all(required in data for required in subclass.__required__) and
                      not any(key not in subclass.__required__ and key not in subclass.__optional__ for key in data)]
 
@@ -180,17 +179,17 @@ class JobBase(object):
 
     @classmethod
     def from_dict(cls, data):
-        return cls(**{k: v for k, v in data.items() if k in cls.__required__ or k in cls.__optional__})
+        return cls(**{k: v for k, v in list(data.items()) if k in cls.__required__ or k in cls.__optional__})
 
     def __repr__(self):
-        return '<%s %s>' % (self.__kind__, ' '.join('%s=%r' % (k, v) for k, v in self.to_dict().items()))
+        return '<%s %s>' % (self.__kind__, ' '.join('%s=%r' % (k, v) for k, v in list(self.to_dict().items())))
 
     def get_guid(self):
         location = self.get_location()
 
         if have_hashlib:
             sha_hash = hashlib.new('sha1')
-            if isinstance(location, unicode):
+            if isinstance(location, str):
                 location = location.encode('utf-8')
             sha_hash.update(location)
             return sha_hash.hexdigest()
@@ -251,25 +250,25 @@ class UrlJob(Job):
             # data might be dict or urlencoded string
             if isinstance(self.post, dict):
                 # convert to urlencoded string
-                postdata = urllib.urlencode(self.post)
-            elif isinstance(self.post, basestring):
+                postdata = urllib.parse.urlencode(self.post)
+            elif isinstance(self.post, str):
                 postdata = self.post
             else:
                 # nuke / ignore other data (no string, no dict)
                 job_state.log.warning("Ignoring invalid data parameter for url %s: %r", self.url, self.post)
 
-        parts = urlparse.urlparse(self.url)
+        parts = urllib.parse.urlparse(self.url)
         if parts.username or parts.password:
-            url = urlparse.urlunparse((parts.scheme, parts.hostname, parts.path,
+            url = urllib.parse.urlunparse((parts.scheme, parts.hostname, parts.path,
                                        parts.params, parts.query, parts.fragment))
             job_state.log.info('Using HTTP basic authentication for %s', url)
-            auth_token = urllib2.unquote(':'.join((parts.username, parts.password)))
+            auth_token = urllib.parse.unquote(':'.join((parts.username, parts.password)))
             headers['Authorization'] = 'Basic %s' % (base64.b64encode(auth_token).strip())
         else:
             url = self.url
 
-        request = urllib2.Request(url, postdata, headers)
-        response = urllib2.urlopen(request)
+        request = urllib.request.Request(url, postdata, headers)
+        response = urllib.request.urlopen(request)
         headers = response.info()
         content = response.read()
         encoding = 'utf-8'
@@ -288,7 +287,7 @@ class UrlJob(Job):
             encoding = content_type_match.group(2)
 
         # Convert from specified encoding to unicode
-        if not isinstance(content, unicode):
+        if not isinstance(content, str):
             try:
                 content = content.decode(encoding, 'ignore')
             except LookupError:
@@ -329,7 +328,7 @@ class UrlsStorage(object):
         # is the same as the file/directory owner and only owner can write
         shelljob_errors = self.shelljob_security_checks()
         if shelljob_errors and any(isinstance(job, ShellJob) for job in jobs):
-            print('Removing shell jobs, because %s' % (' and '.join(shelljob_errors),))
+            print(('Removing shell jobs, because %s' % (' and '.join(shelljob_errors),)))
             jobs = [job for job in jobs if not isinstance(job, ShellJob)]
 
         return jobs

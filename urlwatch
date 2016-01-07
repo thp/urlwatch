@@ -81,8 +81,8 @@ hooks_py_example = os.path.join(examples_dir, 'hooks.py.example')
 import shutil
 import os
 import stat
-import urllib2
-import httplib
+import urllib.request, urllib.error, urllib.parse
+import http.client
 import email.utils
 import time
 import socket
@@ -219,12 +219,12 @@ if __name__ == '__main__':
     else:
         if options.email_from:
             log.error('--mailfrom without --mailto')
-            print 'Error: --mailfrom needs --mailto'
+            print('Error: --mailfrom needs --mailto')
             sys.exit(1)
 
         if options.email_smtp:
             log.error('--smtp without --mailto')
-            print 'Error: --smtp needs --mailto'
+            print('Error: --smtp needs --mailto')
             sys.exit(1)
 
         enable_emails = False
@@ -236,7 +236,7 @@ if __name__ == '__main__':
             log.info('using %s as urls.yaml' % options.urls)
         else:
             log.error('%s is not a file' % options.urls)
-            print 'Error: %s is not a file' % options.urls
+            print('Error: %s is not a file' % options.urls)
             sys.exit(1)
 
     if options.hooks:
@@ -245,7 +245,7 @@ if __name__ == '__main__':
             log.info('using %s as hooks.py' % options.hooks)
         else:
             log.error('%s is not a file' % options.hooks)
-            print 'Error: %s is not a file' % options.hooks
+            print('Error: %s is not a file' % options.hooks)
             sys.exit(1)
 
 
@@ -269,12 +269,12 @@ if __name__ == '__main__':
             handler.UrlsYaml(urls_yaml).save(handler.UrlsTxt(urls_txt).load_secure())
             # rename urls.txt after import
             os.rename(urls_txt, "%s.imported" % urls_txt)
-            print IMPORT_MESSAGE_URLS % (urls_yaml, urls_yaml_fn)
+            print(IMPORT_MESSAGE_URLS % (urls_yaml, urls_yaml_fn))
         else:
-            print ERROR_MESSAGE_URLS % (urls_yaml, urls_yaml_fn)
+            print(ERROR_MESSAGE_URLS % (urls_yaml, urls_yaml_fn))
 
         if not options.hooks:
-            print ERROR_MESSAGE_HOOKS_PY % (hooks_py, hooks_py_fn)
+            print(ERROR_MESSAGE_HOOKS_PY % (hooks_py, hooks_py_fn))
         if os.path.exists(urls_yaml_example) and not os.path.exists(urls_yaml_fn):
             shutil.copy(urls_yaml_example, urls_yaml_fn)
         if not options.hooks and os.path.exists(hooks_py_example) and not os.path.exists(hooks_py_fn):
@@ -322,7 +322,7 @@ if __name__ == '__main__':
         if editor is None:
             editor = os.environ.get('VISUAL', None)
         if editor is None:
-            print 'Please set $VISUAL or $EDITOR.'
+            print('Please set $VISUAL or $EDITOR.')
             sys.exit(1)
 
         urls_yaml_edit = urls_yaml + '.edit'
@@ -332,15 +332,15 @@ if __name__ == '__main__':
             # Check if we can still parse it
             jobs = handler.UrlsYaml(urls_yaml_edit).load()
             os.rename(urls_yaml_edit, urls_yaml)
-            print 'Saving edit changes with %d jobs in %s.' % (len(jobs), urls_yaml)
+            print('Saving edit changes with %d jobs in %s.' % (len(jobs), urls_yaml))
         except Exception as e:
-            print 'Parsing failed:'
-            print '======'
-            print e
-            print '======'
-            print ''
-            print 'The jobs file', urls_yaml, 'was NOT updated.'
-            print 'Your changes have been saved in', urls_yaml_edit
+            print('Parsing failed:')
+            print('======')
+            print(e)
+            print('======')
+            print('')
+            print('The jobs file', urls_yaml, 'was NOT updated.')
+            print('Your changes have been saved in', urls_yaml_edit)
             sys.exit(1)
 
         sys.exit(0)
@@ -349,7 +349,7 @@ if __name__ == '__main__':
 
     if options.list:
         for idx, job in enumerate(jobs):
-            print '%d: %s' % (idx+1, job.get_location(),)
+            print('%d: %s' % (idx+1, job.get_location(),))
         sys.exit(0)
     elif options.add_job is not None or options.delete_job is not None:
         save = True
@@ -358,27 +358,27 @@ if __name__ == '__main__':
                 index = int(options.delete_job) - 1
                 try:
                     job = jobs.pop(index)
-                    print 'Removed %r' % (job,)
+                    print('Removed %r' % (job,))
                 except IndexError:
-                    print 'Not found: %r' % (index,)
+                    print('Not found: %r' % (index,))
                     save = False
             except ValueError:
                 job = next((job for job in jobs if job.get_location() == options.delete_job), None)
                 try:
                     jobs.remove(job)
-                    print 'Removed %r' % (job,)
+                    print('Removed %r' % (job,))
                 except ValueError:
-                    print 'Not found: %r' % (options.delete_job,)
+                    print('Not found: %r' % (options.delete_job,))
                     save = False
 
         if options.add_job is not None:
             d = {k: v for k, v in (item.split('=', 2) for item in options.add_job.split(','))}
             job = handler.JobBase.unserialize(d)
-            print 'Adding %r' % (job,)
+            print('Adding %r' % (job,))
             jobs.append(job)
 
         if save:
-            print 'Saving updated list to %r' % (urls_yaml,)
+            print('Saving updated list to %r' % (urls_yaml,))
             handler.UrlsYaml(urls_yaml).save(jobs)
 
         sys.exit(0)
@@ -406,8 +406,8 @@ if __name__ == '__main__':
                 log.info('%s exists - creating unified diff' % filename)
                 old_data = open(filename).read()
 
-                if (not isinstance(old_data, unicode) and
-                        isinstance(data, unicode)):
+                if (not isinstance(old_data, str) and
+                        isinstance(data, str)):
                     # Fix for Python 2's unicode/str woes
                     data = data.encode('utf-8')
 
@@ -434,30 +434,30 @@ if __name__ == '__main__':
             except UnicodeEncodeError:
                 # Happens in Python 2 when data contains non-ascii characters
                 open(filename, 'w').write(data.encode('utf-8'))
-        except urllib2.HTTPError, error:
+        except urllib.error.HTTPError as error:
             if error.code == 304:
                 log.info('%s has not changed (HTTP 304)' % job)
             else:
                 log.error('got HTTPError while loading url: %s' % error)
                 if display_errors:
                     details += foutput('error', job, error, summary)
-        except handler.ShellError, error:
+        except handler.ShellError as error:
             log.error('Shell returned %d' % error.result)
             if display_errors:
                 details += foutput('error', job, error, summary)
-        except urllib2.URLError, error:
+        except urllib.error.URLError as error:
             log.error('got URLError while loading url: %s' % error)
             if display_errors:
                 details += foutput('error', job, error, summary)
-        except IOError, error:
+        except IOError as error:
             log.error('got IOError while loading url: %s' % error)
             if display_errors:
                 details += foutput('error', job, error, summary)
-        except socket.timeout, error:
+        except socket.timeout as error:
             log.error('got timeout while loading url: %s' % error)
             if display_errors:
                 details += foutput('error', job, error, summary)
-        except httplib.error, error:
+        except http.client.error as error:
             # This is to workaround a bug in urllib2, see
             # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=529740
             log.error('got httplib error while loading url: %s' % error)
@@ -481,18 +481,18 @@ if __name__ == '__main__':
         short_summary += '-'*line_length + '\n'
         short_summary += '\n\n\n'
         if not options.quiet:
-            print short_summary
+            print(short_summary)
     else:
         log.info('summary is too short - not printing')
 
     if len(details) > 1:
         log.info('printing details with %d items' % len(details))
         if not options.quiet:
-            print '\n'.join(details)
-            print '-- '
-            print '%s %s, %s' % (pkgname, __version__, COPYRIGHT)
-            print 'Website: %s' % (__url__,)
-            print 'watched %d URLs in %d seconds\n' % (count, (end-start).seconds)
+            print('\n'.join(details))
+            print('-- ')
+            print('%s %s, %s' % (pkgname, __version__, COPYRIGHT))
+            print('Website: %s' % (__url__,))
+            print('watched %d URLs in %d seconds\n' % (count, (end-start).seconds))
 
         if enable_emails:
             try:
@@ -505,7 +505,7 @@ if __name__ == '__main__':
                         short_summary + '\n' + '\n'.join(details),
                         auth=email_auth, tls=email_tls)
                 log.info('E-Mail to %s sent.', email_receiver_address)
-            except Exception, e:
+            except Exception as e:
                 log.warning('E-Mail delivery error: %s', e)
     else:
         log.info('no details collected - not printing')

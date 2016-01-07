@@ -31,7 +31,7 @@
 def ical2text(ical_string):
     import vobject
     result = []
-    if isinstance(ical_string, unicode):
+    if isinstance(ical_string, str):
         parsedCal = vobject.readOne(ical_string)
     else:
         try:
@@ -65,8 +65,8 @@ if __name__ == '__main__':
     import sys
 
     if len(sys.argv) == 2:
-        print ical2text(open(sys.argv[1]).read())
+        print(ical2text(open(sys.argv[1]).read()))
     else:
-        print 'Usage: %s icalendarfile.ics' % (sys.argv[0])
+        print('Usage: %s icalendarfile.ics' % (sys.argv[0]))
         sys.exit(1)
 
