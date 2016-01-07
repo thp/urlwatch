@@ -1,60 +1,26 @@
-
 # This is an example urls.yaml file for urlwatch
-# Empty lines and lines starting with "#" are ignored
-# This file uses standard yaml syntax.
-# Each entry supports the following keys:
-# - url: the url to watch (mandatory)
-# - name: a short name for the entry (optional)
-# You need to separate entries with "---"
 
-url: "http://www.dubclub-vienna.com/"
+name: "urlwatch webpage"
+url: "https://thp.io/2008/urlwatch/"
 ---
-url: "http://www.openpandora.org/developers.php"
----
-#url: "http://www.statistik.tuwien.ac.at/lv-guide/u107.369/info.html"
----
-#url: "http://www.statistik.tuwien.ac.at/lv-guide/u107.369/blatter.html"
----
-#url: "http://www.dbai.tuwien.ac.at/education/dbs/current/index.html"
----
-#name: "DBS Uebung"
-#url: "http://www.dbai.tuwien.ac.at/education/dbs/current/uebung.html"
----
-url: "http://ti.tuwien.ac.at/rts/teaching/courses/systems_programming"
----
-url: "http://ti.tuwien.ac.at/rts/teaching/courses/systems_programming/labor"
----
-url: "http://ti.tuwien.ac.at/rts/teaching/courses/betriebssysteme"
----
-#url: "http://www.complang.tuwien.ac.at/anton/lvas/effiziente-programme.html"
----
-#url: "http://www.complang.tuwien.ac.at/anton/lvas/effizienz-aufgabe08/"
----
-url: "http://www.kukuk.at/ical/events"
----
-url: "http://guckes.net/cal/"
-
----
-# You can use the pipe character to "watch" the output of shell commands
 name: "Home Listing"
 command: "ls -al ~"
 ---
-
 # If you want to use spaces in URLs, you have to URL-encode them (e.g. %20)
 url: "http://example.org/With%20Spaces/"
 ---
-
-# You can do POST requests by providing data parameter.
-# POST data can be a URL-encoded string or a dict (see next example).
+# POST requests are done by providing a post parameter
 url: "http://example.com/search.cgi"
-post: "button=Search&q=something&category=4"
+data: "button=Search&q=something&category=4"
 ---
-
+# You can use a custom HTTP method, this might be useful for cache invalidation
+url: "http://example.com/foo"
+method: "PURGE"
+---
 # You can do POST requests by providing data parameter.
 # POST data can be a URL-encoded string (see last example) or a dict.
 url: "http://example.com/search.cgi"
-post:
+data:
   button: Search
   q: something
   category: 4
-

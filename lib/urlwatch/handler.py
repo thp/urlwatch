@@ -215,7 +215,7 @@ class UrlJob(Job):
     __kind__ = 'url'
 
     __required__ = ('url',)
-    __optional__ = ('post',)
+    __optional__ = ('data', 'method')
 
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
@@ -228,17 +228,17 @@ class UrlJob(Job):
             headers['If-Modified-Since'] = email.utils.formatdate(job_state.timestamp)
 
         postdata = None
-        if self.post is not None:
+        if self.data is not None:
             job_state.log.info('Sending POST request to %s', self.url)
             # data might be dict or urlencoded string
-            if isinstance(self.post, dict):
+            if isinstance(self.data, dict):
                 # convert to urlencoded string
-                postdata = urllib.parse.urlencode(self.post).encode('utf-8')
-            elif isinstance(self.post, str):
-                postdata = self.post.encode('utf-8')
+                postdata = urllib.parse.urlencode(self.data).encode('utf-8')
+            elif isinstance(self.data, str):
+                postdata = self.data.encode('utf-8')
             else:
                 # nuke / ignore other data (no string, no dict)
-                job_state.log.warning("Ignoring invalid data parameter for url %s: %r", self.url, self.post)
+                job_state.log.warning("Ignoring invalid data parameter for url %s: %r", self.url, self.data)
 
         parts = urllib.parse.urlparse(self.url)
         if parts.username or parts.password:
@@ -250,7 +250,7 @@ class UrlJob(Job):
         else:
             url = self.url
 
-        request = urllib.request.Request(url, postdata, headers)
+        request = urllib.request.Request(url, postdata, headers, method=self.method)
         response = urllib.request.urlopen(request)
         headers = response.info()
         content = response.read()
