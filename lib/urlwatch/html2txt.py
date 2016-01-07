@@ -66,7 +66,7 @@ def html2text(data, method='lynx', utf8=False):
         if utf8:
             cmd.append('-utf8')
     else:
-        return data
+        raise ValueError('Unknown html2text method: %r' % (method,))
 
     html2text = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     stdout, stderr = html2text.communicate(data.encode('utf-8'))

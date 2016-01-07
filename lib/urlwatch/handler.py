@@ -43,6 +43,11 @@ import zlib
 import yaml
 import hashlib
 import base64
+import logging
+import itertools
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_current_user():
@@ -77,6 +82,23 @@ class JobState(object):
     def process(self, job):
         location = job.get_location()
         data = job.retrieve(self)
+
+        # Apply automatic filters first
+        data = FilterBase.auto_process(job, self, data)
+
+        # Apply any specified filters
+        filter_list = job.filter
+        if filter_list is not None:
+            for filter_kind in filter_list.split(','):
+                if ':' in filter_kind:
+                    filter_kind, subfilter = filter_kind.split(':', 2)
+                else:
+                    subfilter = None
+
+                logger.info('Applying filter %r, subfilter %r to %r', filter_kind, subfilter, job)
+                data = FilterBase.process(filter_kind, subfilter, job, self, data)
+
+        # Apply legacy hook filter functions
         return (self.filter_func(location, data) or data) if self.filter_func is not None else data
 
 
@@ -89,26 +111,138 @@ class TrackSubClasses(type):
                 continue
 
             for attr in ('__required__', '__optional__'):
+                if not hasattr(base, attr):
+                    continue
+
                 inherited = getattr(base, attr, ())
                 new_value = tuple(namespace.get(attr, ())) + tuple(inherited)
                 namespace[attr] = new_value
                 setattr(cls, attr, new_value)
 
-        if hasattr(cls, '__kind__'):
-            for base in bases:
-                if base == object:
-                    continue
+        for base in bases:
+            if base == object:
+                continue
 
+            if hasattr(cls, '__kind__'):
                 subclasses = getattr(base, '__subclasses__', None)
                 if subclasses is not None:
+                    logger.info('Registering %r as %s', cls, cls.__kind__)
                     subclasses[cls.__kind__] = cls
+                    break
+            else:
+                anonymous_subclasses = getattr(base, '__anonymous_subclasses__', None)
+                if anonymous_subclasses is not None:
+                    logger.info('Registering %r', cls)
+                    anonymous_subclasses.append(cls)
                     break
 
         super().__init__(name, bases, namespace)
 
 
+class FilterBase(object, metaclass=TrackSubClasses):
+    __subclasses__ = {}
+    __anonymous_subclasses__ = []
+
+    def __init__(self, job, state):
+        self.job = job
+        self.state = state
+
+    @classmethod
+    def filter_documentation(cls):
+        result = []
+        for sc in list(cls.__subclasses__.values()):
+            result.extend((
+                '  * %s - %s' % (sc.__kind__, sc.__doc__),
+            ))
+        return '\n'.join(result)
+
+    @classmethod
+    def auto_process(cls, job, state, data):
+        filters = itertools.chain((filtercls for _, filtercls in
+                                   sorted(cls.__subclasses__.items(), key=lambda k_v: k_v[0])),
+                                  cls.__anonymous_subclasses__)
+
+        for filtercls in filters:
+            filter_instance = filtercls(job, state)
+            if filter_instance.match():
+                state.log.info('Auto-applying filter %r to %r', filter_instance, job)
+                data = filter_instance.filter(data)
+
+        return data
+
+    @classmethod
+    def process(cls, filter_kind, subfilter, job, state, data):
+        filtercls = cls.__subclasses__.get(filter_kind, None)
+        if filtercls is None:
+            raise ValueError('Unknown filter kind: %s:%s' % (filter_kind, subfilter))
+        return filtercls(job, state).filter(data, subfilter)
+
+    def match(self):
+        return False
+
+    def filter(self, data, subfilter=None):
+        raise NotImplementedError()
+
+
+class AutoMatchFilter(FilterBase):
+    """Automatically matches subclass filters with a given location"""
+    MATCH = None
+
+    def match(self):
+        if self.MATCH is None:
+            return False
+
+        d = self.job.to_dict()
+        result = all(d.get(k, None) == v for k, v in self.MATCH.items())
+        logger.debug('Matching %r with %r result: %r', self, self.job, result)
+        return result
+
+
+class Html2TextFilter(FilterBase):
+    """Convert HTML to plaintext"""
+
+    __kind__ = 'html2text'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            subfilter = 'lynx'
+
+        from .html2txt import html2text
+        return html2text(data, method=subfilter)
+
+
+class Ical2TextFilter(FilterBase):
+    """Convert iCalendar to plaintext"""
+
+    __kind__ = 'ical2text'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is not None:
+            raise ValueError('No subfilters supported for ical2text')
+
+        from .ical2txt import ical2text
+        return ical2text(data)
+
+
+class GrepFilter(FilterBase):
+    """Filter only lines matching a regular expression"""
+
+    __kind__ = 'grep'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            raise ValueError('The grep filter needs a regular expression')
+
+        return '\n'.join(line for line in data.splitlines()
+                         if re.search(subfilter, line) is not None)
+
+
+
 class JobBase(object, metaclass=TrackSubClasses):
     __subclasses__ = {}
+
+    __required__ = ()
+    __optional__ = ()
 
     def __init__(self, **kwargs):
         # Set optional keys to None
@@ -185,7 +319,7 @@ class JobBase(object, metaclass=TrackSubClasses):
 
 class Job(JobBase):
     __required__ = ()
-    __optional__ = ('name',)
+    __optional__ = ('name', 'filter')
 
 
 class ShellJob(Job):

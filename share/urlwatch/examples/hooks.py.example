@@ -28,47 +28,66 @@
 #
 
 
-# You can decide which filter you want to apply using the "url"
-# parameter and you can use the "re" module to search for the
-# content that you want to filter, so the noise is removed.
+from urlwatch import handler
 
 
-# Needed for regular expression substitutions
-import re
+class CustomLoginJob(handler.UrlJob):
+    """Custom login for my webpage"""
 
-# Additional modules installed with urlwatch
-from urlwatch import ical2txt
-from urlwatch import html2txt
+    __kind__ = 'custom-login'
+    __required__ = ('username', 'password')
+
+    def retrieve(self, job_state):
+        return 'Would log in to {} with {} and {}\n'.format(self.url, self.username, self.password)
 
 
+class CaseFilter(handler.FilterBase):
+    """Custom filter for changing case, needs to be selected manually"""
+
+    __kind__ = 'case'
+
+    def filter(self, data, subfilter=None):
+        # The subfilter is specified using a colon, for example the "case"
+        # filter here can be specified as "case:upper" and "case:lower"
+
+        if subfilter is None:
+            subfilter = 'upper'
+
+        if subfilter == 'upper':
+            return data.upper()
+        elif subfilter == 'lower':
+            return data.lower()
+        else:
+            raise ValueError('Unknown case subfilter: %r' % (subfilter,))
+
+
+class IndentFilter(handler.FilterBase):
+    """Custom filter for indenting, needs to be selected manually"""
+
+    __kind__ = 'indent'
+
+    def filter(self, data, subfilter=None):
+        # The subfilter here is a number of characters to indent
+
+        if subfilter is None:
+            indent = 8
+        else:
+            indent = int(subfilter)
+
+        return '\n'.join((' '*indent) + line for line in data.splitlines())
+
+
+
+class CustomMatchUrlFilter(handler.AutoMatchFilter):
+    # The AutoMatchFilter will apply automatically to all filters
+    # that have the given properties set
+    MATCH = {'url': 'http://example.org/'}
+
+    def filter(self, data):
+        return data.replace('foo', 'bar')
+
+
+# Legacy filter support (deprecated, use the filters and jobs above)
 def filter(url, data):
-    if url == 'http://example.net/cms/':
-        return re.sub('.*TYPO3SEARCH_end.*', '', data)
-    elif url == 'https://example.org/random':
-        return re.sub('</html><!-- \d+ -->', '', data)
-    elif url == 'http://example.com/':
-        # example of using the "tidy" module for cleaning up bad HTML
-        import tidy
-        mlr = re.compile('magicCalendarHeader.*magicCalendarBottom', re.S)
-        data = str(tidy.parseString(data, output_xhtml=1, indent=0, tidy_mark=0))
-        return re.sub(mlr, '', data)
-    elif url == 'http://www.poleros.at/calender.htm':
-        # remove style changes, because we only want to see content changes
-        return re.sub('style="[^"]"', '', data)
-    elif url.endswith('.ics'):
-        return ical2txt.ical2text(data)
-    elif url.endswith('.htm'):
-        # You need to install "lynx" for this to work or use
-        # "html2text" as method (needs "html2text") or use
-        # "re" (does not need anything, but only strips tags
-        # using a regular expression and does no formatting)
-        return html2txt.html2text(data, method='lynx')
-
-    # You might want to replace DOS-style line endings (\r\n) with
-    # Unix-style line endings (\n), which is easy to do like so:
-    data = data.replace('\r', '')
-
-    # The next line is optional - if the filter function returns
-    # None (or no value at all), the input data will be taken as
-    # the result -> None as return value means "don't filter".
-    return data
+    if url == 'http://example.org/shakespeare':
+        return data.replace('not to be', 'to be')

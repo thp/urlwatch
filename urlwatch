@@ -130,7 +130,7 @@ An example is available in %s
 
 MAX_WORKERS = 10
 
-def foutput(type, url, content=None, summary=None, c='*', n=line_length):
+def foutput(type, job, content=None, summary=None, c='*', n=line_length):
     """Format output messages
 
     Returns a snippet of a specific message type (i.e. 'changed') for
@@ -141,7 +141,7 @@ def foutput(type, url, content=None, summary=None, c='*', n=line_length):
 
     The return value is a list of strings (one item per line).
     """
-    summary_txt = ': '.join((type.upper(), str(url)))
+    summary_txt = ': '.join((type.upper(), job.get_location()))
 
     if summary is not None:
         if content is None:
@@ -159,8 +159,6 @@ def foutput(type, url, content=None, summary=None, c='*', n=line_length):
 
 if __name__ == '__main__':
     start = datetime.datetime.now()
-
-    __doc__ += '\nSupported job kinds:\n\n' + handler.JobBase.job_documentation()
 
     # Option parser
     parser = optparse.OptionParser(usage='%%prog [options]\n\n%s' % __doc__.strip(), version=pkgname+' '+__version__)
@@ -182,6 +180,7 @@ if __name__ == '__main__':
     parser.add_option('-d', '--delete', dest='delete_job', metavar='JOB', help='Delete job by location or index.',
                       default=None)
     parser.add_option('-E', '--edit', action='store_true', dest='edit', help='Edit jobs in $EDITOR/$VISUAL.')
+    parser.add_option('-k', '--kinds', action='store_true', dest='kinds', help='List supported jobs/filters.')
 
     parser.set_defaults(verbose=False, display_errors=False)
 
@@ -302,6 +301,15 @@ if __name__ == '__main__':
     else:
         log.info('not using hooks.py (file not found)')
 
+    if options.kinds:
+        print()
+        print('Supported job kinds:\n')
+        print(handler.JobBase.job_documentation())
+        print('Supported filter kinds:\n')
+        print(handler.FilterBase.filter_documentation())
+        print()
+        sys.exit(0)
+
     def process_job(job):
         log.info('now processing: %s', job)
         filename = os.path.join(cache_dir, job.get_guid())
@@ -346,7 +354,10 @@ if __name__ == '__main__':
 
     if options.list:
         for idx, job in enumerate(jobs):
-            print('%d: %s' % (idx+1, job.get_location(),))
+            if options.verbose:
+                print('%d: %s' % (idx+1, repr(job)))
+            else:
+                print('%d: %s' % (idx+1, job.get_location()))
         sys.exit(0)
     elif options.add_job is not None or options.delete_job is not None:
         save = True

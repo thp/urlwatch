@@ -1,10 +1,26 @@
 # This is an example urls.yaml file for urlwatch
 
+# A basic URL job just needs a URL
 name: "urlwatch webpage"
 url: "https://thp.io/2008/urlwatch/"
+# You can use a pre-supplied filter for this, here we apply two:
+# the html2text filter that converts the HTML to plaintext and
+# the grep filter that filters lines based on a regular expression
+filter: html2text,grep:Current.*version
 ---
+# Built-in job kind "shell" needs a command specified
 name: "Home Listing"
 command: "ls -al ~"
+---
+name: "Login to some webpage (custom job)"
+url: "http://example.org/"
+# This job kind is defined in hooks.py, so you need to enable it
+kind: custom-login
+# Additional parameters for the custom-login job kind can be specified here
+username: "myuser"
+password: "secret"
+# Filters can be specified here, separated by comma (these are also from hooks.py)
+filter: case:upper,indent:5
 ---
 # If you want to use spaces in URLs, you have to URL-encode them (e.g. %20)
 url: "http://example.org/With%20Spaces/"
