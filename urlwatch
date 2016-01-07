@@ -403,20 +403,10 @@ if __name__ == '__main__':
                 log.info('%s exists - creating unified diff' % filename)
                 old_data = open(filename).read()
 
-                if (not isinstance(old_data, str) and
-                        isinstance(data, str)):
-                    # Fix for Python 2's unicode/str woes
-                    data = data.encode('utf-8')
-
                 timestamp_old = email.utils.formatdate(timestamp, localtime=1)
                 timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-                diff = ''.join(difflib.unified_diff(\
-                        old_data.splitlines(1), \
-                        data.splitlines(1), \
-                        '@', \
-                        '@', \
-                        timestamp_old, \
-                        timestamp_new))
+                diff = ''.join(difflib.unified_diff(old_data.splitlines(1), data.splitlines(1),
+                                                    '@', '@', timestamp_old, timestamp_new))
                 if len(diff) > 0:
                     log.info('%s has changed - adding diff' % job)
                     details += foutput('changed', job, diff, summary)
@@ -425,12 +415,9 @@ if __name__ == '__main__':
             else:
                 log.info('%s does not exist - is considered "new"' % filename)
                 details += foutput('new', job, None, summary)
+
             log.info('writing current content of %s to %s' % (job, filename))
-            try:
-                open(filename, 'w').write(data)
-            except UnicodeEncodeError:
-                # Happens in Python 2 when data contains non-ascii characters
-                open(filename, 'w').write(data.encode('utf-8'))
+            open(filename, 'w').write(data)
         except urllib.error.HTTPError as error:
             if error.code == 304:
                 log.info('%s has not changed (HTTP 304)' % job)

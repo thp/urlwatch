@@ -175,15 +175,9 @@ class JobBase(object, metaclass=TrackSubClasses):
 
     def get_guid(self):
         location = self.get_location()
-
-        if have_hashlib:
-            sha_hash = hashlib.new('sha1')
-            if isinstance(location, str):
-                location = location.encode('utf-8')
-            sha_hash.update(location)
-            return sha_hash.hexdigest()
-        else:
-            return sha.new(location).hexdigest()
+        sha_hash = hashlib.new('sha1')
+        sha_hash.update(location.encode('utf-8'))
+        return sha_hash.hexdigest()
 
     def retrieve(self, job_state):
         raise NotImplementedError()
@@ -212,7 +206,7 @@ class ShellJob(Job):
         if result != 0:
             raise ShellError(result)
 
-        return stdout_data
+        return stdout_data.decode('utf-8')
 
 
 class UrlJob(Job):
@@ -239,9 +233,9 @@ class UrlJob(Job):
             # data might be dict or urlencoded string
             if isinstance(self.post, dict):
                 # convert to urlencoded string
-                postdata = urllib.parse.urlencode(self.post)
+                postdata = urllib.parse.urlencode(self.post).encode('utf-8')
             elif isinstance(self.post, str):
-                postdata = self.post
+                postdata = self.post.encode('utf-8')
             else:
                 # nuke / ignore other data (no string, no dict)
                 job_state.log.warning("Ignoring invalid data parameter for url %s: %r", self.url, self.post)
