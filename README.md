@@ -12,23 +12,16 @@ know when lecture dates have changed or new tasks are online :)
 DEPENDENCIES
 ------------
 
-This package requires the "concurrent.futures" module as included in Python
-3.2. For Python versions < 3.2, you can install it using:
-
-    pip install futures
-
-or download and install it manually from its project page at
-
-    http://code.google.com/p/pythonfutures/
+urlwatch requires Python 3.3 or newer.
 
 It also needs the python-yaml module. Install it using:
 
-    pip install python-yaml
+    pip3 install pyyaml
 
 If you need to use an authenticated SMTP connection, this package also relies
 on "keyring", it can be installed using:
 
-    pip install keyring
+    pip3 install keyring
 
 or download and install manually from the project page at
 
@@ -93,4 +86,3 @@ CONTACT
 Website: http://thp.io/2008/urlwatch/  
 E-Mail: m@thp.io  
 Jabber/XMPP: thp@jabber.org
-

@@ -92,9 +92,6 @@ import optparse
 import logging
 import imp
 import subprocess
-
-# Python 3.2 includes "concurrent.futures", for older versions,
-# use "pip install futures" or http://code.google.com/p/pythonfutures/
 import concurrent.futures
 
 from urlwatch import handler
@@ -108,7 +105,7 @@ log.setLevel(logging.DEBUG)
 
 class NullHandler(logging.Handler):
     def emit(self, record):
-        pass
+        ...
 
 log.addHandler(NullHandler())
 

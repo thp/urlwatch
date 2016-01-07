@@ -42,18 +42,11 @@ from urlwatch import html2txt
 
 
 def filter(url, data):
-    if url == 'http://www.inso.tuwien.ac.at/lectures/usability/':
+    if url == 'http://example.net/cms/':
         return re.sub('.*TYPO3SEARCH_end.*', '', data)
-    elif url == 'https://www.auto.tuwien.ac.at/courses/viewDetails/11/':
+    elif url == 'https://example.org/random':
         return re.sub('</html><!-- \d+ -->', '', data)
-    elif url == 'http://grenzlandvagab.gr.funpic.de/events/':
-        return re.sub('<!-- Ad by .*by funpic.de -->', '', data)
-    elif url == 'http://www.mv-eberau.at/terminliste.php':
-        return data.replace('</br>', '\n')
-    elif 'iuner.lukas-krispel.at' in url:
-        # Remove always-changing entries from FTP server listing
-        return re.sub('drwx.*usage', '', re.sub('drwx.*logs', '', data))
-    elif url.startswith('http://ti.tuwien.ac.at/rts/teaching/courses/'):
+    elif url == 'http://example.com/':
         # example of using the "tidy" module for cleaning up bad HTML
         import tidy
         mlr = re.compile('magicCalendarHeader.*magicCalendarBottom', re.S)
@@ -62,33 +55,14 @@ def filter(url, data):
     elif url == 'http://www.poleros.at/calender.htm':
         # remove style changes, because we only want to see content changes
         return re.sub('style="[^"]"', '', data)
-    elif url == 'http://www.ads.tuwien.ac.at/teaching/LVA/186170.html':
-        return re.sub('Saved in parser cache with key .* and timestamp .* --', '', re.sub('Served by aragon in .* secs\.', '', re.sub('This page has been accessed .* times\.', '', data)))
-    elif url.endswith('.ics') or url == 'http://www.kukuk.at/ical/events':
-        # example of generating a summary for icalendar files
-        # append "data" to the converted ical data, so you get
-        # all minor changes to the ICS that are not included
-        # in the ical2text summary (remove this if you want)
-        return ical2txt.ical2text(data).encode('utf-8') + '\n\n' + data
-    elif url == 'http://www.oho.at/programm/programm.php3':
-        # example of converting HTML to plaintext for very
-        # ugly HTML code that cannot be deciphered when just
-        # diffing the HTML source (or if the user is just not
-        # used to HTML, use this for every web page)
-        #
+    elif url.endswith('.ics'):
+        return ical2txt.ical2text(data)
+    elif url.endswith('.htm'):
         # You need to install "lynx" for this to work or use
         # "html2text" as method (needs "html2text") or use
         # "re" (does not need anything, but only strips tags
         # using a regular expression and does no formatting)
         return html2txt.html2text(data, method='lynx')
-
-    # In some cases, it might be necessary to decode the data from
-    # bytes to unicode. We don't always know the encoding of the
-    # remote file, so pick the right encoding (maybe depending on
-    # the remote URL), like so:
-
-    if type(data) == bytes:
-        data = data.decode('utf-8')
 
     # You might want to replace DOS-style line endings (\r\n) with
     # Unix-style line endings (\n), which is easy to do like so:
@@ -98,4 +72,3 @@ def filter(url, data):
     # None (or no value at all), the input data will be taken as
     # the result -> None as return value means "don't filter".
     return data
-

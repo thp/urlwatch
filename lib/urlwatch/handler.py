@@ -27,34 +27,23 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-try:
-    # Available in Python 2.5 and above and preferred if available
-    import hashlib
-    have_hashlib = True
-except ImportError:
-    # "sha" is deprecated since Python 2.5 (throws a warning in Python 2.6)
-    # Thanks to Frank Palvölgyi for reporting the warning in Python 2.6
-    import sha
-    have_hashlib = False
-
-# Python 2 and 3 compatible string check
-try:
-    str
-except NameError:
-    str = str
 
 import subprocess
-import email.utils
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
-import urllib.parse
 import os
 import stat
 import sys
 import re
+
+import urllib.request
+import urllib.error
+import urllib.parse
+
+import email.utils
 import zlib
 import yaml
+import hashlib
 import base64
+
 
 def get_current_user():
     try:
@@ -115,7 +104,7 @@ class TrackSubClasses(type):
                     subclasses[cls.__kind__] = cls
                     break
 
-        super(TrackSubClasses, cls).__init__(name, bases, namespace)
+        super().__init__(name, bases, namespace)
 
 
 class JobBase(object, metaclass=TrackSubClasses):

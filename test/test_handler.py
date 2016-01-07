@@ -3,6 +3,7 @@ from urlwatch.handler import *
 from nose.tools import *
 
 import tempfile
+import os
 
 
 def test_required_classattrs_in_subclasses():
@@ -30,7 +31,7 @@ def test_save_load_jobs():
 
 
 def test_load_examples():
-    txt_jobs = UrlsTxt('share/urlwatch/examples/urls.txt.example').load_secure()
+    txt_jobs = UrlsTxt(os.path.join(os.path.dirname(__file__), 'data', 'urls.txt')).load_secure()
     assert len(txt_jobs) > 0
 
     yaml_jobs = UrlsYaml('share/urlwatch/examples/urls.yaml.example').load_secure()

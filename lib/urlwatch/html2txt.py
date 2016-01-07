@@ -29,8 +29,11 @@
 
 
 import re
+import subprocess
+
 
 def html2text(data, method='lynx', utf8=False):
+
     """
     Convert a string consisting of HTML to plain text
     for easy difference checking.
@@ -68,9 +71,7 @@ def html2text(data, method='lynx', utf8=False):
     else:
         return data
 
-    import subprocess
-    html2text = subprocess.Popen(cmd, stdin=subprocess.PIPE, \
-            stdout=subprocess.PIPE)
+    html2text = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     (stdout, stderr) = html2text.communicate(data)
 
     if method == 'lynx':
