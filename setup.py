@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Minimalistic, automatic setup.py file for Python modules
-# Copyright (c) 2008-2015 Thomas Perl <thp.io/about>
+# Copyright (c) 2008-2016 Thomas Perl <thp.io/about>
 
 PACKAGE_NAME = 'urlwatch'
 
