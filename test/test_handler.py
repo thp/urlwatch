@@ -1,9 +1,11 @@
-from urlwatch.handler import *
+from urlwatch.jobs import UrlJob, JobBase, ShellJob
+from urlwatch.storage import UrlsYaml, UrlsTxt
 
-from nose.tools import *
+from nose.tools import raises
 
 import tempfile
 import os
+import imp
 
 
 def test_required_classattrs_in_subclasses():
@@ -23,6 +25,7 @@ def test_save_load_jobs():
     with tempfile.NamedTemporaryFile() as tmp:
         UrlsYaml(tmp.name).save(jobs)
         jobs2 = UrlsYaml(tmp.name).load()
+        os.chmod(tmp.name, 0o777)
         jobs3 = UrlsYaml(tmp.name).load_secure()
 
     assert len(jobs2) == len(jobs)
@@ -34,6 +37,7 @@ def test_load_examples():
     txt_jobs = UrlsTxt(os.path.join(os.path.dirname(__file__), 'data', 'urls.txt')).load_secure()
     assert len(txt_jobs) > 0
 
+    imp.load_source('hooks', 'share/urlwatch/examples/hooks.py.example')
     yaml_jobs = UrlsYaml('share/urlwatch/examples/urls.yaml.example').load_secure()
     assert len(yaml_jobs) > 0
 

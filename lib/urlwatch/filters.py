@@ -1,0 +1,148 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of urlwatch (https://thp.io/2008/urlwatch/).
+# Copyright (c) 2008-2016 Thomas Perl <thp.io/about>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+# NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+import re
+import logging
+import itertools
+
+from .util import TrackSubClasses
+
+
+logger = logging.getLogger(__name__)
+
+
+class FilterBase(object, metaclass=TrackSubClasses):
+    __subclasses__ = {}
+    __anonymous_subclasses__ = []
+
+    def __init__(self, job, state):
+        self.job = job
+        self.state = state
+
+    def _no_subfilters(self, subfilter):
+        if subfilter is not None:
+            raise ValueError('No subfilters supported for {}'.format(self.__kind__))
+
+    @classmethod
+    def filter_documentation(cls):
+        result = []
+        for sc in list(cls.__subclasses__.values()):
+            result.extend((
+                '  * %s - %s' % (sc.__kind__, sc.__doc__),
+            ))
+        return '\n'.join(result)
+
+    @classmethod
+    def auto_process(cls, state, data):
+        filters = itertools.chain((filtercls for _, filtercls in
+                                   sorted(cls.__subclasses__.items(), key=lambda k_v: k_v[0])),
+                                  cls.__anonymous_subclasses__)
+
+        for filtercls in filters:
+            filter_instance = filtercls(state.job, state)
+            if filter_instance.match():
+                logger.info('Auto-applying filter %r to %s', filter_instance, state.job.get_location())
+                data = filter_instance.filter(data)
+
+        return data
+
+    @classmethod
+    def process(cls, filter_kind, subfilter, state, data):
+        filtercls = cls.__subclasses__.get(filter_kind, None)
+        if filtercls is None:
+            raise ValueError('Unknown filter kind: %s:%s' % (filter_kind, subfilter))
+        return filtercls(state.job, state).filter(data, subfilter)
+
+    def match(self):
+        return False
+
+    def filter(self, data, subfilter=None):
+        raise NotImplementedError()
+
+
+class AutoMatchFilter(FilterBase):
+    """Automatically matches subclass filters with a given location"""
+    MATCH = None
+
+    def match(self):
+        if self.MATCH is None:
+            return False
+
+        d = self.job.to_dict()
+        result = all(d.get(k, None) == v for k, v in self.MATCH.items())
+        logger.debug('Matching %r with %r result: %r', self, self.job, result)
+        return result
+
+
+class Html2TextFilter(FilterBase):
+    """Convert HTML to plaintext"""
+
+    __kind__ = 'html2text'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            subfilter = 're'
+
+        from .html2txt import html2text
+        return html2text(data, method=subfilter)
+
+
+class Ical2TextFilter(FilterBase):
+    """Convert iCalendar to plaintext"""
+
+    __kind__ = 'ical2text'
+
+    def filter(self, data, subfilter=None):
+        self._no_subfilters(subfilter)
+        from .ical2txt import ical2text
+        return ical2text(data)
+
+
+class GrepFilter(FilterBase):
+    """Filter only lines matching a regular expression"""
+
+    __kind__ = 'grep'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            raise ValueError('The grep filter needs a regular expression')
+
+        return '\n'.join(line for line in data.splitlines()
+                         if re.search(subfilter, line) is not None)
+
+
+class StripFilter(FilterBase):
+    """Strip leading and trailing whitespace"""
+
+    __kind__ = 'strip'
+
+    def filter(self, data, subfilter=None):
+        self._no_subfilters(subfilter)
+        return data.strip()

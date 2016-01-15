@@ -3,6 +3,11 @@
 # Minimalistic, automatic setup.py file for Python modules
 # Copyright (c) 2008-2016 Thomas Perl <thp.io/about>
 
+from distutils.core import setup
+
+import os
+import re
+
 PACKAGE_NAME = 'urlwatch'
 
 # Assumptions:
@@ -11,12 +16,7 @@ PACKAGE_NAME = 'urlwatch'
 #  3. Data files are in "share/", will be installed in $(PREFIX)/share
 #  4. Packages are in "lib/", no modules
 
-from distutils.core import setup
-
-import os
-import re
-
-main_py = open(PACKAGE_NAME).read()
+main_py = open('lib/%s/__init__.py' % PACKAGE_NAME).read()
 m = dict(re.findall("\n__([a-z]+)__ = '([^']+)'", main_py))
 docs = re.findall('"""(.*?)"""', main_py, re.DOTALL)
 
@@ -27,10 +27,7 @@ m['download_url'] = m['url'] + PACKAGE_NAME + '-' + m['version'] + '.tar.gz'
 
 m['scripts'] = [PACKAGE_NAME]
 m['package_dir'] = {'': 'lib'}
-m['packages'] = ['.'.join(dirname.split(os.sep)[1:])
-        for dirname, _, files in os.walk('lib') if '__init__.py' in files]
-m['data_files'] = [(dirname, [os.path.join(dirname, file) for file in files])
-        for dirname, _, files in os.walk('share')]
+m['packages'] = ['.'.join(dirname.split(os.sep)[1:]) for dirname, _, files in os.walk('lib') if '__init__.py' in files]
+m['data_files'] = [(dirname, [os.path.join(dirname, fn) for fn in files]) for dirname, _, files in os.walk('share')]
 
 setup(**m)
-

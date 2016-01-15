@@ -28,34 +28,43 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-def ical2text(ical_string):
-    import vobject
-    result = []
-    if isinstance(ical_string, str):
-        parsedCal = vobject.readOne(ical_string)
-    else:
-        try:
-            parsedCal = vobject.readOne(ical_string)
-        except:
-            parsedCal = vobject.readOne(ical_string.decode('utf-8', 'ignore'))
+import logging
 
-    for event in parsedCal.getChildren():
-        if event.name == 'VEVENT':
-            if hasattr(event, 'dtstart'):
-                start = event.dtstart.value.strftime('%F %H:%M')
+logger = logging.getLogger(__name__)
+
+
+class TrackSubClasses(type):
+    """A metaclass that stores subclass name-to-class mappings in the base class"""
+
+    def __init__(cls, name, bases, namespace):
+        for base in bases:
+            if base == object:
+                continue
+
+            for attr in ('__required__', '__optional__'):
+                if not hasattr(base, attr):
+                    continue
+
+                inherited = getattr(base, attr, ())
+                new_value = tuple(namespace.get(attr, ())) + tuple(inherited)
+                namespace[attr] = new_value
+                setattr(cls, attr, new_value)
+
+        for base in bases:
+            if base == object:
+                continue
+
+            if hasattr(cls, '__kind__'):
+                subclasses = getattr(base, '__subclasses__', None)
+                if subclasses is not None:
+                    logger.info('Registering %r as %s', cls, cls.__kind__)
+                    subclasses[cls.__kind__] = cls
+                    break
             else:
-                start = 'unknown start date'
+                anonymous_subclasses = getattr(base, '__anonymous_subclasses__', None)
+                if anonymous_subclasses is not None:
+                    logger.info('Registering %r', cls)
+                    anonymous_subclasses.append(cls)
+                    break
 
-            if hasattr(event, 'dtend'):
-                end = event.dtend.value.strftime('%F %H:%M')
-            else:
-                end = start
-
-            if start == end:
-                date_str = start
-            else:
-                date_str = '%s -- %s' % (start, end)
-
-            result.append('%s: %s' % (date_str, event.summary.value))
-
-    return '\n'.join(result)
+        super().__init__(name, bases, namespace)

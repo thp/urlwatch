@@ -28,36 +28,28 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Watch web pages and arbitrary URLs for changes
-
-This script is intended to help you watch URLs and get notified (via email or
-in your terminal) of any changes. The change notification will include the URL
-that has changed and a unified diff of what has changed.
-"""
-
-pkgname = 'urlwatch'
-COPYRIGHT = 'Copyright 2008-2015 Thomas Perl'
-
-__author__ = 'Thomas Perl <m@thp.io>'
-__license__ = 'BSD'
-__url__ = 'http://thp.io/2008/urlwatch/'
-__version__ = '1.18'
-
-user_agent = '%s/%s (+http://thp.io/2008/urlwatch/info.html)' % (pkgname, __version__)
-
-# Configuration section
-display_errors = False
-line_length = 75
-
-
 # File and folder paths
 import sys
 import os.path
 import os
 
+import shutil
+import urllib.error
+import socket
+import argparse
+import logging
+import imp
+import subprocess
+import concurrent.futures
+
+
+# Duplicated here
+pkgname = 'urlwatch'
+
 urlwatch_dir = os.path.expanduser(os.path.join('~', '.'+pkgname))
 urls_txt = os.path.join(urlwatch_dir, 'urls.txt')
 urls_yaml = os.path.join(urlwatch_dir, 'urls.yaml')
+config_yaml = os.path.join(urlwatch_dir, 'urlwatch.yaml')
 cache_dir = os.path.join(urlwatch_dir, 'cache')
 scripts_dir = os.path.join(urlwatch_dir, 'lib')
 hooks_py = os.path.join(scripts_dir, 'hooks.py')
@@ -78,36 +70,21 @@ hooks_py_example = os.path.join(examples_dir, 'hooks.py.example')
 
 # Code section
 
-import shutil
-import os
-import stat
-import urllib.request, urllib.error, urllib.parse
-import http.client
-import email.utils
-import time
-import socket
-import difflib
-import datetime
-import optparse
-import logging
-import imp
-import subprocess
-import concurrent.futures
+import urlwatch
 
-from urlwatch import handler
-from urlwatch import mailer
+from urlwatch.handler import JobState, Report
+
+from urlwatch.storage import UrlsYaml, UrlsTxt, ConfigStorage
+
+from urlwatch.jobs import JobBase
+from urlwatch.filters import FilterBase
+from urlwatch.reporters import ReporterBase
 
 # One minute (=60 seconds) timeout for each request to avoid hanging
 socket.setdefaulttimeout(60)
 
-log = logging.getLogger(pkgname)
-log.setLevel(logging.DEBUG)
+logger = logging.getLogger(pkgname)
 
-class NullHandler(logging.Handler):
-    def emit(self, record):
-        ...
-
-log.addHandler(NullHandler())
 
 IMPORT_MESSAGE_URLS = """
 Found old urls.txt and imported it into %s
@@ -130,378 +107,231 @@ An example is available in %s
 
 MAX_WORKERS = 10
 
-def foutput(type, job, content=None, summary=None, c='*', n=line_length):
-    """Format output messages
+def run_parallel(func, items):
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
+    for future in concurrent.futures.as_completed(executor.submit(func, item) for item in items):
+        exception = future.exception()
+        if exception is not None:
+            raise exception
+        yield future.result()
 
-    Returns a snippet of a specific message type (i.e. 'changed') for
-    a specific URL and an optional (possibly multi-line) content.
 
-    The parameter "summary" (if specified) should be a list variable
-    that gets one item appended for the summary of the changes.
+def show_features():
+    print()
+    print('Supported jobs:\n')
+    print(JobBase.job_documentation())
 
-    The return value is a list of strings (one item per line).
-    """
-    summary_txt = ': '.join((type.upper(), job.get_location()))
+    print('Supported filters:\n')
+    print(FilterBase.filter_documentation())
+    print()
+    print('Supported reporters:\n')
+    print(ReporterBase.reporter_documentation())
+    print()
+    return 0
 
-    if summary is not None:
-        if content is None:
-            summary.append(summary_txt)
+
+def edit_yaml(yaml_file, parser=None):
+    editor = os.environ.get('EDITOR', None)
+    if editor is None:
+        editor = os.environ.get('VISUAL', None)
+    if editor is None:
+        print('Please set $VISUAL or $EDITOR.')
+        return 1
+
+    fn_base, fn_ext = os.path.splitext(yaml_file)
+    yaml_edit = fn_base + '.edit' + fn_ext
+    try:
+        if os.path.exists(yaml_file):
+            shutil.copy(yaml_file, yaml_edit)
+        subprocess.check_call([editor, yaml_edit])
+        # Check if we can still parse it
+        if parser is not None:
+            parser(yaml_edit).load()
+        os.rename(yaml_edit, yaml_file)
+        print('Saving edit changes in', yaml_file)
+    except Exception as e:
+        print('Parsing failed:')
+        print('======')
+        print(e)
+        print('======')
+        print('')
+        print('The file', yaml_file, 'was NOT updated.')
+        print('Your changes have been saved in', yaml_edit)
+        return 1
+
+    return 0
+
+
+def list_urls(jobs, verbose):
+    for idx, job in enumerate(jobs):
+        if verbose:
+            print('%d: %s' % (idx+1, repr(job)))
         else:
-            summary.append('%s (%d bytes)' % (summary_txt, len(str(content))))
-
-    result = [c*n, summary_txt]
-    if content is not None:
-        result += [c*n, str(content)]
-    result += [c*n, '', '']
-
-    return result
+            print('%d: %s' % (idx+1, job.get_location()))
+    return 0
 
 
-if __name__ == '__main__':
-    start = datetime.datetime.now()
+def modify_urls(jobs, urls, add, delete):
+    save = True
+    if delete is not None:
+        try:
+            index = int(delete) - 1
+            try:
+                job = jobs.pop(index)
+                print('Removed %r' % (job,))
+            except IndexError:
+                print('Not found: %r' % (index,))
+                save = False
+        except ValueError:
+            job = next((job for job in jobs if job.get_location() == delete), None)
+            try:
+                jobs.remove(job)
+                print('Removed %r' % (job,))
+            except ValueError:
+                print('Not found: %r' % (delete,))
+                save = False
 
-    # Option parser
-    parser = optparse.OptionParser(usage='%%prog [options]\n\n%s' % __doc__.strip(), version=pkgname+' '+__version__)
-    parser.add_option('-v', '--verbose', action='store_true', dest='verbose', help='Show debug/log output')
-    parser.add_option('', '--urls', dest='urls', metavar='FILE', help='Read URLs from the specified file')
-    parser.add_option('', '--hooks', dest='hooks', metavar='FILE', help='Use specified file as hooks.py module')
-    parser.add_option('-e', '--display-errors', action='store_true', dest='display_errors', help='Include HTTP errors (404, etc..) in the output')
-    parser.add_option('-t', '--mailto', dest='email', metavar='ADDRESS', help='Send results via e-mail to ADDRESS')
-    parser.add_option('-f', '--mailfrom', dest='email_from', metavar='ADDRESS', help='Alternate From: address for e-mail (--mailto)')
-    parser.add_option('-s', '--smtp', dest='email_smtp', metavar='SERVER', help='SMTP server for e-mail (--mailto)')
-    parser.add_option('-S', '--subject', dest='email_subject', metavar='SUBJECT', help='Alternate Subject: for e-mail (--mailto)')
-    parser.add_option('-p', '--pass', dest='password', action='store_true', help='Interactively set password for SMTP')
-    parser.add_option('-T', '--tls', dest='tls', action='store_true', help='Enable STARTTLS for SMTP')
-    parser.add_option('-q', '--quiet', action='store_true', dest='quiet', help='Avoid diff output on stdout (--mailto)')
-    parser.add_option('-A', '--auth', dest='auth', action='store_true', default=False, help='Enable authentication from keyring for SMTP')
-    parser.add_option('-c', '--cache', dest='cache', metavar='DIR', help='Use specified DIR as cache directory.', default=None)
-    parser.add_option('-l', '--list', action='store_true', dest='list', help='List jobs.')
-    parser.add_option('-a', '--add', dest='add_job', metavar='JOB', help='Add job (key1=value1,key2=value2,...).')
-    parser.add_option('-d', '--delete', dest='delete_job', metavar='JOB', help='Delete job by location or index.',
-                      default=None)
-    parser.add_option('-E', '--edit', action='store_true', dest='edit', help='Edit jobs in $EDITOR/$VISUAL.')
-    parser.add_option('-k', '--kinds', action='store_true', dest='kinds', help='List supported jobs/filters.')
+    if add is not None:
+        d = {k: v for k, v in (item.split('=', 2) for item in add.split(','))}
+        job = JobBase.unserialize(d)
+        print('Adding %r' % (job,))
+        jobs.append(job)
 
-    parser.set_defaults(verbose=False, display_errors=False)
+    if save:
+        print('Saving updated list to %r' % (urls,))
+        UrlsYaml(urls).save(jobs)
 
-    (options, args) = parser.parse_args(sys.argv)
+    return 0
 
-    if options.verbose:
-        # Enable logging to the console
+
+def main(args):
+    if args.verbose:
+        root_logger = logging.getLogger('')
         console = logging.StreamHandler()
-        console.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
-        console.setFormatter(formatter)
-        log.addHandler(console)
-        log.info('turning on verbose logging mode')
+        console.setFormatter(logging.Formatter('%(asctime)s %(module)s %(levelname)s: %(message)s'))
+        root_logger.addHandler(console)
+        root_logger.setLevel(logging.DEBUG)
+        root_logger.info('turning on verbose logging mode')
 
-    if options.display_errors:
-        log.info('turning display of errors ON')
-        display_errors = True
-
-    if options.password:
-        mailer.set_password(options.email_smtp, options.email_from)
-        sys.exit(0)
-
-    if options.email:
-        log.info('Send emails enabled')
-        enable_emails = True
-        email_smtp_server = options.email_smtp or 'localhost'
-        email_sender_address = options.email_from or options.email
-        email_receiver_address = options.email
-        email_subject = options.email_subject or 'Changes detected ({count})'
-        email_tls = options.tls
-        email_auth = options.auth
-    else:
-        if options.email_from:
-            log.error('--mailfrom without --mailto')
-            print('Error: --mailfrom needs --mailto')
-            sys.exit(1)
-
-        if options.email_smtp:
-            log.error('--smtp without --mailto')
-            print('Error: --smtp needs --mailto')
-            sys.exit(1)
-
-        enable_emails = False
-
-
-    if options.urls:
-        if os.path.isfile(options.urls):
-            urls_yaml = options.urls
-            log.info('using %s as urls.yaml' % options.urls)
-        else:
-            log.error('%s is not a file' % options.urls)
-            print('Error: %s is not a file' % options.urls)
-            sys.exit(1)
-
-    if options.hooks:
-        if os.path.isfile(options.hooks):
-            hooks_py = options.hooks
-            log.info('using %s as hooks.py' % options.hooks)
-        else:
-            log.error('%s is not a file' % options.hooks)
-            print('Error: %s is not a file' % options.hooks)
-            sys.exit(1)
-
-
-    if options.cache:
-            cache_dir = options.cache
-            log.info('using {} as cache directory'.format(cache_dir))
-
+    logger.info('Using %s as URLs file', args.urls)
+    logger.info('Using %s for hooks', args.hooks)
+    logger.info('Using %s as cache directory', args.cache)
 
     # Created all needed folders
-    for needed_dir in (urlwatch_dir, cache_dir, scripts_dir):
+    for needed_dir in (urlwatch_dir, args.cache, scripts_dir):
         if not os.path.isdir(needed_dir):
             os.makedirs(needed_dir)
 
+    if not os.path.exists(args.config):
+        ConfigStorage.write_default_config(args.config)
+        print('A default config has been written to', args.config)
+
+    config = ConfigStorage(args.config)
+
     # Check for required files
-    if not os.path.isfile(urls_yaml):
-        log.warning('not a file: %s' % urls_yaml)
-        urls_yaml_fn = os.path.join(os.path.dirname(urls_yaml), os.path.basename(urls_yaml_example))
-        hooks_py_fn = os.path.join(os.path.dirname(hooks_py), os.path.basename(hooks_py_example))
+    if not os.path.isfile(args.urls) and not args.edit and not args.add:
+        logger.warning('not a file: %s' % args.urls)
+        urls_yaml_fn = os.path.join(os.path.dirname(args.urls), os.path.basename(urls_yaml_example))
+        hooks_py_fn = os.path.join(os.path.dirname(args.hooks), os.path.basename(hooks_py_example))
+
         if os.path.isfile(urls_txt):
             # import old urls.txt file
-            handler.UrlsYaml(urls_yaml).save(handler.UrlsTxt(urls_txt).load_secure())
+            UrlsYaml(args.urls).save(UrlsTxt(urls_txt).load_secure())
             # rename urls.txt after import
             os.rename(urls_txt, "%s.imported" % urls_txt)
-            print(IMPORT_MESSAGE_URLS % (urls_yaml, urls_yaml_fn))
+            print(IMPORT_MESSAGE_URLS % (args.urls, urls_yaml_fn))
         else:
-            print(ERROR_MESSAGE_URLS % (urls_yaml, urls_yaml_fn))
+            print(ERROR_MESSAGE_URLS % (args.urls, urls_yaml_fn))
 
-        if not options.hooks:
-            print(ERROR_MESSAGE_HOOKS_PY % (hooks_py, hooks_py_fn))
+        print(ERROR_MESSAGE_HOOKS_PY % (args.hooks, hooks_py_fn))
+
         if os.path.exists(urls_yaml_example) and not os.path.exists(urls_yaml_fn):
             shutil.copy(urls_yaml_example, urls_yaml_fn)
-        if not options.hooks and os.path.exists(hooks_py_example) and not os.path.exists(hooks_py_fn):
+
+        if os.path.exists(hooks_py_example) and not os.path.exists(hooks_py_fn):
             shutil.copy(hooks_py_example, hooks_py_fn)
+
         sys.exit(1)
 
     if os.path.isfile(urls_txt):
-        log.warning('Ignoring old urls.txt file at %s', urls_txt)
+        logger.warning('Ignoring old urls.txt file at %s', urls_txt)
 
-    headers = {
-            'User-agent': user_agent,
-    }
+    if os.path.exists(args.hooks):
+        imp.load_source('hooks', args.hooks)
 
-    summary = []
-    details = []
-    count = 0
-
-    filter_func = lambda x, y: y
-
-    if os.path.exists(hooks_py):
-        log.info('using hooks.py from %s' % hooks_py)
-        hooks = imp.load_source('hooks', hooks_py)
-        if hasattr(hooks, 'filter'):
-            log.info('found and enabled filter function from hooks.py')
-            filter_func = hooks.filter
-        else:
-            log.warning('hooks.py has no filter function - ignoring')
+    if os.path.isfile(args.urls):
+        jobs = UrlsYaml(args.urls).load_secure()
     else:
-        log.info('not using hooks.py (file not found)')
+        logger.warn('No jobs file found')
+        jobs = []
 
-    if options.kinds:
-        print()
-        print('Supported job kinds:\n')
-        print(handler.JobBase.job_documentation())
-        print('Supported filter kinds:\n')
-        print(handler.FilterBase.filter_documentation())
-        print()
-        sys.exit(0)
+    if args.features:
+        sys.exit(show_features())
 
-    def process_job(job):
-        log.info('now processing: %s', job)
-        filename = os.path.join(cache_dir, job.get_guid())
-        timestamp = None
+    if args.edit:
+        sys.exit(edit_yaml(args.urls, UrlsYaml))
 
-        if os.path.exists(filename):
-            timestamp = os.stat(filename)[stat.ST_MTIME]
+    if args.configure:
+        sys.exit(edit_yaml(args.config, ConfigStorage))
 
-        job_state = handler.JobState(timestamp, filter_func, headers, log)
-        data = job_state.process(job)
-        return filename, timestamp, data
+    if args.list:
+        sys.exit(list_urls(jobs, args.verbose))
 
-    if options.edit:
-        editor = os.environ.get('EDITOR', None)
-        if editor is None:
-            editor = os.environ.get('VISUAL', None)
-        if editor is None:
-            print('Please set $VISUAL or $EDITOR.')
-            sys.exit(1)
+    if args.add is not None or args.delete is not None:
+        sys.exit(modify_urls(jobs, args.urls, args.add, args.delete))
 
-        urls_yaml_edit = urls_yaml + '.edit'
-        try:
-            shutil.copy(urls_yaml, urls_yaml_edit)
-            subprocess.check_call([editor, urls_yaml_edit])
-            # Check if we can still parse it
-            jobs = handler.UrlsYaml(urls_yaml_edit).load()
-            os.rename(urls_yaml_edit, urls_yaml)
-            print('Saving edit changes with %d jobs in %s.' % (len(jobs), urls_yaml))
-        except Exception as e:
-            print('Parsing failed:')
-            print('======')
-            print(e)
-            print('======')
-            print('')
-            print('The jobs file', urls_yaml, 'was NOT updated.')
-            print('Your changes have been saved in', urls_yaml_edit)
-            sys.exit(1)
+    report = Report(config.config)
 
-        sys.exit(0)
+    logger.debug('Processing %d jobs', len(jobs))
+    for job_state in run_parallel(lambda job_state: job_state.process(), (JobState(args.cache, job) for job in jobs)):
+        logger.debug('Job finished: %s', job_state.job)
 
-    jobs = handler.UrlsYaml(urls_yaml).load_secure()
-
-    if options.list:
-        for idx, job in enumerate(jobs):
-            if options.verbose:
-                print('%d: %s' % (idx+1, repr(job)))
-            else:
-                print('%d: %s' % (idx+1, job.get_location()))
-        sys.exit(0)
-    elif options.add_job is not None or options.delete_job is not None:
-        save = True
-        if options.delete_job is not None:
-            try:
-                index = int(options.delete_job) - 1
-                try:
-                    job = jobs.pop(index)
-                    print('Removed %r' % (job,))
-                except IndexError:
-                    print('Not found: %r' % (index,))
-                    save = False
-            except ValueError:
-                job = next((job for job in jobs if job.get_location() == options.delete_job), None)
-                try:
-                    jobs.remove(job)
-                    print('Removed %r' % (job,))
-                except ValueError:
-                    print('Not found: %r' % (options.delete_job,))
-                    save = False
-
-        if options.add_job is not None:
-            d = {k: v for k, v in (item.split('=', 2) for item in options.add_job.split(','))}
-            job = handler.JobBase.unserialize(d)
-            print('Adding %r' % (job,))
-            jobs.append(job)
-
-        if save:
-            print('Saving updated list to %r' % (urls_yaml,))
-            handler.UrlsYaml(urls_yaml).save(jobs)
-
-        sys.exit(0)
-
-    log.info('processing %d jobs', len(jobs))
-
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
-
-    future_to_job = dict((executor.submit(process_job, job), job)
-            for job in jobs)
-
-    for future in concurrent.futures.as_completed(future_to_job):
-        job = future_to_job[future]
-
-        log.info('job finished: %s' % job)
-
-        try:
-            exception = future.exception()
-            if exception is not None:
-                raise exception
-
-            filename, timestamp, data = future.result()
-
-            if os.path.exists(filename):
-                log.info('%s exists - creating unified diff' % filename)
-                old_data = open(filename).read()
-
-                timestamp_old = email.utils.formatdate(timestamp, localtime=1)
-                timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-                diff = ''.join(difflib.unified_diff(old_data.splitlines(1), data.splitlines(1),
-                                                    '@', '@', timestamp_old, timestamp_new))
-                if len(diff) > 0:
-                    log.info('%s has changed - adding diff' % job)
-                    details += foutput('changed', job, diff, summary)
+        if job_state.exception is not None:
+            if isinstance(job_state.exception, urllib.error.HTTPError):
+                if job_state.exception.code == 304:
+                    logger.info('Job %s has not changed (HTTP 304)', job_state.job)
+                    report.unchanged(job_state)
                 else:
-                    log.info('%s has not changed' % job)
+                    # Instead of a full traceback, just show the HTTP error
+                    job_state.traceback = str(job_state.exception)
+                    report.error(job_state)
             else:
-                log.info('%s does not exist - is considered "new"' % filename)
-                details += foutput('new', job, None, summary)
-
-            log.info('writing current content of %s to %s' % (job, filename))
-            open(filename, 'w').write(data)
-        except urllib.error.HTTPError as error:
-            if error.code == 304:
-                log.info('%s has not changed (HTTP 304)' % job)
+                report.error(job_state)
+        elif job_state.old_data is not None:
+            if job_state.old_data != job_state.new_data:
+                report.changed(job_state)
+                job_state.save()
             else:
-                log.error('got HTTPError while loading url: %s' % error)
-                if display_errors:
-                    details += foutput('error', job, error, summary)
-        except handler.ShellError as error:
-            log.error('Shell returned %d' % error.result)
-            if display_errors:
-                details += foutput('error', job, error, summary)
-        except urllib.error.URLError as error:
-            log.error('got URLError while loading url: %s' % error)
-            if display_errors:
-                details += foutput('error', job, error, summary)
-        except IOError as error:
-            log.error('got IOError while loading url: %s' % error)
-            if display_errors:
-                details += foutput('error', job, error, summary)
-        except socket.timeout as error:
-            log.error('got timeout while loading url: %s' % error)
-            if display_errors:
-                details += foutput('error', job, error, summary)
-        except http.client.error as error:
-            # This is to workaround a bug in urllib2, see
-            # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=529740
-            log.error('got httplib error while loading url: %s' % error)
-            if display_errors:
-                details += foutput('error', job, (repr(error) +
-                        '\n' + str(error)).strip(), summary)
-
-        count += 1
-
-    end = datetime.datetime.now()
-
-    short_summary = ''
+                report.unchanged(job_state)
+        else:
+            report.new(job_state)
+            job_state.save()
 
     # Output everything
-    if len(summary) > 1:
-        log.info('printing summary with %d items' % len(summary))
-        short_summary = '-'*line_length + '\n'
-        short_summary += 'summary: %d changes' % (len(summary),) + '\n\n'
-        for id, line in enumerate(summary):
-            short_summary += '%02d. %s' % (id+1, line) + '\n'
-        short_summary += '-'*line_length + '\n'
-        short_summary += '\n\n\n'
-        if not options.quiet:
-            print(short_summary)
-    else:
-        log.info('summary is too short - not printing')
+    report.finish()
 
-    if len(details) > 1:
-        log.info('printing details with %d items' % len(details))
-        if not options.quiet:
-            print('\n'.join(details))
-            print('-- ')
-            print('%s %s, %s' % (pkgname, __version__, COPYRIGHT))
-            print('Website: %s' % (__url__,))
-            print('watched %d URLs in %d seconds\n' % (count, (end-start).seconds))
 
-        if enable_emails:
-            try:
-                subject_args = {
-                    'count': len(summary),
-                }
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=urlwatch.__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
 
-                mailer.send(email_smtp_server, email_sender_address,
-                        email_receiver_address,  email_subject.format(**subject_args),
-                        short_summary + '\n' + '\n'.join(details),
-                        auth=email_auth, tls=email_tls)
-                log.info('E-Mail to %s sent.', email_receiver_address)
-            except Exception as e:
-                log.warning('E-Mail delivery error: %s', e)
-    else:
-        log.info('no details collected - not printing')
+    parser.add_argument('--version', action='version', version='%(prog)s {}'.format(urlwatch.__version__))
+    parser.add_argument('-v', '--verbose', action='store_true', help='show debug output')
 
+    group = parser.add_argument_group('files and directories')
+    group.add_argument('--urls', metavar='FILE', help='read job list (URLs) from FILE', default=urls_yaml)
+    group.add_argument('--config', metavar='FILE', help='read configuration from FILE', default=config_yaml)
+    group.add_argument('--hooks', metavar='FILE', help='use FILE as hooks.py module', default=hooks_py)
+    group.add_argument('--cache', metavar='DIR', help='use DIR as cache directory', default=cache_dir)
+    group.add_argument('--configure', action='store_true', help='edit configuration in $EDITOR/$VISUAL')
+
+    group = parser.add_argument_group('job list management')
+    group.add_argument('--list', action='store_true', help='list jobs')
+    group.add_argument('--add', metavar='JOB', help='add job (key1=value1,key2=value2,...)')
+    group.add_argument('--delete', metavar='JOB', help='delete job by location or index')
+    group.add_argument('--edit', action='store_true', help='edit jobs in $EDITOR/$VISUAL')
+
+    group = parser.add_argument_group('miscellaneous')
+    group.add_argument('--features', action='store_true', help='list supported jobs/filters/reporters')
+
+    main(parser.parse_args())

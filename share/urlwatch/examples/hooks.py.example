@@ -28,10 +28,12 @@
 #
 
 
-from urlwatch import handler
+from urlwatch import filters
+from urlwatch import jobs
+from urlwatch import reporters
 
 
-class CustomLoginJob(handler.UrlJob):
+class CustomLoginJob(jobs.UrlJob):
     """Custom login for my webpage"""
 
     __kind__ = 'custom-login'
@@ -41,7 +43,7 @@ class CustomLoginJob(handler.UrlJob):
         return 'Would log in to {} with {} and {}\n'.format(self.url, self.username, self.password)
 
 
-class CaseFilter(handler.FilterBase):
+class CaseFilter(filters.FilterBase):
     """Custom filter for changing case, needs to be selected manually"""
 
     __kind__ = 'case'
@@ -61,7 +63,7 @@ class CaseFilter(handler.FilterBase):
             raise ValueError('Unknown case subfilter: %r' % (subfilter,))
 
 
-class IndentFilter(handler.FilterBase):
+class IndentFilter(filters.FilterBase):
     """Custom filter for indenting, needs to be selected manually"""
 
     __kind__ = 'indent'
@@ -78,7 +80,7 @@ class IndentFilter(handler.FilterBase):
 
 
 
-class CustomMatchUrlFilter(handler.AutoMatchFilter):
+class CustomMatchUrlFilter(filters.AutoMatchFilter):
     # The AutoMatchFilter will apply automatically to all filters
     # that have the given properties set
     MATCH = {'url': 'http://example.org/'}
@@ -87,7 +89,11 @@ class CustomMatchUrlFilter(handler.AutoMatchFilter):
         return data.replace('foo', 'bar')
 
 
-# Legacy filter support (deprecated, use the filters and jobs above)
-def filter(url, data):
-    if url == 'http://example.org/shakespeare':
-        return data.replace('not to be', 'to be')
+class CustomFileReporter(reporters.TextReporter):
+    """Custom reporter that writes the text-only report to a file"""
+
+    __kind__ = 'custom_file'
+
+    def submit(self):
+        with open(self.config['filename'], 'w') as fp:
+            fp.write('\n'.join(super().submit()))

@@ -30,9 +30,12 @@
 
 import re
 import subprocess
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-def html2text(data, method='lynx', utf8=False):
+def html2text(data, method='lynx'):
 
     """
     Convert a string consisting of HTML to plain text
@@ -42,13 +45,6 @@ def html2text(data, method='lynx', utf8=False):
      'lynx' (default) - Use "lynx -dump" for conversion
      'html2text'      - Use "html2text -nobs" for conversion
      're'             - A simple regex-based HTML tag stripper
-
-    If utf8 is True, the data will be handled as utf-8 by Lynx and
-    html2text (if possible). It seems like only the Debian-provided
-    version of html2text has support for the "-utf8" command line
-    flag, so this might not work on non-Debian systems.
-
-    Dependencies: apt-get install lynx html2text
     """
     if method == 're':
         stripped_tags = re.sub(r'<[^>]*>', '', data)
@@ -56,21 +52,20 @@ def html2text(data, method='lynx', utf8=False):
         return d
 
     if method == 'lynx':
-        cmd = ['lynx', '-dump', '-stdin']
-
-        if utf8:
-            cmd.append('-assume_charset=UTF-8')
+        cmd = ['lynx', '-dump', '-stdin', '-assume_charset=UTF-8']
+        # For some reason it looks like lynx always(?) outputs Latin-1
+        stdout_encoding = 'latin-1'
     elif method == 'html2text':
-        cmd = ['html2text', '-nobs']
-
-        if utf8:
-            cmd.append('-utf8')
+        cmd = ['html2text', '-nobs', '-utf8']
+        stdout_encoding = 'utf-8'
     else:
         raise ValueError('Unknown html2text method: %r' % (method,))
 
+    logger.debug('Command: %r, stdout encoding: %s', cmd, stdout_encoding)
+
     html2text = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     stdout, stderr = html2text.communicate(data.encode('utf-8'))
-    stdout = stdout.decode('utf-8')
+    stdout = stdout.decode(stdout_encoding)
 
     if method == 'lynx':
         # Lynx translates relative links in the mode we use it to:
@@ -88,15 +83,4 @@ def html2text(data, method='lynx', utf8=False):
         # Also remove file names like L9816-5928TMP.html
         stdout = re.sub(r'L\d+-\d+TMP.html', '', stdout)
 
-    return stdout
-
-
-if __name__ == '__main__':
-    import sys
-
-    if len(sys.argv) == 2:
-        print(html2text(open(sys.argv[1]).read()))
-    else:
-        print('Usage: %s document.html' % (sys.argv[0]))
-        sys.exit(1)
-
+    return stdout.strip()

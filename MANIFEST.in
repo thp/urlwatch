@@ -1,3 +1,2 @@
 include ChangeLog COPYING
 recursive-include share *
-include convert-to-python3.sh
