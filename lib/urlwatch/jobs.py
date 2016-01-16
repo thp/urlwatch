@@ -238,7 +238,13 @@ class UrlJob(Job):
         # Convert from specified encoding to unicode
         if not isinstance(content, str):
             try:
-                content = content.decode(encoding, 'ignore')
+                try:
+                    try:
+                        content = content.decode(encoding)
+                    except UnicodeDecodeError:
+                        content = content.decode('latin1')
+                except UnicodeDecodeError:
+                    content = content.decode('utf-8', 'ignore')
             except LookupError:
                 # If this is an invalid encoding, decode as ascii
                 # (Debian bug 731931)

@@ -29,6 +29,7 @@
 
 
 import re
+import os
 import subprocess
 import logging
 
@@ -63,7 +64,12 @@ def html2text(data, method='lynx'):
 
     logger.debug('Command: %r, stdout encoding: %s', cmd, stdout_encoding)
 
-    html2text = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    env = {}
+    env.update(os.environ)
+    env['LANG'] = 'en_US.utf-8'
+    env['LC_ALL'] = 'en_US.utf-8'
+
+    html2text = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=env)
     stdout, stderr = html2text.communicate(data.encode('utf-8'))
     stdout = stdout.decode(stdout_encoding)
 
@@ -73,13 +79,13 @@ def html2text(data, method='lynx'):
 
         # Recent versions of lynx (seen in 2.8.8pre1-1) do not include the
         # "localhost" in the file:// URLs; see Debian bug 732112
-        stdout = re.sub(r'file:///tmp/[^/]*/', '', stdout)
+        stdout = re.sub(r'file://%s/[^/]*/' % (os.environ.get('TMPDIR', '/tmp'),), '', stdout)
 
         # Use the following regular expression to remove the unnecessary
         # parts, so that [RANDOM STRING] (changing on each call) does not
         # expose itself as change on the website (it's a Lynx-related thing
         # Thanks to Evert Meulie for pointing that out
-        stdout = re.sub(r'file://localhost/tmp/[^/]*/', '', stdout)
+        stdout = re.sub(r'file://localhost%s/[^/]*/' % (os.environ.get('TMPDIR', '/tmp'),), '', stdout)
         # Also remove file names like L9816-5928TMP.html
         stdout = re.sub(r'L\d+-\d+TMP.html', '', stdout)
 

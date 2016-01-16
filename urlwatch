@@ -303,7 +303,7 @@ def main(args):
             else:
                 report.error(job_state)
         elif job_state.old_data is not None:
-            if job_state.old_data != job_state.new_data:
+            if job_state.old_data.splitlines() != job_state.new_data.splitlines():
                 report.changed(job_state)
                 job_state.save()
             else:

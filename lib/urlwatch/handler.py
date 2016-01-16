@@ -55,8 +55,13 @@ class JobState(object):
 
     def load(self):
         if os.path.exists(self.filename):
-            with open(self.filename) as fp:
-                self.old_data = fp.read()
+            try:
+                with open(self.filename) as fp:
+                    self.old_data = fp.read()
+            except UnicodeDecodeError:
+                with open(self.filename, 'rb') as fp:
+                    self.old_data = fp.read().decode('utf-8', 'ignore')
+
             self.timestamp = os.stat(self.filename)[stat.ST_MTIME]
         else:
             self.old_data = None

@@ -89,8 +89,8 @@ class ReporterBase(object, metaclass=TrackSubClasses):
     def unified_diff(self, job_state):
         timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
         timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-        return ''.join(difflib.unified_diff(job_state.old_data.splitlines(1),
-                                            job_state.new_data.splitlines(1),
+        return ''.join(difflib.unified_diff([l + '\n' for l in job_state.old_data.splitlines()],
+                                            [l + '\n' for l in job_state.new_data.splitlines()],
                                             '@', '@', timestamp_old, timestamp_new))
 
 
