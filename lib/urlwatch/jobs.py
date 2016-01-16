@@ -95,6 +95,9 @@ class JobBase(object, metaclass=TrackSubClasses):
     def get_location(self):
         raise NotImplementedError()
 
+    def pretty_name(self):
+        raise NotImplementedError()
+
     def serialize(self):
         d = {'kind': self.__kind__}
         d.update(self.to_dict())
@@ -143,6 +146,9 @@ class JobBase(object, metaclass=TrackSubClasses):
 class Job(JobBase):
     __required__ = ()
     __optional__ = ('name', 'filter')
+
+    def pretty_name(self):
+        return self.name if self.name else self.get_location()
 
 
 class ShellJob(Job):

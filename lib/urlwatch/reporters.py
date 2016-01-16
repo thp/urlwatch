@@ -153,8 +153,11 @@ class EMailReporter(TextReporter):
     __kind__ = 'email'
 
     def submit(self):
+        filtered_job_states = list(self.report.get_filtered_job_states(self.job_states))
+
         subject_args = {
-            'count': len(list(self.report.get_filtered_job_states(self.job_states))),
+            'count': len(filtered_job_states),
+            'jobs': ', '.join(job_state.job.pretty_name() for job_state in filtered_job_states),
         }
 
         body = '\n'.join(super().submit())

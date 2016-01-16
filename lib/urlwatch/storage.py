@@ -60,7 +60,7 @@ DEFAULT_CONFIG = {
             'enabled': False,
             'to': '',
             'from': '',
-            'subject': '{count} changes detected',
+            'subject': '{count} changes: {jobs}',
             'smtp': {
                 'host': 'localhost',
                 'port': 25,
