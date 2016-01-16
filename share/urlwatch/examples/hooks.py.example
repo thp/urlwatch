@@ -89,10 +89,20 @@ class CustomMatchUrlFilter(filters.AutoMatchFilter):
         return data.replace('foo', 'bar')
 
 
-class CustomFileReporter(reporters.TextReporter):
+class CustomTextFileReporter(reporters.TextReporter):
     """Custom reporter that writes the text-only report to a file"""
 
     __kind__ = 'custom_file'
+
+    def submit(self):
+        with open(self.config['filename'], 'w') as fp:
+            fp.write('\n'.join(super().submit()))
+
+
+class CustomHtmlFileReporter(reporters.HtmlReporter):
+    """Custom reporter that writes the HTML report to a file"""
+
+    __kind__ = 'custom_html'
 
     def submit(self):
         with open(self.config['filename'], 'w') as fp:

@@ -54,6 +54,10 @@ DEFAULT_CONFIG = {
             'footer': True,
         },
 
+        'html': {
+            'diff': 'unified',  # "unified" or "table"
+        },
+
         'stdout': {
             'enabled': True,
             'color': True,
@@ -61,6 +65,7 @@ DEFAULT_CONFIG = {
 
         'email': {
             'enabled': False,
+            'html': False,
             'to': '',
             'from': '',
             'subject': '{count} changes: {jobs}',

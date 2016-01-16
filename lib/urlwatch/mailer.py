@@ -36,36 +36,55 @@ try:
 except ImportError:
     keyring = None
 
+import email.mime.multipart
 import email.mime.text
 import email.utils
 
 
-def send(smtp_server, from_email, to_email, subject, body, tls=False, auth=False):
-    msg = email.mime.text.MIMEText(body, 'plain', 'utf_8')
-    msg['Subject'] = subject
-    msg['From'] = from_email
-    msg['To'] = to_email
-    msg['Date'] = email.utils.formatdate()
+class Mailer(object):
+    def __init__(self, smtp_server, smtp_port, tls, auth):
+        self.smtp_server = smtp_server
+        self.smtp_port = smtp_port
+        self.tls = tls
+        self.auth = auth
 
-    if ':' in smtp_server:
-        smtp_hostname, smtp_port = smtp_server.split(':')
-        smtp_port = int(smtp_port)
-    else:
-        smtp_port = 25
-        smtp_hostname = smtp_server
+    def send(self, msg):
+        s = smtplib.SMTP()
+        s.connect(self.smtp_server, self.smtp_port)
+        s.ehlo()
 
-    s = smtplib.SMTP()
-    s.connect(smtp_hostname, smtp_port)
-    s.ehlo()
-    if tls:
-        s.starttls()
-    if auth and keyring is not None:
-        passwd = keyring.get_password(smtp_server, from_email)
-        if passwd is None:
-            raise ValueError('No password available in keyring for {}, {}'.format(smtp_server, from_email))
-        s.login(from_email, passwd)
-    s.sendmail(from_email, [to_email], msg.as_string())
-    s.quit()
+        if self.tls:
+            s.starttls()
+
+        if self.auth and keyring is not None:
+            passwd = keyring.get_password(self.smtp_server, msg['From'])
+            if passwd is None:
+                raise ValueError('No password available in keyring for {}, {}'.format(self.smtp_server, msg['From']))
+            s.login(msg['From'], passwd)
+
+        s.sendmail(msg['From'], [msg['To']], msg.as_string())
+        s.quit()
+
+    def msg_plain(self, from_email, to_email, subject, body):
+        msg = email.mime.text.MIMEText(body, 'plain', 'utf_8')
+        msg['Subject'] = subject
+        msg['From'] = from_email
+        msg['To'] = to_email
+        msg['Date'] = email.utils.formatdate()
+
+        return msg
+
+    def msg_html(self, from_email, to_email, subject, body_text, body_html):
+        msg = email.mime.multipart.MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = from_email
+        msg['To'] = to_email
+        msg['Date'] = email.utils.formatdate()
+
+        msg.attach(email.mime.text.MIMEText(body_text, 'plain', 'utf_8'))
+        msg.attach(email.mime.text.MIMEText(body_html, 'html', 'utf_8'))
+
+        return msg
 
 
 def set_password(smtp_server, from_email):

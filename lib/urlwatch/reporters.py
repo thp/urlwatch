@@ -33,11 +33,12 @@ import difflib
 import time
 import email.utils
 import sys
+import cgi
 
 import urlwatch
 
 from .util import TrackSubClasses
-from .mailer import send
+from .mailer import Mailer
 
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,14 @@ class ReporterBase(object, metaclass=TrackSubClasses):
         self.config = config
         self.job_states = job_states
         self.duration = duration
+
+    def convert(self, othercls):
+        if hasattr(othercls, '__kind__'):
+            config = self.report.config['report'][othercls.__kind__]
+        else:
+            config = {}
+
+        return othercls(self.report, config, self.job_states, self.duration)
 
     @classmethod
     def reporter_documentation(cls):
@@ -76,6 +85,111 @@ class ReporterBase(object, metaclass=TrackSubClasses):
 
     def submit(self):
         raise NotImplementedError()
+
+    def unified_diff(self, job_state):
+        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
+        timestamp_new = email.utils.formatdate(time.time(), localtime=1)
+        return ''.join(difflib.unified_diff(job_state.old_data.splitlines(1),
+                                            job_state.new_data.splitlines(1),
+                                            '@', '@', timestamp_old, timestamp_new))
+
+
+class SafeHtml(object):
+    def __init__(self, s):
+        self.s = s
+
+    def __str__(self):
+        return self.s
+
+    def format(self, *args, **kwargs):
+        return str(self).format(*(cgi.escape(str(arg)) for arg in args),
+                                **{k: cgi.escape(str(v)) for k, v in kwargs.items()})
+
+
+class HtmlReporter(ReporterBase):
+    def submit(self):
+        yield from (str(part) for part in self._parts())
+
+    def _parts(self):
+        cfg = self.report.config['report']['html']
+
+        yield SafeHtml("""<!DOCTYPE html>
+        <html><head>
+            <title>urlwatch</title>
+            <meta http-equiv="content-type" content="text/html; charset=utf-8">
+            <style type="text/css">
+                body { font-family: sans-serif; }
+                .diff_add { color: green; background-color: lightgreen; }
+                .diff_sub { color: red; background-color: lightred; }
+                .diff_chg { color: orange; background-color: lightyellow; }
+                .unified_add { color: green; }
+                .unified_sub { color: red; }
+                .unified_nor { color: #333; }
+                table { font-family: monospace; }
+                h2 span.verb { color: #888; }
+            </style>
+        </head><body>
+        """)
+
+        for job_state in self.report.get_filtered_job_states(self.job_states):
+            pretty_name = job_state.job.pretty_name()
+            location = job_state.job.get_location()
+            if pretty_name != location:
+                location = '%s (%s)' % (pretty_name, location)
+
+            yield SafeHtml('<h2><span class="verb">{verb}:</span> {location}</h2>').format(verb=job_state.verb,
+                                                                                           location=location)
+
+            content = self._format_content(job_state, cfg['diff'])
+            if content is not None:
+                yield content
+
+            yield SafeHtml('<hr>')
+
+        yield SafeHtml("""
+        <address>
+        {pkgname} {version}, {copyright}<br>
+        Website: {url}<br>
+        watched {count} URLs in {duration} seconds
+        </address>
+        </body>
+        </html>
+        """).format(pkgname=urlwatch.pkgname, version=urlwatch.__version__, copyright=urlwatch.__copyright__,
+                    url=urlwatch.__url__, count=len(self.job_states), duration=self.duration.seconds)
+
+    def _diff_to_html(self, unified_diff):
+        for line in unified_diff.splitlines():
+            if line.startswith('+'):
+                yield SafeHtml('<span class="unified_add">{line}</span>').format(line=line)
+            elif line.startswith('-'):
+                yield SafeHtml('<span class="unified_sub">{line}</span>').format(line=line)
+            else:
+                yield SafeHtml('<span class="unified_nor">{line}</span>').format(line=line)
+
+    def _format_content(self, job_state, difftype):
+        if job_state.verb == 'error':
+            return SafeHtml('<pre style="text-color: red;">{error}</pre>').format(error=job_state.traceback.strip())
+
+        if job_state.verb == 'unchanged':
+            return SafeHtml('<pre>{old_data}</pre>').format(old_data=job_state.old_data)
+
+        if job_state.old_data in (None, job_state.new_data):
+            return SafeHtml('...')
+
+        if difftype == 'table':
+            timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
+            timestamp_new = email.utils.formatdate(time.time(), localtime=1)
+            html_diff = difflib.HtmlDiff()
+            return SafeHtml(html_diff.make_table(job_state.old_data.splitlines(1), job_state.new_data.splitlines(1),
+                                                 timestamp_old, timestamp_new, True, 3))
+        elif difftype == 'unified':
+            return ''.join((
+                '<pre>',
+                '\n'.join(self._diff_to_html(self.unified_diff(job_state))),
+                '</pre>',
+            ))
+        else:
+            raise ValueError('Diff style not supported: %r', cfg['diff'])
 
 
 class TextReporter(ReporterBase):
@@ -103,7 +217,7 @@ class TextReporter(ReporterBase):
         if show_details:
             yield from details
 
-        if show_footer:
+        if summary and show_footer:
             yield from ('-- ',
                         '%s %s, %s' % (urlwatch.pkgname, urlwatch.__version__, urlwatch.__copyright__),
                         'Website: %s' % (urlwatch.__url__,),
@@ -119,11 +233,7 @@ class TextReporter(ReporterBase):
         if job_state.old_data in (None, job_state.new_data):
             return None
 
-        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
-        timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-        return ''.join(difflib.unified_diff(job_state.old_data.splitlines(1),
-                                            job_state.new_data.splitlines(1),
-                                            '@', '@', timestamp_old, timestamp_new))
+        return self.unified_diff(job_state)
 
     def _format_output(self, job_state, line_length):
         summary_part = []
@@ -155,7 +265,7 @@ class StdoutReporter(TextReporter):
     __kind__ = 'stdout'
 
     def _incolor(self, color_id, s):
-        if sys.stdout.isatty() and self.config['color']:
+        if sys.stdout.isatty() and self.config.get('color', False):
             return '\033[9%dm%s\033[0m' % (color_id, s)
         return s
 
@@ -208,10 +318,23 @@ class EMailReporter(TextReporter):
             'count': len(filtered_job_states),
             'jobs': ', '.join(job_state.job.pretty_name() for job_state in filtered_job_states),
         }
+        subject = self.config['subject'].format(**subject_args)
 
-        body = '\n'.join(super().submit())
+        body_text = '\n'.join(super().submit())
 
-        # TODO mailer.set_password(options.email_smtp, options.email_from)
-        send(self.config['smtp']['host'], self.config['from'], self.config['to'],
-             self.config['subject'].format(**subject_args), body,
-             self.config['smtp']['starttls'], self.config['smtp']['keyring'])
+        if not body_text:
+            logger.debug('Not sending e-mail (no changes)')
+            return
+
+        mailer = Mailer(self.config['smtp']['host'], self.config['smtp']['port'],
+                        self.config['smtp']['starttls'], self.config['smtp']['keyring'])
+
+        # TODO set_password(options.email_smtp, options.email_from)
+
+        if self.config['html']:
+            body_html = '\n'.join(self.convert(HtmlReporter).submit())
+            msg = mailer.msg_html(self.config['from'], self.config['to'], subject, body_text, body_html)
+        else:
+            msg = mailer.msg_plain(self.config['from'], self.config['to'], subject, body_text)
+
+        mailer.send(msg)
