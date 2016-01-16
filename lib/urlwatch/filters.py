@@ -31,6 +31,7 @@
 import re
 import logging
 import itertools
+import html.parser
 
 from .util import TrackSubClasses
 
@@ -146,3 +147,52 @@ class StripFilter(FilterBase):
     def filter(self, data, subfilter=None):
         self._no_subfilters(subfilter)
         return data.strip()
+
+
+class ElementByID(html.parser.HTMLParser):
+    def __init__(self, element_id):
+        super().__init__()
+
+        self._element_id = element_id
+        self._result = []
+        self._inside = False
+        self._depth = 0
+
+    def get_html(self):
+        return ''.join(self._result)
+
+    def handle_starttag(self, tag, attrs):
+        ad = dict(attrs)
+
+        if ad.get('id', None) == self._element_id:
+            self._inside = True
+
+        if self._inside:
+            self._result.append('<%s%s%s>' % (tag, ' ' if attrs else '',
+                                              ' '.join('%s="%s"' % (k, v) for k, v in attrs)))
+            self._depth += 1
+
+    def handle_endtag(self, tag):
+        if self._inside:
+            self._result.append('</%s>' % (tag,))
+            self._depth -= 1
+            if self._depth == 0:
+                self._inside = False
+
+    def handle_data(self, data):
+        if self._inside:
+            self._result.append(data)
+
+
+class GetElementById(FilterBase):
+    """Get a HTML element by its ID"""
+
+    __kind__ = 'element-by-id'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            raise ValueError('Need an element ID for filtering')
+
+        element_by_id = ElementByID(subfilter)
+        element_by_id.feed(data)
+        return element_by_id.get_html()
