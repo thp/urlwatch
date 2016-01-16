@@ -56,6 +56,7 @@ DEFAULT_CONFIG = {
 
         'stdout': {
             'enabled': True,
+            'color': True,
         },
 
         'email': {

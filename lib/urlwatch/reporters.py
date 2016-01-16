@@ -32,6 +32,7 @@ import logging
 import difflib
 import time
 import email.utils
+import sys
 
 import urlwatch
 
@@ -153,9 +154,46 @@ class StdoutReporter(TextReporter):
 
     __kind__ = 'stdout'
 
+    def _incolor(self, color_id, s):
+        if sys.stdout.isatty() and self.config['color']:
+            return '\033[9%dm%s\033[0m' % (color_id, s)
+        return s
+
+    def _red(self, s):
+        return self._incolor(1, s)
+
+    def _green(self, s):
+        return self._incolor(2, s)
+
+    def _yellow(self, s):
+        return self._incolor(3, s)
+
+    def _blue(self, s):
+        return self._incolor(4, s)
+
     def submit(self):
-        for line in super().submit():
-            print(line)
+        cfg = self.report.config['report']['text']
+        line_length = cfg['line_length']
+
+        separators = (line_length * '=', line_length * '-', '-- ')
+        body = '\n'.join(super().submit())
+
+        for line in body.splitlines():
+            # FIXME: This isn't ideal, but works for now...
+            if line in separators:
+                print(line)
+            elif line.startswith('+'):
+                print(self._green(line))
+            elif line.startswith('-'):
+                print(self._red(line))
+            elif any(line.startswith(prefix) for prefix in ('NEW:', 'CHANGED:', 'UNCHANGED:', 'ERROR:')):
+                first, second = line.split(' ', 1)
+                if line.startswith('ERROR:'):
+                    print(first, self._red(second))
+                else:
+                    print(first, self._blue(second))
+            else:
+                print(line)
 
 
 class EMailReporter(TextReporter):
