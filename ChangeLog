@@ -150,3 +150,14 @@
 	* Added support for TLS and SMTP auth (-p/--pass, -T/--tls, -A/--auth)
 	* Added support for specifying cache directory (-c/--cache)
 	* Add support for HTTP Auth to urlwatch.handler (fixes #10)
+
+2016-01-16 Thomas Perl <thp.io/about>
+	* Version 2.0 with lots of changes, only a few listed here
+	* Requires Python 3, support for Python 2 dropped
+	* Uses SQLite 3 / minidb for cache storage
+	* Uses PyYAML for the URL list and configuration file
+	* Subclass-based hooking features
+	* Custom job types by subclassing Job
+	* Custom reporters by subclassing ReporterBase
+	* Custom filters by subclassing FilterBase
+	* Old data will be migrated as good as possible to the new formats
