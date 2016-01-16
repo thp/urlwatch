@@ -33,6 +33,7 @@ import stat
 import copy
 
 import yaml
+import minidb
 import logging
 
 from .jobs import JobBase, UrlJob, ShellJob
@@ -205,25 +206,53 @@ class CacheStorage(object):
     def __init__(self, filename):
         self.filename = filename
 
+    def close(self):
+        ...
+
     def get_guids(self):
         raise NotImplementedError()
 
-    def load(self, job):
+    def load(self, job, guid):
         raise NotImplementedError()
 
-    def save(self, job, data):
+    def save(self, job, guid, data, timestamp):
         raise NotImplementedError()
+
+    def delete(self, guid):
+        raise NotImplementedError()
+
+    def clean(self, guid):
+        raise NotImplementedError()
+
+    def backup(self):
+        for guid in self.get_guids():
+            data, timestamp = self.load(None, guid)
+            yield guid, data, timestamp
+
+    def restore(self, entries):
+        for guid, data, timestamp in entries:
+            self.save(None, guid, data, timestamp)
+
+    def gc(self, known_guids):
+        for guid in set(self.get_guids()) - set(known_guids):
+            print('Removing: {guid}'.format(guid=guid))
+            self.delete(guid)
+
+        for guid in known_guids:
+            count = self.clean(guid)
+            if count > 0:
+                print('Removed {count} old versions of {guid}'.format(count=count, guid=guid))
 
 
 class CacheDirStorage(CacheStorage):
-    def _get_filename(self, job):
-        return os.path.join(self.filename, job.get_guid())
+    def _get_filename(self, guid):
+        return os.path.join(self.filename, guid)
 
     def get_guids(self):
         return os.listdir(self.filename)
 
-    def load(self, job):
-        filename = self._get_filename(job)
+    def load(self, job, guid):
+        filename = self._get_filename(guid)
         if not os.path.exists(filename):
             return None, None
 
@@ -238,7 +267,64 @@ class CacheDirStorage(CacheStorage):
 
         return data, timestamp
 
-    def save(self, job, data):
-        filename = self._get_filename(job)
+    def save(self, job, guid, data, timestamp):
+        # Timestamp is always ignored
+        filename = self._get_filename(guid)
         with open(filename, 'w') as fp:
             fp.write(data)
+
+    def delete(self, guid):
+        filename = self._get_filename(guid)
+        if os.path.exists(filename):
+            os.unlink(filename)
+
+    def clean(self, guid):
+        # We only store the latest version, no need to clean
+        return 0
+
+
+class CacheEntry(minidb.Model):
+    guid = str
+    timestamp = int
+    data = str
+
+
+class CacheMiniDBStorage(CacheStorage):
+    def __init__(self, filename):
+        super().__init__(filename)
+        self.db = minidb.Store(self.filename, debug=True)
+        self.db.register(CacheEntry)
+
+    def close(self):
+        self.db.close()
+        self.db = None
+
+    def get_guids(self):
+        return (guid for guid, in CacheEntry.query(self.db, minidb.Function('distinct', CacheEntry.c.guid)))
+
+    def load(self, job, guid):
+        for data, timestamp in CacheEntry.query(self.db, CacheEntry.c.data // CacheEntry.c.timestamp,
+                                                order_by=CacheEntry.c.timestamp.desc,
+                                                where=CacheEntry.c.guid == guid, limit=1):
+            return data, timestamp
+
+        return None, None
+
+    def save(self, job, guid, data, timestamp):
+        self.db.save(CacheEntry(guid=guid, timestamp=timestamp, data=data))
+        self.db.commit()
+
+    def delete(self, guid):
+        CacheEntry.delete_where(self.db, CacheEntry.c.guid == guid)
+        self.db.commit()
+
+    def clean(self, guid):
+        keep_id = next((CacheEntry.query(self.db, CacheEntry.c.id, where=CacheEntry.c.guid == guid,
+                                         order_by=CacheEntry.c.timestamp.desc, limit=1)), (None,))[0]
+
+        if keep_id is not None:
+            result = CacheEntry.delete_where(self.db, (CacheEntry.c.guid == guid) & (CacheEntry.c.id != keep_id))
+            self.db.commit()
+            return result
+
+        return 0

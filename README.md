@@ -14,18 +14,9 @@ DEPENDENCIES
 
 urlwatch requires Python 3.3 or newer.
 
-It also needs the python-yaml module. Install it using:
+The dependencies can be installed with (add "--user" to install to $HOME):
 
-    pip3 install pyyaml
-
-If you need to use an authenticated SMTP connection, this package also relies
-on "keyring", it can be installed using:
-
-    pip3 install keyring
-
-or download and install manually from the project page at
-
-    https://bitbucket.org/kang/python-keyring-lib/
+    python3 -m pip install pyyaml minidb keyring
 
 
 QUICK START

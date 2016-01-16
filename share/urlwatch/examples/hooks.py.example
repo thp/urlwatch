@@ -33,50 +33,50 @@ from urlwatch import jobs
 from urlwatch import reporters
 
 
-class CustomLoginJob(jobs.UrlJob):
-    """Custom login for my webpage"""
-
-    __kind__ = 'custom-login'
-    __required__ = ('username', 'password')
-
-    def retrieve(self, job_state):
-        return 'Would log in to {} with {} and {}\n'.format(self.url, self.username, self.password)
-
-
-class CaseFilter(filters.FilterBase):
-    """Custom filter for changing case, needs to be selected manually"""
-
-    __kind__ = 'case'
-
-    def filter(self, data, subfilter=None):
-        # The subfilter is specified using a colon, for example the "case"
-        # filter here can be specified as "case:upper" and "case:lower"
-
-        if subfilter is None:
-            subfilter = 'upper'
-
-        if subfilter == 'upper':
-            return data.upper()
-        elif subfilter == 'lower':
-            return data.lower()
-        else:
-            raise ValueError('Unknown case subfilter: %r' % (subfilter,))
+#class CustomLoginJob(jobs.UrlJob):
+#    """Custom login for my webpage"""
+#
+#    __kind__ = 'custom-login'
+#    __required__ = ('username', 'password')
+#
+#    def retrieve(self, job_state):
+#        return 'Would log in to {} with {} and {}\n'.format(self.url, self.username, self.password)
 
 
-class IndentFilter(filters.FilterBase):
-    """Custom filter for indenting, needs to be selected manually"""
+#class CaseFilter(filters.FilterBase):
+#    """Custom filter for changing case, needs to be selected manually"""
+#
+#    __kind__ = 'case'
+#
+#    def filter(self, data, subfilter=None):
+#        # The subfilter is specified using a colon, for example the "case"
+#        # filter here can be specified as "case:upper" and "case:lower"
+#
+#        if subfilter is None:
+#            subfilter = 'upper'
+#
+#        if subfilter == 'upper':
+#            return data.upper()
+#        elif subfilter == 'lower':
+#            return data.lower()
+#        else:
+#            raise ValueError('Unknown case subfilter: %r' % (subfilter,))
 
-    __kind__ = 'indent'
 
-    def filter(self, data, subfilter=None):
-        # The subfilter here is a number of characters to indent
-
-        if subfilter is None:
-            indent = 8
-        else:
-            indent = int(subfilter)
-
-        return '\n'.join((' '*indent) + line for line in data.splitlines())
+#class IndentFilter(filters.FilterBase):
+#    """Custom filter for indenting, needs to be selected manually"""
+#
+#    __kind__ = 'indent'
+#
+#    def filter(self, data, subfilter=None):
+#        # The subfilter here is a number of characters to indent
+#
+#        if subfilter is None:
+#            indent = 8
+#        else:
+#            indent = int(subfilter)
+#
+#        return '\n'.join((' '*indent) + line for line in data.splitlines())
 
 
 

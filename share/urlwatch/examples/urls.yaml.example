@@ -11,16 +11,16 @@ filter: html2text,grep:Current.*version,strip
 # Built-in job kind "shell" needs a command specified
 name: "Home Listing"
 command: "ls -al ~"
----
-name: "Login to some webpage (custom job)"
-url: "http://example.org/"
+#---
+#name: "Login to some webpage (custom job)"
+#url: "http://example.org/"
 # This job kind is defined in hooks.py, so you need to enable it
-kind: custom-login
+#kind: custom-login
 # Additional parameters for the custom-login job kind can be specified here
-username: "myuser"
-password: "secret"
+#username: "myuser"
+#password: "secret"
 # Filters can be specified here, separated by comma (these are also from hooks.py)
-filter: case:upper,indent:5
+#filter: case:upper,indent:5
 ---
 # If you want to use spaces in URLs, you have to URL-encode them (e.g. %20)
 url: "http://example.org/With%20Spaces/"

@@ -33,6 +33,7 @@ import stat
 import datetime
 import traceback
 import logging
+import time
 
 from .filters import FilterBase
 from .reporters import ReporterBase
@@ -53,10 +54,10 @@ class JobState(object):
         self.traceback = None
 
     def load(self):
-        self.old_data, self.timestamp = self.cache_storage.load(self.job)
+        self.old_data, self.timestamp = self.cache_storage.load(self.job, self.job.get_guid())
 
     def save(self):
-        self.cache_storage.save(self.job, self.new_data)
+        self.cache_storage.save(self.job, self.job.get_guid(), self.new_data, time.time())
 
     def process(self):
         logger.info('Processing: %s', self.job)

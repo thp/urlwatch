@@ -51,8 +51,8 @@ urls_txt = os.path.join(urlwatch_dir, 'urls.txt')
 urls_yaml = os.path.join(urlwatch_dir, 'urls.yaml')
 config_yaml = os.path.join(urlwatch_dir, 'urlwatch.yaml')
 cache_dir = os.path.join(urlwatch_dir, 'cache')
-scripts_dir = os.path.join(urlwatch_dir, 'lib')
-hooks_py = os.path.join(scripts_dir, 'hooks.py')
+cache_db = os.path.join(urlwatch_dir, 'cache.db')
+hooks_py = os.path.join(urlwatch_dir, 'hooks.py')
 
 # Check if we are installed in the system already
 (prefix, bindir) = os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))
@@ -74,7 +74,7 @@ import urlwatch
 
 from urlwatch.handler import JobState, Report
 
-from urlwatch.storage import UrlsYaml, UrlsTxt, ConfigStorage, CacheDirStorage
+from urlwatch.storage import UrlsYaml, UrlsTxt, ConfigStorage, CacheDirStorage, CacheMiniDBStorage
 
 from urlwatch.jobs import JobBase
 from urlwatch.filters import FilterBase
@@ -84,26 +84,6 @@ from urlwatch.reporters import ReporterBase
 socket.setdefaulttimeout(60)
 
 logger = logging.getLogger(pkgname)
-
-
-IMPORT_MESSAGE_URLS = """
-Found old urls.txt and imported it into %s
-
-An example for urls.yaml is available in %s
-Old urls.txt has been renamed to urls.txt.imported
-"""
-
-ERROR_MESSAGE_URLS = """
-Error: You need to create a urls.yaml file first.
-
-Place it in %s
-An example is available in %s
-"""
-
-ERROR_MESSAGE_HOOKS_PY = """
-You can also create %s
-An example is available in %s
-"""
 
 MAX_WORKERS = 10
 
@@ -130,7 +110,7 @@ def show_features():
     return 0
 
 
-def edit_yaml(yaml_file, parser=None):
+def edit_yaml(yaml_file, parser, example_file=None):
     editor = os.environ.get('EDITOR', None)
     if editor is None:
         editor = os.environ.get('VISUAL', None)
@@ -143,6 +123,8 @@ def edit_yaml(yaml_file, parser=None):
     try:
         if os.path.exists(yaml_file):
             shutil.copy(yaml_file, yaml_edit)
+        elif example_file is not None:
+            shutil.copy(example_file, yaml_edit)
         subprocess.check_call([editor, yaml_edit])
         # Check if we can still parse it
         if parser is not None:
@@ -161,6 +143,37 @@ def edit_yaml(yaml_file, parser=None):
 
     return 0
 
+
+def edit_hooks(hooks_file, example_file):
+    editor = os.environ.get('EDITOR', None)
+    if editor is None:
+        editor = os.environ.get('VISUAL', None)
+    if editor is None:
+        print('Please set $VISUAL or $EDITOR.')
+        return 1
+
+    fn_base, fn_ext = os.path.splitext(hooks_file)
+    hooks_edit = fn_base + '.edit' + fn_ext
+    try:
+        if os.path.exists(hooks_file):
+            shutil.copy(hooks_file, hooks_edit)
+        else:
+            shutil.copy(example_file, hooks_edit)
+        subprocess.check_call([editor, hooks_edit])
+        imp.load_source('hooks', hooks_edit)
+        os.rename(hooks_edit, hooks_file)
+        print('Saving edit changes in', hooks_file)
+    except Exception as e:
+        print('Parsing failed:')
+        print('======')
+        print(e)
+        print('======')
+        print('')
+        print('The file', hooks_file, 'was NOT updated.')
+        print('Your changes have been saved in', hooks_edit)
+        return 1
+
+    return 0
 
 def list_urls(jobs, verbose):
     for idx, job in enumerate(jobs):
@@ -222,44 +235,40 @@ def main(args):
     logger.info('Using %s for hooks', args.hooks)
     logger.info('Using %s as cache directory', args.cache)
 
-    # Created all needed folders
-    for needed_dir in (urlwatch_dir, args.cache, scripts_dir):
-        if not os.path.isdir(needed_dir):
-            os.makedirs(needed_dir)
+    if not os.path.isdir(urlwatch_dir):
+        os.makedirs(urlwatch_dir)
+        print("""
+        Created directory: {urlwatch_dir}
+        """.format(urlwatch_dir=urlwatch_dir))
 
     if not os.path.exists(args.config):
         ConfigStorage.write_default_config(args.config)
-        print('A default config has been written to', args.config)
+        print("""
+        A default config has been written to {config_yaml}.
+        Use "{pkgname} --edit-config" to customize it.
+        """.format(config_yaml=args.config, pkgname=pkgname))
+
+    if args.edit_config:
+        sys.exit(edit_yaml(args.config, ConfigStorage))
 
     config = ConfigStorage(args.config)
 
-    # Check for required files
+    # Migrate urlwatch 1.x URLs to urlwatch 2.x
+    if os.path.isfile(urls_txt) and not os.path.isfile(args.urls):
+        print("""
+        Migrating URLs: {urls_txt} -> {urls_yaml}
+        Use "{pkgname} --edit" to customize it.
+        """.format(urls_txt=urls_txt, urls_yaml=args.urls, pkgname=pkgname))
+        UrlsYaml(args.urls).save(UrlsTxt(urls_txt).load_secure())
+        os.rename(urls_txt, urls_txt + '.migrated')
+
     if not os.path.isfile(args.urls) and not args.edit and not args.add:
-        logger.warning('not a file: %s' % args.urls)
-        urls_yaml_fn = os.path.join(os.path.dirname(args.urls), os.path.basename(urls_yaml_example))
-        hooks_py_fn = os.path.join(os.path.dirname(args.hooks), os.path.basename(hooks_py_example))
-
-        if os.path.isfile(urls_txt):
-            # import old urls.txt file
-            UrlsYaml(args.urls).save(UrlsTxt(urls_txt).load_secure())
-            # rename urls.txt after import
-            os.rename(urls_txt, "%s.imported" % urls_txt)
-            print(IMPORT_MESSAGE_URLS % (args.urls, urls_yaml_fn))
-        else:
-            print(ERROR_MESSAGE_URLS % (args.urls, urls_yaml_fn))
-
-        print(ERROR_MESSAGE_HOOKS_PY % (args.hooks, hooks_py_fn))
-
-        if os.path.exists(urls_yaml_example) and not os.path.exists(urls_yaml_fn):
-            shutil.copy(urls_yaml_example, urls_yaml_fn)
-
-        if os.path.exists(hooks_py_example) and not os.path.exists(hooks_py_fn):
-            shutil.copy(hooks_py_example, hooks_py_fn)
+        print("""
+        You need to create {urls_yaml} in order to use {pkgname}.
+        Use "{pkgname} --edit" to open the file with your editor.
+        """.format(urls_yaml=args.urls, pkgname=pkgname))
 
         sys.exit(1)
-
-    if os.path.isfile(urls_txt):
-        logger.warning('Ignoring old urls.txt file at %s', urls_txt)
 
     if os.path.exists(args.hooks):
         imp.load_source('hooks', args.hooks)
@@ -270,17 +279,33 @@ def main(args):
         logger.warn('No jobs file found')
         jobs = []
 
-    cache_storage = CacheDirStorage(args.cache)
+    # Migreate urlwatch 1.x cache to urlwatch 2.x
+    if not os.path.isfile(args.cache) and os.path.isdir(cache_dir):
+        print("""
+        Migrating cache: {cache_dir} -> {cache_db}
+        """.format(cache_dir=cache_dir, cache_db=args.cache))
+        cache_storage = CacheMiniDBStorage(args.cache)
+        old_cache_storage = CacheDirStorage(cache_dir)
+        cache_storage.restore(old_cache_storage.backup())
+        cache_storage.gc([job.get_guid() for job in jobs])
+        os.rename(cache_dir, cache_dir + '.migrated')
+    else:
+        cache_storage = CacheMiniDBStorage(args.cache)
+
     report = Report(config.config)
 
     if args.features:
         sys.exit(show_features())
 
-    if args.edit:
-        sys.exit(edit_yaml(args.urls, UrlsYaml))
+    if args.gc_cache:
+        cache_storage.gc([job.get_guid() for job in jobs])
+        sys.exit(0)
 
-    if args.configure:
-        sys.exit(edit_yaml(args.config, ConfigStorage))
+    if args.edit:
+        sys.exit(edit_yaml(args.urls, UrlsYaml, urls_yaml_example))
+
+    if args.edit_hooks:
+        sys.exit(edit_hooks(args.hooks, hooks_py_example))
 
     if args.list:
         sys.exit(list_urls(jobs, args.verbose))
@@ -317,6 +342,9 @@ def main(args):
     # Output everything
     report.finish()
 
+    # Close cache
+    cache_storage.close()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=urlwatch.__doc__,
@@ -329,16 +357,20 @@ if __name__ == '__main__':
     group.add_argument('--urls', metavar='FILE', help='read job list (URLs) from FILE', default=urls_yaml)
     group.add_argument('--config', metavar='FILE', help='read configuration from FILE', default=config_yaml)
     group.add_argument('--hooks', metavar='FILE', help='use FILE as hooks.py module', default=hooks_py)
-    group.add_argument('--cache', metavar='DIR', help='use DIR as cache directory', default=cache_dir)
-    group.add_argument('--configure', action='store_true', help='edit configuration in $EDITOR/$VISUAL')
+    group.add_argument('--cache', metavar='DIR', help='use FILE as cache database', default=cache_db)
 
     group = parser.add_argument_group('job list management')
     group.add_argument('--list', action='store_true', help='list jobs')
     group.add_argument('--add', metavar='JOB', help='add job (key1=value1,key2=value2,...)')
     group.add_argument('--delete', metavar='JOB', help='delete job by location or index')
-    group.add_argument('--edit', action='store_true', help='edit jobs in $EDITOR/$VISUAL')
+
+    group = parser.add_argument_group('interactive commands ($EDITOR/$VISUAL)')
+    group.add_argument('--edit', action='store_true', help='edit URL/job listL')
+    group.add_argument('--edit-config', action='store_true', help='edit configuration file')
+    group.add_argument('--edit-hooks', action='store_true', help='edit hooks script')
 
     group = parser.add_argument_group('miscellaneous')
     group.add_argument('--features', action='store_true', help='list supported jobs/filters/reporters')
+    group.add_argument('--gc-cache', action='store_true', help='remove old cache entries')
 
     main(parser.parse_args())
