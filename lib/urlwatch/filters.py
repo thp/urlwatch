@@ -31,6 +31,8 @@
 import re
 import logging
 import itertools
+import os
+import imp
 import html.parser
 
 from .util import TrackSubClasses
@@ -100,6 +102,33 @@ class AutoMatchFilter(FilterBase):
         result = all(d.get(k, None) == v for k, v in self.MATCH.items())
         logger.debug('Matching %r with %r result: %r', self, self.job, result)
         return result
+
+
+class LegacyHooksPyFilter(FilterBase):
+    FILENAME = os.path.expanduser('~/.urlwatch/lib/hooks.py')
+
+    def __init__(self, job, state):
+        super().__init__(job, state)
+
+        self.hooks = None
+        if os.path.exists(self.FILENAME):
+            try:
+                self.hooks = imp.load_source('legacy_hooks', self.FILENAME)
+            except Exception as e:
+                logger.error('Could not load legacy hooks file: %s', e)
+
+    def match(self):
+        return self.hooks is not None
+
+    def filter(self, data, subfilter=None):
+        try:
+            result = self.hooks.filter(self.job.get_location(), data)
+            if result is None:
+                result = data
+            return result
+        except Exception as e:
+            logger.warn('Could not apply legacy hooks filter: %s', e)
+            return data
 
 
 class Html2TextFilter(FilterBase):
