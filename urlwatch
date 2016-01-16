@@ -74,7 +74,7 @@ import urlwatch
 
 from urlwatch.handler import JobState, Report
 
-from urlwatch.storage import UrlsYaml, UrlsTxt, ConfigStorage
+from urlwatch.storage import UrlsYaml, UrlsTxt, ConfigStorage, CacheDirStorage
 
 from urlwatch.jobs import JobBase
 from urlwatch.filters import FilterBase
@@ -270,6 +270,9 @@ def main(args):
         logger.warn('No jobs file found')
         jobs = []
 
+    cache_storage = CacheDirStorage(args.cache)
+    report = Report(config.config)
+
     if args.features:
         sys.exit(show_features())
 
@@ -285,10 +288,9 @@ def main(args):
     if args.add is not None or args.delete is not None:
         sys.exit(modify_urls(jobs, args.urls, args.add, args.delete))
 
-    report = Report(config.config)
-
     logger.debug('Processing %d jobs', len(jobs))
-    for job_state in run_parallel(lambda job_state: job_state.process(), (JobState(args.cache, job) for job in jobs)):
+    for job_state in run_parallel(lambda job_state: job_state.process(),
+                                  (JobState(cache_storage, job) for job in jobs)):
         logger.debug('Job finished: %s', job_state.job)
 
         if job_state.exception is not None:

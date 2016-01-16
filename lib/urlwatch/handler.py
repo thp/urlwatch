@@ -42,8 +42,8 @@ logger = logging.getLogger(__name__)
 
 
 class JobState(object):
-    def __init__(self, cache_dir, job):
-        self.cache_dir = cache_dir
+    def __init__(self, cache_storage, job):
+        self.cache_storage = cache_storage
         self.job = job
         self.verb = None
         self.old_data = None
@@ -51,31 +51,16 @@ class JobState(object):
         self.timestamp = None
         self.exception = None
         self.traceback = None
-        self.filename = None
 
     def load(self):
-        if os.path.exists(self.filename):
-            try:
-                with open(self.filename) as fp:
-                    self.old_data = fp.read()
-            except UnicodeDecodeError:
-                with open(self.filename, 'rb') as fp:
-                    self.old_data = fp.read().decode('utf-8', 'ignore')
-
-            self.timestamp = os.stat(self.filename)[stat.ST_MTIME]
-        else:
-            self.old_data = None
-            self.timestamp = None
+        self.old_data, self.timestamp = self.cache_storage.load(self.job)
 
     def save(self):
-        logger.info('Writing content of %s to %s', self.job, self.filename)
-        with open(self.filename, 'w') as fp:
-            fp.write(self.new_data)
+        self.cache_storage.save(self.job, self.new_data)
 
     def process(self):
         logger.info('Processing: %s', self.job)
         try:
-            self.filename = os.path.join(self.cache_dir, self.job.get_guid())
             self.load()
             data = self.job.retrieve(self)
 

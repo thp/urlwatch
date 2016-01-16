@@ -199,3 +199,46 @@ class UrlsTxt(UrlsStorage):
 
     def load(self):
         return list(self._parse(open(self.filename)))
+
+
+class CacheStorage(object):
+    def __init__(self, filename):
+        self.filename = filename
+
+    def get_guids(self):
+        raise NotImplementedError()
+
+    def load(self, job):
+        raise NotImplementedError()
+
+    def save(self, job, data):
+        raise NotImplementedError()
+
+
+class CacheDirStorage(CacheStorage):
+    def _get_filename(self, job):
+        return os.path.join(self.filename, job.get_guid())
+
+    def get_guids(self):
+        return os.listdir(self.filename)
+
+    def load(self, job):
+        filename = self._get_filename(job)
+        if not os.path.exists(filename):
+            return None, None
+
+        try:
+            with open(filename) as fp:
+                data = fp.read()
+        except UnicodeDecodeError:
+            with open(filename, 'rb') as fp:
+                data = fp.read().decode('utf-8', 'ignore')
+
+        timestamp = os.stat(filename)[stat.ST_MTIME]
+
+        return data, timestamp
+
+    def save(self, job, data):
+        filename = self._get_filename(job)
+        with open(filename, 'w') as fp:
+            fp.write(data)
