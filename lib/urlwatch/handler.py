@@ -107,7 +107,7 @@ class Report(object):
 
     def _result(self, verb, job_state):
         if job_state.exception is not None:
-            logger.warn('Got exception while processing %r: %s', job_state.job, job_state.exception)
+            logger.debug('Got exception while processing %r: %s', job_state.job, job_state.exception)
 
         job_state.verb = verb
         self.job_states.append(job_state)
