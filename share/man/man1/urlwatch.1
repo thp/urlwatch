@@ -1,83 +1,84 @@
-.TH URLWATCH "1" "February 2015" "urlwatch 1.18" "User Commands"
+.TH URLWATCH "1" "January 2016" "urlwatch 2.0" "User Commands"
 .SH NAME
-urlwatch \- Watch web pages and arbitrary URLs for changes
-.SH SYNOPSIS
+urlwatch \- a tool for monitoring webpages for updates
+.SH USAGE
 .B urlwatch
-[\fIoptions\fR]
+[\-h] [\-\-version] [\-v]
+.IP
+[\-\-urls FILE] [\-\-config FILE] [\-\-hooks FILE] [\-\-cache FILE]
+.IP
+[\-\-list] [\-\-add JOB] [\-\-delete JOB]
+.IP
+[\-\-edit] [\-\-edit\-config] [\-\-edit\-hooks]
+.IP
+[\-\-features] [\-\-gc\-cache]
+.PP
 .SH DESCRIPTION
-urlwatch watches a list of URLs for changes and prints out unified
-diffs of the changes. You can filter always-changing parts of websites
-by providing a "hooks.py" script.
-.SH OPTIONS
+.PP
+urlwatch is intended to help you watch changes in webpages and get notified
+(via email, in your terminal or with a custom-written reporter class) of any
+changes. The change notification will include the URL that has changed and
+a unified diff of what has changed.
+.SS "optional arguments:"
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show this help message and exit
 .TP
 \fB\-\-version\fR
 show program's version number and exit
 .TP
-\fB\-h\fR, \fB\-\-help\fR
-show the help message and exit
-.TP
 \fB\-v\fR, \fB\-\-verbose\fR
-Show debug/log output
+show debug output
+.SS "files and directories:"
 .TP
-\fB\-\-urls\fR=\fIFILE\fR
-Read URLs from the specified file
+\fB\-\-urls\fR FILE
+read job list (URLs) from FILE
 .TP
-\fB\-\-hooks\fR=\fIFILE\fR
-Use specified file as hooks.py module
+\fB\-\-config\fR FILE
+read configuration from FILE
 .TP
-\fB\-e\fR, \fB\-\-display\-errors\fR
-Include HTTP errors (404, etc..) in the output
+\fB\-\-hooks\fR FILE
+use FILE as hooks.py module
 .TP
-\fB\-t\fR, \fB\-\-mailto\fR=\fIADDRESS\fR
-Send results via e-mail to ADDRESS
+\fB\-\-cache\fR FILE
+use FILE as cache database
+.SS "job list management:"
 .TP
-\fB\-f\fR, \fB\-\-mailfrom\fR=\fIADDRESS\fR
-Alternate From: address for e-mail (--mailto)
+\fB\-\-list\fR
+list jobs
 .TP
-\fB\-s\fR, \fB\-\-smtp\fR=\fISERVER\fR
-SMTP server for e-mail (--mailto)
+\fB\-\-add\fR JOB
+add job (key1=value1,key2=value2,...)
 .TP
-\fB\-q\fR, \fB\-\-quiet\fR
-Avoid diff output on stdout (--mailto)
-.SH ADVANCED FEATURES
-urlwatch includes some advanced features that you have to activate by creating
-a hooks.py file that specifies for which URLs to use a specific feature. You
-can also use the hooks.py file to filter trivially-varying elements of a web
-page.
-.SS ICALENDAR FILE PARSING
-This module allows you to parse .ics files that are in iCalendar format and
-provide a very simplified text-based format for the diffs. Use it like this
-in your hooks.py file:
-
-  from urlwatch import ical2txt
-
-  def filter(url, data):
-      if url.endswith('.ics'):
-          return ical2txt.ical2text(data).encode('utf-8') + data
-      # ...you can add more hooks here...
-.SS HTML TO TEXT CONVERSION
-There are three methods of converting HTML to text in the current version of
-urlwatch: "lynx" (default), "html2text" and "re". The former two use
-command-line utilities of the same name to convert HTML to text, and the last
-one uses a simple regex-based tag stripping method (needs no extra tools).
-Here is an example of using it in your hooks.py file:
-
-  from urlwatch import html2txt
-
-  def filter(url, data):
-      if url.endswith('.html') or url.endswith('.htm'):
-          return html2txt.html2text(data, method='lynx')
-      # ...you can add more hooks here...
+\fB\-\-delete\fR JOB
+delete job by location or index
+.SS "interactive commands ($EDITOR/$VISUAL):"
+.TP
+\fB\-\-edit\fR
+edit URL/job list
+.TP
+\fB\-\-edit\-config\fR
+edit configuration file
+.TP
+\fB\-\-edit\-hooks\fR
+edit hooks script
+.SS "miscellaneous:"
+.TP
+\fB\-\-features\fR
+list supported jobs/filters/reporters
+.TP
+\fB\-\-gc\-cache\fR
+remove old cache entries
 .SH "FILES"
 .TP
-.B ~/.urlwatch/urls.txt
-A list of HTTP/FTP URLs to watch (one URL per line)
+.B ~/.urlwatch/urls.yaml
+A list of URLs, commands and other jobs to watch
 .TP
-.B ~/.urlwatch/lib/hooks.py
-A Python module that can be used to filter contents
+.B ~/.urlwatch/hooks.py
+A Python module that can implement new job types, filters and reporters
 .TP
-.B ~/.urlwatch/cache/
-The state of web pages is saved in this folder
+.B ~/.urlwatch/cache.db
+A SQLite 3 database that contains the state history of jobs (for diffing)
 .SH AUTHOR
 Thomas Perl <thp.io/about>
 .SH WEBSITE

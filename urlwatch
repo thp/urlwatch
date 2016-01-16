@@ -357,7 +357,7 @@ if __name__ == '__main__':
     group.add_argument('--urls', metavar='FILE', help='read job list (URLs) from FILE', default=urls_yaml)
     group.add_argument('--config', metavar='FILE', help='read configuration from FILE', default=config_yaml)
     group.add_argument('--hooks', metavar='FILE', help='use FILE as hooks.py module', default=hooks_py)
-    group.add_argument('--cache', metavar='DIR', help='use FILE as cache database', default=cache_db)
+    group.add_argument('--cache', metavar='FILE', help='use FILE as cache database', default=cache_db)
 
     group = parser.add_argument_group('job list management')
     group.add_argument('--list', action='store_true', help='list jobs')

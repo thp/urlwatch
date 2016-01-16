@@ -1,8 +1,9 @@
-"""Watch web pages and arbitrary URLs for changes
+"""A tool for monitoring webpages for updates
 
-This script is intended to help you watch URLs and get notified (via email or
-in your terminal) of any changes. The change notification will include the URL
-that has changed and a unified diff of what has changed.
+urlwatch is intended to help you watch changes in webpages and get notified
+(via email, in your terminal or with a custom-written reporter class) of any
+changes. The change notification will include the URL that has changed and
+a unified diff of what has changed.
 """
 
 pkgname = 'urlwatch'
