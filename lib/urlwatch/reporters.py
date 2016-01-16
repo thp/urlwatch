@@ -79,7 +79,10 @@ class ReporterBase(object, metaclass=TrackSubClasses):
 
 class TextReporter(ReporterBase):
     def submit(self):
-        line_length = self.report.config['report']['text']['line_length']
+        cfg = self.report.config['report']['text']
+        line_length = cfg['line_length']
+        show_details = cfg['details']
+        show_footer = cfg['footer']
 
         summary = []
         details = []
@@ -89,15 +92,17 @@ class TextReporter(ReporterBase):
             details.extend(details_part)
 
         if summary:
-            sep = line_length * '-'
+            sep = line_length * '='
             yield from itertools.chain(
-                (sep, 'summary: %d changes' % (len(summary),), ''),
+                (sep,),
                 ('%02d. %s' % (idx+1, line) for idx, line in enumerate(summary)),
-                (sep, '', '', ''),
+                (sep, ''),
             )
 
-        if details:
+        if show_details:
             yield from details
+
+        if show_footer:
             yield from ('-- ',
                         '%s %s, %s' % (urlwatch.pkgname, urlwatch.__version__, urlwatch.__copyright__),
                         'Website: %s' % (urlwatch.__url__,),
@@ -123,12 +128,18 @@ class TextReporter(ReporterBase):
         summary_part = []
         details_part = []
 
-        summary = ': '.join((job_state.verb.upper(), job_state.job.get_location()))
+        pretty_name = job_state.job.pretty_name()
+        location = job_state.job.get_location()
+        if pretty_name != location:
+            location = '%s (%s)' % (pretty_name, location)
+
+        pretty_summary = ': '.join((job_state.verb.upper(), pretty_name))
+        summary = ': '.join((job_state.verb.upper(), location))
         content = self._format_content(job_state)
 
-        summary_part.append(summary)
+        summary_part.append(pretty_summary)
 
-        sep = line_length * '*'
+        sep = line_length * '-'
         details_part.extend((sep, summary, sep))
         if content is not None:
             details_part.extend((content, sep))

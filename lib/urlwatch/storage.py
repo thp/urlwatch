@@ -50,6 +50,8 @@ DEFAULT_CONFIG = {
     'report': {
         'text': {
             'line_length': 75,
+            'details': True,
+            'footer': True,
         },
 
         'stdout': {
