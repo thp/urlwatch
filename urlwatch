@@ -143,7 +143,7 @@ def foutput(type, url, content=None, summary=None, c='*', n=line_length):
     if options.pushover:
         summary_txt = '%(type)s: <a href="%(url)s">%(url)s</a>' % {'type': type.upper(), 'url': str(url)}
     else:
-	summary_txt = ': '.join((type.upper(), str(url)))
+        summary_txt = ': '.join((type.upper(), str(url)))
 
     if summary is not None:
         if content is None:
@@ -246,10 +246,10 @@ if __name__ == '__main__':
     if options.cache:
             cache_dir = options.cache
             log.info('using {} as cache directory'.format(cache_dir))
-                
+
     if options.pushover_file:
-	options.pushover = True
-            
+        options.pushover = True
+
     # Created all needed folders
     for needed_dir in (urlwatch_dir, cache_dir, scripts_dir):
         if not os.path.isdir(needed_dir):
@@ -280,7 +280,7 @@ if __name__ == '__main__':
         pushover_app_key = config.get('App', 'Key')
         pushover_user_key = config.get('User', 'Key')
         log.info('Using Pushover to send messages to user %s' % pushover_user_key)
-	
+
     # Check for required files
     if not os.path.isfile(urls_txt):
         log.warning('not a file: %s' % urls_txt)
