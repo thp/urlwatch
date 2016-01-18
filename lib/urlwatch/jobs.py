@@ -212,7 +212,8 @@ class UrlJob(Job):
                                            parts.params, parts.query, parts.fragment))
             logger.info('Using HTTP basic authentication for %s', url)
             auth_token = urllib.parse.unquote(':'.join((parts.username, parts.password)))
-            headers['Authorization'] = 'Basic %s' % (base64.b64encode(auth_token).strip())
+            auth_token = base64.b64encode(auth_token.encode('utf-8')).decode('utf-8')
+            headers['Authorization'] = 'Basic %s' % (auth_token.strip(),)
         else:
             url = self.url
 
