@@ -40,6 +40,7 @@ import zlib
 import hashlib
 import base64
 import logging
+import ssl
 
 import urlwatch
 
@@ -178,7 +179,7 @@ class UrlJob(Job):
     __kind__ = 'url'
 
     __required__ = ('url',)
-    __optional__ = ('data', 'method')
+    __optional__ = ('data', 'method', 'ssl_no_verify')
 
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
@@ -217,8 +218,16 @@ class UrlJob(Job):
         else:
             url = self.url
 
+        if self.ssl_no_verify:
+            logger.info('Disabling SSL verification for %s (ssl_no_verify is set)', url)
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+        else:
+            ctx = None
+
         request = urllib.request.Request(url, postdata, headers, method=self.method)
-        response = urllib.request.urlopen(request)
+        response = urllib.request.urlopen(request, context=ctx)
         headers = response.info()
         content = response.read()
         encoding = 'utf-8'
