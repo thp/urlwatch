@@ -3,12 +3,13 @@
 # Minimalistic, automatic setup.py file for Python modules
 # Copyright (c) 2008-2016 Thomas Perl <thp.io/about>
 
-from distutils.core import setup
+from setuptools import setup
 
 import os
 import re
 
 PACKAGE_NAME = 'urlwatch'
+DEPENDENCIES = ['minidb', 'PyYAML']
 
 # Assumptions:
 #  1. Package name equals main script file name (and only one script)
@@ -29,5 +30,6 @@ m['scripts'] = [PACKAGE_NAME]
 m['package_dir'] = {'': 'lib'}
 m['packages'] = ['.'.join(dirname.split(os.sep)[1:]) for dirname, _, files in os.walk('lib') if '__init__.py' in files]
 m['data_files'] = [(dirname, [os.path.join(dirname, fn) for fn in files]) for dirname, _, files in os.walk('share')]
+m['install_requires'] = DEPENDENCIES
 
 setup(**m)
