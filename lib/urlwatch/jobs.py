@@ -31,9 +31,7 @@
 import subprocess
 import re
 
-import urllib.request
-import urllib.error
-import urllib.parse
+import requests
 
 import email.utils
 import zlib
@@ -60,6 +58,9 @@ class ShellError(Exception):
     def __str__(self):
         return '%s: Exit status %d' % (self.__class__.__name__, self.result)
 
+class NotModifiedError(Exception):
+    """Exception raised on HTTP 304 responses"""
+    ...
 
 class JobBase(object, metaclass=TrackSubClasses):
     __subclasses__ = {}
@@ -194,70 +195,15 @@ class UrlJob(Job):
         if job_state.timestamp is not None:
             headers['If-Modified-Since'] = email.utils.formatdate(job_state.timestamp)
 
-        postdata = None
+        if self.method is None:
+            self.method = "GET"
         if self.data is not None:
+            self.method = "POST"
             logger.info('Sending POST request to %s', self.url)
-            # data might be dict or urlencoded string
-            if isinstance(self.data, dict):
-                # convert to urlencoded string
-                postdata = urllib.parse.urlencode(self.data).encode('utf-8')
-            elif isinstance(self.data, str):
-                postdata = self.data.encode('utf-8')
-            else:
-                # nuke / ignore other data (no string, no dict)
-                logger.warning("Ignoring invalid data parameter for url %s: %r", self.url, self.data)
 
-        parts = urllib.parse.urlparse(self.url)
-        if parts.username or parts.password:
-            url = urllib.parse.urlunparse((parts.scheme, parts.hostname, parts.path,
-                                           parts.params, parts.query, parts.fragment))
-            logger.info('Using HTTP basic authentication for %s', url)
-            auth_token = urllib.parse.unquote(':'.join((parts.username, parts.password)))
-            auth_token = base64.b64encode(auth_token.encode('utf-8')).decode('utf-8')
-            headers['Authorization'] = 'Basic %s' % (auth_token.strip(),)
-        else:
-            url = self.url
-
-        if self.ssl_no_verify:
-            logger.info('Disabling SSL verification for %s (ssl_no_verify is set)', url)
-            ctx = ssl.create_default_context()
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
-        else:
-            ctx = None
-
-        request = urllib.request.Request(url, postdata, headers, method=self.method)
-        response = urllib.request.urlopen(request, context=ctx)
-        headers = response.info()
-        content = response.read()
-        encoding = 'utf-8'
-
-        # Handle HTTP compression
-        compression_type = headers.get('Content-Encoding')
-        if compression_type == 'gzip':
-            content = zlib.decompress(content, zlib.MAX_WBITS | 32)
-        elif compression_type == 'deflate':
-            content = zlib.decompress(content, -zlib.MAX_WBITS)
-
-        # Determine content type via HTTP headers
-        content_type = headers.get('Content-type', '')
-        content_type_match = self.CHARSET_RE.match(content_type)
-        if content_type_match:
-            encoding = content_type_match.group(2)
-
-        # Convert from specified encoding to unicode
-        if not isinstance(content, str):
-            try:
-                try:
-                    try:
-                        content = content.decode(encoding)
-                    except UnicodeDecodeError:
-                        content = content.decode('latin1')
-                except UnicodeDecodeError:
-                    content = content.decode('utf-8', 'ignore')
-            except LookupError:
-                # If this is an invalid encoding, decode as ascii
-                # (Debian bug 731931)
-                content = content.decode('ascii', 'ignore')
-
-        return content
+        
+        response = requests.request(url=self.url, data=self.data, headers=headers, method=self.method, verify=(not self.ssl_no_verify))
+        response.raise_for_status()
+        if response.status_code == 304:
+            raise NotModifiedError()
+        return response.text
