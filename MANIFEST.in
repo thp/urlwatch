@@ -1,2 +1,3 @@
 include ChangeLog COPYING
 recursive-include share *
+recursive-include test/data *
