@@ -201,9 +201,27 @@ class UrlJob(Job):
             self.method = "POST"
             logger.info('Sending POST request to %s', self.url)
 
-        
         response = requests.request(url=self.url, data=self.data, headers=headers, method=self.method, verify=(not self.ssl_no_verify))
         response.raise_for_status()
         if response.status_code == 304:
             raise NotModifiedError()
+
+        # If we can't find the encoding in the headers, requests gets all
+        # old-RFC-y and assumes ISO-8859-1 instead of UTF-8. Use the old
+        # urlwatch behavior and try UTF-8 decoding first.
+        content_type = response.headers.get('Content-type', '')
+        content_type_match = self.CHARSET_RE.match(content_type)
+        if not content_type_match:
+            try:
+                try:
+                    try:
+                        return response.content.decode('utf-8')
+                    except UnicodeDecodeError:
+                        return response.content.decode('latin1')
+                except UnicodeDecodeError:
+                    return response.content.decode('utf-8', 'ignore')
+            except LookupError:
+                # If this is an invalid encoding, decode as ascii (Debian bug 731931)
+                return response.content.decode('ascii', 'ignore')
+
         return response.text
