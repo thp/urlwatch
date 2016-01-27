@@ -33,13 +33,22 @@ def test_save_load_jobs():
     assert len(jobs3) == 1
 
 
-def test_load_examples():
-    txt_jobs = UrlsTxt(os.path.join(os.path.dirname(__file__), 'data', 'urls.txt')).load_secure()
-    assert len(txt_jobs) > 0
+def test_load_urls_txt():
+    urls_txt = os.path.join(os.path.dirname(__file__), 'data', 'urls.txt')
+    if os.path.exists(urls_txt):
+        assert len(UrlsTxt(urls_txt).load_secure()) > 0
 
-    imp.load_source('hooks', 'share/urlwatch/examples/hooks.py.example')
-    yaml_jobs = UrlsYaml('share/urlwatch/examples/urls.yaml.example').load_secure()
-    assert len(yaml_jobs) > 0
+
+def test_load_urls_yaml():
+    urls_yaml = 'share/urlwatch/examples/urls.yaml.example'
+    if os.path.exists(urls_yaml):
+        assert len(UrlsYaml(urls_yaml).load_secure()) > 0
+
+
+def test_load_hooks_py():
+    hooks_py = 'share/urlwatch/examples/hooks.py.example'
+    if os.path.exists(hooks_py):
+        imp.load_source('hooks', hooks_py)
 
 
 def test_unserialize_shell_job_without_kind():
