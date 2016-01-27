@@ -180,7 +180,7 @@ class UrlJob(Job):
     __kind__ = 'url'
 
     __required__ = ('url',)
-    __optional__ = ('data', 'method', 'ssl_no_verify')
+    __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify')
 
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
@@ -201,7 +201,10 @@ class UrlJob(Job):
             self.method = "POST"
             logger.info('Sending POST request to %s', self.url)
 
-        response = requests.request(url=self.url, data=self.data, headers=headers, method=self.method, verify=(not self.ssl_no_verify))
+        response = requests.request(url=self.url, data=self.data,
+                                    headers=headers, method=self.method,
+                                    verify=(not self.ssl_no_verify),
+                                    cookies=self.cookies)
         response.raise_for_status()
         if response.status_code == 304:
             raise NotModifiedError()
