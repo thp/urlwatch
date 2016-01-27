@@ -9,7 +9,7 @@ import os
 import re
 
 PACKAGE_NAME = 'urlwatch'
-DEPENDENCIES = ['minidb', 'PyYAML']
+DEPENDENCIES = ['minidb', 'PyYAML', 'requests']
 
 # Assumptions:
 #  1. Package name equals main script file name (and only one script)

@@ -21,11 +21,12 @@ urlwatch 2 requires:
   * Python 3.3 or newer
   * PyYAML
   * minidb
+  * requests
   * keyring
 
 The dependencies can be installed with (add "--user" to install to $HOME):
 
-  python3 -m pip install pyyaml minidb keyring
+  python3 -m pip install pyyaml minidb requests keyring
 
 
 MIGRATION FROM URLWATCH 1.x
