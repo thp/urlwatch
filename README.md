@@ -57,7 +57,7 @@ QUICK START
  2. Use `urlwatch --edit` to customize your job list
  3. Use `urlwatch --edit-config` if you want to set up e-mail sending
  4. Use `urlwatch --edit-hooks` if you want to write custom subclasses
- 5. Add `urlwatch` to your crontab (crontab -e)
+ 5. Add `urlwatch` to your crontab (`crontab -e`)
 
 
 TIPS AND TRICKS
