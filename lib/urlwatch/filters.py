@@ -103,6 +103,19 @@ class AutoMatchFilter(FilterBase):
         logger.debug('Matching %r with %r result: %r', self, self.job, result)
         return result
 
+class RegexMatchFilter(FilterBase):
+    """Same as AutoMatchFilter but matching is done with regexes"""
+    MATCH = None
+
+    def match(self):
+        if self.MATCH is None:
+            return False
+
+        d = self.job.to_dict()
+        result = all(v.match(d.get(k, None)) for k, v in self.MATCH.items())
+        logger.debug('Matching %r with %r result: %r', self, self.job, result)
+        return result
+
 
 class LegacyHooksPyFilter(FilterBase):
     FILENAME = os.path.expanduser('~/.urlwatch/lib/hooks.py')

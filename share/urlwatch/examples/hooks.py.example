@@ -27,6 +27,7 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+import re
 
 from urlwatch import filters
 from urlwatch import jobs
@@ -84,6 +85,13 @@ class CustomMatchUrlFilter(filters.AutoMatchFilter):
     # The AutoMatchFilter will apply automatically to all filters
     # that have the given properties set
     MATCH = {'url': 'http://example.org/'}
+
+    def filter(self, data):
+        return data.replace('foo', 'bar')
+
+class CustomRegexMatchUrlFilter(filters.RegexMatchFilter):
+    # Similar to AutoMatchFilter
+    MATCH = {'url': re.compile('http://example.org/.*')}
 
     def filter(self, data):
         return data.replace('foo', 'bar')
