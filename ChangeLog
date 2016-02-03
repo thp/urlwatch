@@ -161,3 +161,16 @@
 	* Custom reporters by subclassing ReporterBase
 	* Custom filters by subclassing FilterBase
 	* Old data will be migrated as good as possible to the new formats
+
+2016-02-03 Thomas Perl <thp.io/about>
+	* Replace urllib usage with requests (by Louis Sautier)
+	* Add cookies support (by Louis Sautier)
+	* Convert README to Markdown (README.md, by Louis Sautier)
+	* Add a new auto-applying filter that uses regexes, fixes #37 (by Louis Sautier)
+	* Use setuptools, install dependencies (Fixes #33)
+	* Fix HTTP basic authentication (Fixes #26)
+	* Add ssl_no_verify option for UrlJob
+	* Update list of dependencies (add requests)
+	* Fix unit tests for files only in source tree (Fixes #34)
+	* Add test/data to source tarball (#34)
+	* Workaround a requests shortcoming related to encoding
