@@ -279,7 +279,7 @@ def main(args):
         logger.warn('No jobs file found')
         jobs = []
 
-    # Migreate urlwatch 1.x cache to urlwatch 2.x
+    # Migrate urlwatch 1.x cache to urlwatch 2.x
     if not os.path.isfile(args.cache) and os.path.isdir(cache_dir):
         print("""
         Migrating cache: {cache_dir} -> {cache_db}

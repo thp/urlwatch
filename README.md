@@ -38,7 +38,7 @@ quick rundown of changes in 2.0:
  * URLs are stored in a YAML file now, with direct support for specifying
    names for jobs, different job kinds, directly applying filters, selecting
    the HTTP request method, specifying POST data as dictionary and much more
- * The cache directory has been replaced with with a SQLite 3 database file
+ * The cache directory has been replaced with a SQLite 3 database file
    "cache.db" in minidb format, storing all change history (use `--gc-cache` to
    remove old changes if you don't need them anymore) for further analysis
  * The hooks mechanism has been replaced with support for creating new job
