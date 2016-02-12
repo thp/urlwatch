@@ -53,9 +53,8 @@ def html2text(data, method='lynx'):
         return d
 
     if method == 'lynx':
-        cmd = ['lynx', '-dump', '-stdin', '-assume_charset=UTF-8']
-        # For some reason it looks like lynx always(?) outputs Latin-1
-        stdout_encoding = 'latin-1'
+        cmd = ['lynx', '-nonumbers', '-dump', '-stdin', '-assume_charset=UTF-8', '-display_charset=UTF-8']
+        stdout_encoding = 'utf-8'
     elif method == 'html2text':
         cmd = ['html2text', '-nobs', '-utf8']
         stdout_encoding = 'utf-8'
