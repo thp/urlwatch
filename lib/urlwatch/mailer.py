@@ -49,8 +49,7 @@ class Mailer(object):
         self.auth = auth
 
     def send(self, msg):
-        s = smtplib.SMTP()
-        s.connect(self.smtp_server, self.smtp_port)
+        s = smtplib.SMTP(self.smtp_server, self.smtp_port)
         s.ehlo()
 
         if self.tls:
