@@ -10,6 +10,7 @@ import re
 
 PACKAGE_NAME = 'urlwatch'
 DEPENDENCIES = ['minidb', 'PyYAML', 'requests']
+HERE = os.path.dirname(__file__)
 
 # Assumptions:
 #  1. Package name equals main script file name (and only one script)
@@ -17,7 +18,7 @@ DEPENDENCIES = ['minidb', 'PyYAML', 'requests']
 #  3. Data files are in "share/", will be installed in $(PREFIX)/share
 #  4. Packages are in "lib/", no modules
 
-main_py = open('lib/%s/__init__.py' % PACKAGE_NAME).read()
+main_py = open(os.path.join(HERE, 'lib', PACKAGE_NAME, '__init__.py')).read()
 m = dict(re.findall("\n__([a-z]+)__ = '([^']+)'", main_py))
 docs = re.findall('"""(.*?)"""', main_py, re.DOTALL)
 
@@ -26,10 +27,12 @@ m['author'], m['author_email'] = re.match(r'(.*) <(.*)>', m['author']).groups()
 m['description'], m['long_description'] = docs[0].strip().split('\n\n', 1)
 m['download_url'] = m['url'] + PACKAGE_NAME + '-' + m['version'] + '.tar.gz'
 
-m['scripts'] = [PACKAGE_NAME]
-m['package_dir'] = {'': 'lib'}
-m['packages'] = ['.'.join(dirname.split(os.sep)[1:]) for dirname, _, files in os.walk('lib') if '__init__.py' in files]
-m['data_files'] = [(dirname, [os.path.join(dirname, fn) for fn in files]) for dirname, _, files in os.walk('share')]
+m['scripts'] = [os.path.join(HERE, PACKAGE_NAME)]
+m['package_dir'] = {'': os.path.join(HERE, 'lib')}
+m['packages'] = ['.'.join(dirname[len(HERE)+1:].split(os.sep)[1:])
+                 for dirname, _, files in os.walk(os.path.join(HERE, 'lib')) if '__init__.py' in files]
+m['data_files'] = [(dirname[len(HERE)+1:], [os.path.join(dirname[len(HERE)+1:], fn) for fn in files])
+                   for dirname, _, files in os.walk(os.path.join(HERE, 'share')) if files]
 m['install_requires'] = DEPENDENCIES
 
 setup(**m)
