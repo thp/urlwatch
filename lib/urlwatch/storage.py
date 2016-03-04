@@ -77,6 +77,11 @@ DEFAULT_CONFIG = {
                 'keyring': True,
             },
         },
+        'pushover': {
+            'enabled': False,
+            'app': '',
+            'user': ''
+        },
     },
 }
 

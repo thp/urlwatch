@@ -40,6 +40,11 @@ import urlwatch
 from .util import TrackSubClasses
 from .mailer import Mailer
 
+try:
+    import chump
+except ImportError:
+    chump = None
+
 
 logger = logging.getLogger(__name__)
 
@@ -338,3 +343,36 @@ class EMailReporter(TextReporter):
             msg = mailer.msg_plain(self.config['from'], self.config['to'], subject, body_text)
 
         mailer.send(msg)
+
+
+class PushoverReport(TextReporter):
+    """Send summary via Pushover"""
+
+    __kind__ = 'pushover'
+
+    def submit(self):
+
+        body_text = '\n'.join(super().submit())
+
+        if not body_text:
+            logger.debug('Not sending pushover (no changes)')
+            return
+
+        if len(body_text) > 1024:
+            body_text = body_text[0:1023]
+
+        try:
+            app = chump.Application(self.config['app'])
+        except:
+            logger.error("Failed to load chump - is it installed ('pip install chump')")
+            return
+
+        user = app.get_user(self.config['user'])
+
+        msg = user.create_message(
+            title='Website Change Detected',
+            message=body_text,
+            html=True,
+            sound='spacealarm')
+
+        msg.send()
