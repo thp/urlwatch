@@ -66,16 +66,22 @@ DEFAULT_CONFIG = {
 
         'email': {
             'enabled': False,
+
             'html': False,
             'to': '',
             'from': '',
             'subject': '{count} changes: {jobs}',
+            'method': 'smtp',
             'smtp': {
                 'host': 'localhost',
                 'port': 25,
                 'starttls': True,
                 'keyring': True,
             },
+            'sendmail':{
+                'path': '/usr/bin/sendmail',
+                'arguments': '-t -oi'
+            }
         },
         'pushover': {
             'enabled': False,
