@@ -44,7 +44,7 @@ import email.utils
 
 class Mailer(object):
     def send(self, msg):
-        raise NotImplemented
+        raise NotImplementedError
 
     def msg_plain(self, from_email, to_email, subject, body):
         msg = email.mime.text.MIMEText(body, 'plain', 'utf_8')
