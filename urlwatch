@@ -210,7 +210,7 @@ def modify_urls(jobs, urls, add, delete):
                 save = False
 
     if add is not None:
-        d = {k: v for k, v in (item.split('=', 2) for item in add.split(','))}
+        d = {k: v for k, v in (item.split('=', 1) for item in add.split(','))}
         job = JobBase.unserialize(d)
         print('Adding %r' % (job,))
         jobs.append(job)
