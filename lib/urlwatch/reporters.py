@@ -39,6 +39,8 @@ import urlwatch
 
 from .util import TrackSubClasses
 from .mailer import Mailer
+from .mailer import SendmailMailer
+from .mailer import SMTPMailer
 import subprocess
 
 try:
@@ -331,9 +333,13 @@ class EMailReporter(TextReporter):
         if not body_text:
             logger.debug('Not sending e-mail (no changes)')
             return
-
-        mailer = Mailer(self.config['smtp']['host'], self.config['smtp']['port'],
-                        self.config['smtp']['starttls'], self.config['smtp']['keyring'])
+        if self.config['method'] == "smtp":
+            mailer = SMTPMailer(self.config['smtp']['host'], self.config['smtp']['port'],
+                                self.config['smtp']['starttls'], self.config['smtp']['keyring'])
+        elif self.config['method'] == "sendmail":
+            mailer = SendmailMailer(self.config['sendmail']['path'])
+        else:
+            logger.error('Invalid entry for method {method}'.format(method = self.config['method']))
 
         # TODO set_password(options.email_smtp, options.email_from)
 
@@ -344,18 +350,7 @@ class EMailReporter(TextReporter):
         else:
             msg = mailer.msg_plain(self.config['from'], self.config['to'], subject, body_text)
 
-        if self.config['method'] == "smtp":
-            mailer.send(msg)
-        elif self.config['method'] == "sendmail":
-            p = subprocess.Popen([self.config['sendmail']['path']] + self.config['sendmail']['arguments'].split(),
-                                 stdin=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 universal_newlines=True)
-            result = p.communicate(msg.as_string())
-            if result[1]:
-                logger.error('Sendmail failed with: ' . result[1])
-        else:
-            logger.error('Invalid entry for method ' . self.config['method'])
+        mailer.send(msg)
 
 
 class PushoverReport(TextReporter):

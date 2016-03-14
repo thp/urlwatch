@@ -79,8 +79,7 @@ DEFAULT_CONFIG = {
                 'keyring': True,
             },
             'sendmail':{
-                'path': '/usr/bin/sendmail',
-                'arguments': '-t -oi'
+                'path': 'sendmail',
             }
         },
         'pushover': {
