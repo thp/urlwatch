@@ -46,10 +46,17 @@ def html2text(data, method='lynx'):
      'lynx' (default) - Use "lynx -dump" for conversion
      'html2text'      - Use "html2text -nobs" for conversion
      're'             - A simple regex-based HTML tag stripper
+     'pyhtml2text'    - Use Python module "html2text", keeps link targets
     """
     if method == 're':
         stripped_tags = re.sub(r'<[^>]*>', '', data)
         d = '\n'.join((l.rstrip() for l in stripped_tags.splitlines() if l.strip() != ''))
+        return d
+
+    if method == 'pyhtml2text':
+        import html2text
+        pyhtml2text = html2text.HTML2Text()
+        d = pyhtml2text.handle(data)
         return d
 
     if method == 'lynx':
