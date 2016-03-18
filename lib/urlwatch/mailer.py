@@ -30,6 +30,7 @@
 
 import smtplib
 import getpass
+import subprocess
 
 try:
     import keyring
@@ -42,6 +43,32 @@ import email.utils
 
 
 class Mailer(object):
+    def send(self, msg):
+        raise NotImplementedError
+
+    def msg_plain(self, from_email, to_email, subject, body):
+        msg = email.mime.text.MIMEText(body, 'plain', 'utf_8')
+        msg['Subject'] = subject
+        msg['From'] = from_email
+        msg['To'] = to_email
+        msg['Date'] = email.utils.formatdate()
+
+        return msg
+
+    def msg_html(self, from_email, to_email, subject, body_text, body_html):
+        msg = email.mime.multipart.MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = from_email
+        msg['To'] = to_email
+        msg['Date'] = email.utils.formatdate()
+
+        msg.attach(email.mime.text.MIMEText(body_text, 'plain', 'utf_8'))
+        msg.attach(email.mime.text.MIMEText(body_html, 'html', 'utf_8'))
+
+        return msg
+
+
+class SMTPMailer(Mailer):
     def __init__(self, smtp_server, smtp_port, tls, auth):
         self.smtp_server = smtp_server
         self.smtp_port = smtp_port
@@ -64,26 +91,19 @@ class Mailer(object):
         s.sendmail(msg['From'], [msg['To']], msg.as_string())
         s.quit()
 
-    def msg_plain(self, from_email, to_email, subject, body):
-        msg = email.mime.text.MIMEText(body, 'plain', 'utf_8')
-        msg['Subject'] = subject
-        msg['From'] = from_email
-        msg['To'] = to_email
-        msg['Date'] = email.utils.formatdate()
 
-        return msg
+class SendmailMailer(Mailer):
+    def __init__(self, sendmail_path):
+        self.sendmail_path = sendmail_path
 
-    def msg_html(self, from_email, to_email, subject, body_text, body_html):
-        msg = email.mime.multipart.MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = from_email
-        msg['To'] = to_email
-        msg['Date'] = email.utils.formatdate()
-
-        msg.attach(email.mime.text.MIMEText(body_text, 'plain', 'utf_8'))
-        msg.attach(email.mime.text.MIMEText(body_html, 'html', 'utf_8'))
-
-        return msg
+    def send(self, msg):
+        p = subprocess.Popen([self.sendmail_path, '-t', '-oi'],
+                             stdin=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             universal_newlines=True)
+        result = p.communicate(msg.as_string())
+        if p.returncode:
+            logger.error('Sendmail failed with {result}'.format(result=result))
 
 
 def set_password(smtp_server, from_email):

@@ -39,6 +39,9 @@ import urlwatch
 
 from .util import TrackSubClasses
 from .mailer import Mailer
+from .mailer import SendmailMailer
+from .mailer import SMTPMailer
+import subprocess
 
 try:
     import chump
@@ -330,14 +333,19 @@ class EMailReporter(TextReporter):
         if not body_text:
             logger.debug('Not sending e-mail (no changes)')
             return
-
-        mailer = Mailer(self.config['smtp']['host'], self.config['smtp']['port'],
-                        self.config['smtp']['starttls'], self.config['smtp']['keyring'])
+        if self.config['method'] == "smtp":
+            mailer = SMTPMailer(self.config['smtp']['host'], self.config['smtp']['port'],
+                                self.config['smtp']['starttls'], self.config['smtp']['keyring'])
+        elif self.config['method'] == "sendmail":
+            mailer = SendmailMailer(self.config['sendmail']['path'])
+        else:
+            logger.error('Invalid entry for method {method}'.format(method = self.config['method']))
 
         # TODO set_password(options.email_smtp, options.email_from)
 
         if self.config['html']:
             body_html = '\n'.join(self.convert(HtmlReporter).submit())
+
             msg = mailer.msg_html(self.config['from'], self.config['to'], subject, body_text, body_html)
         else:
             msg = mailer.msg_plain(self.config['from'], self.config['to'], subject, body_text)
