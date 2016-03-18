@@ -180,6 +180,18 @@ class GrepFilter(FilterBase):
         return '\n'.join(line for line in data.splitlines()
                          if re.search(subfilter, line) is not None)
 
+class InverseGrepFilter(filters.FilterBase):
+    """Filter which removes lines matching a regular expression"""
+
+    __kind__ = 'grepi'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            raise ValueError('The inverse grep filter needs a regular expression')
+
+        return '\n'.join(line for line in data.splitlines()
+                         if re.search(subfilter, line) is None)
+
 
 class StripFilter(FilterBase):
     """Strip leading and trailing whitespace"""
