@@ -180,7 +180,7 @@ class GrepFilter(FilterBase):
         return '\n'.join(line for line in data.splitlines()
                          if re.search(subfilter, line) is not None)
 
-class InverseGrepFilter(filters.FilterBase):
+class InverseGrepFilter(FilterBase):
     """Filter which removes lines matching a regular expression"""
 
     __kind__ = 'grepi'
