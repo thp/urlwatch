@@ -140,13 +140,20 @@ class HtmlReporter(ReporterBase):
         """)
 
         for job_state in self.report.get_filtered_job_states(self.job_states):
-            pretty_name = job_state.job.pretty_name()
-            location = job_state.job.get_location()
-            if pretty_name != location:
-                location = '%s (%s)' % (pretty_name, location)
+            job = job_state.job
 
-            yield SafeHtml('<h2><span class="verb">{verb}:</span> {location}</h2>').format(verb=job_state.verb,
-                                                                                           location=location)
+            if job.__kind__ == 'url':
+                title = '<a href="{location}">{pretty_name}</a>'
+            elif job.pretty_name() != job.get_location():
+                title = '<span title="{location}">{pretty_name}</span>'
+            else:
+                title = '{location}'
+            title = '<h2><span class="verb">{verb}:</span> '+title+'</h2>'
+
+            yield SafeHtml(title).format(
+                    verb=job_state.verb,
+                    location=job.get_location(),
+                    pretty_name=job.pretty_name())
 
             content = self._format_content(job_state, cfg['diff'])
             if content is not None:
