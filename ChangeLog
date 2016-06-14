@@ -174,3 +174,13 @@
 	* Fix unit tests for files only in source tree (Fixes #34)
 	* Add test/data to source tarball (#34)
 	* Workaround a requests shortcoming related to encoding
+
+2016-06-14 Thomas Perl <thp.io/about>
+	* Add support for pushover (by Richard Palmer)
+	* html2txt: Use -nonumbers and UTF-8 output for Lynx
+	* Fix SMTP server connection setup (fixes #50)
+	* setup.py: Allow running from non-source directory (Fixes #52)
+	* Fix adding URLs with = in them (Fixes #59)
+	* Add option to use sendmail instead of SMTP (by e-dschungel)
+	* Add InverseGrepFilter which removes lines matching a regex (by e-dschungel)
+	* New html2text method "pyhtml2text" using the Python module "html2text" (by e-dschungel)
