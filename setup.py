@@ -31,7 +31,7 @@ m['scripts'] = [os.path.join(HERE, PACKAGE_NAME)]
 m['package_dir'] = {'': os.path.join(HERE, 'lib')}
 m['packages'] = ['.'.join(dirname[len(HERE)+1:].split(os.sep)[1:])
                  for dirname, _, files in os.walk(os.path.join(HERE, 'lib')) if '__init__.py' in files]
-m['data_files'] = [(dirname[len(HERE)+1:], [os.path.join(dirname[len(HERE)+1:], fn) for fn in files])
+m['data_files'] = [(dirname[len(HERE):], [os.path.join(dirname[len(HERE):], fn) for fn in files])
                    for dirname, _, files in os.walk(os.path.join(HERE, 'share')) if files]
 m['install_requires'] = DEPENDENCIES
 
