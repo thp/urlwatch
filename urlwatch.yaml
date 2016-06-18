@@ -1,0 +1,39 @@
+display:
+  error: true
+  new: true
+  unchanged: false
+report:
+  pushover:
+    enabled: false
+    app: 'a566cikneaoqxua3kuhrk6w4xazeek'
+    user: 'u3xcja4wj54wkcazamxqrqtn1mkdr7'
+  mailgun:
+    enabled: true
+    domain : 'sandbox661aa203938245db8a62e0401088567b.mailgun.org'
+    apikey: 'key-ff91a2738f59f72c21731f95115afa0e'
+    from_mail: 'postmaster@sandbox661aa203938245db8a62e0401088567b.mailgun.org'
+    from_name: 'Thumbling - Page monitor'
+    to: 'pisciu@gmail.com'
+    subject : '{count} changes: {jobs}'
+  email:
+    enabled: false
+    from: ''
+    html: false
+    smtp:
+      host: localhost
+      keyring: true
+      port: 25
+      starttls: true
+    subject: '{count} changes: {jobs}'
+    to: ''
+  html:
+    diff: unified
+  stdout:
+    color: true
+    enabled: true
+  text:
+    details: true
+    footer: true
+    line_length: 75
+
+

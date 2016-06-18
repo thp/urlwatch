@@ -1,0 +1,12 @@
+filter: content_only,html2text:bs4
+kind: url
+name: repubblica
+url: http://www.repubblica.it/
+---
+kind: file
+name: local
+path: /Users/Marco/Documents/y.html
+---
+kind: url
+name: gazzetta
+url: http://www.gazzetta.it/
