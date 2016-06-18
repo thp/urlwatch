@@ -68,28 +68,55 @@ class ContentOnlyFilter(filters.FilterBase):
         REMOVE_ATTRIBUTES = ['lang', 'language', 'onmouseover', 'onmouseout', 'script', 'style', 'font', 'dir', 'face',
                              'size', 'color', 'style', 'class', 'width', 'height', 'hspace', 'border', 'valign',
                              'align', 'background', 'bgcolor', 'text', 'link', 'vlink', 'alink', 'cellpadding',
-                             'cellspacing']
+                             'cellspacing', 'data-sharebuttons', 'data-href', 'id', 'fck_savedurl', 'role',
+                             'frameborder', 'scrolling', 'marginheight', 'data-template', 'datetime', 'marginwidth']
+
 
         soup = BeautifulSoup(data, 'lxml')
 
-        # Remove tags
-        for elem in soup.findAll(REMOVE_TAGS):
-            elem.extract()
 
         # Remove comments
+        removed_comment_count = 0
         for comment in soup.findAll(text=lambda text: isinstance(text, Comment)):
-            comment.extract()
+            removed_comment = comment.extract()
+            removed_comment_count += 1
+
+        logger.debug("Removed {0} comments from HTML".format(removed_comment_count))
+
+        # Remove tags
+        removed_tag_count = 0
+        for elem in soup.findAll(REMOVE_TAGS):
+            removed_tag = elem.extract()
+            removed_tag_count += 1
+
+        logger.debug("Removed {0} unwanted tags from HTML".format(removed_tag_count))
 
         # Remove attributes
+        removed_attrs_count = 0
+        preserved_attrs = {}
         for tag in soup.findAll(True):
+
             try:
-                tag.attrs = [(key, value) for key, value in tag.attrs if key not in REMOVE_ATTRIBUTES]
+                attrs_count = len(tag.attrs)
+                tag.attrs = {key: value for key, value in tag.attrs.items() if key not in REMOVE_ATTRIBUTES}
+                removed_attrs_count += attrs_count - len(tag.attrs)
+
+                for key in tag.attrs.keys():
+                    if key in preserved_attrs:
+                        preserved_attrs[key] += 1
+                    else:
+                        preserved_attrs[key] = 1
+
             except AttributeError:
                 # 'NavigableString' object has no attribute 'attrs'
                 pass
             except ValueError as e:
                 print(e)
                 pass
+
+        preserved_attrs = sorted(preserved_attrs.items(), key=lambda x:x[1], reverse=True)
+        logger.debug("Removed {0} unwanted attributes from HTML".format(removed_attrs_count))
+        logger.debug("Preserved attributes: '{0}'".format(preserved_attrs))
 
         result = soup.prettify()
         return result
