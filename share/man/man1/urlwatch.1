@@ -1,0 +1,85 @@
+.TH URLWATCH "1" "January 2016" "urlwatch 2.0" "User Commands"
+.SH NAME
+urlwatch \- a tool for monitoring webpages for updates
+.SH USAGE
+.B urlwatch
+[\-h] [\-\-version] [\-v]
+.IP
+[\-\-urls FILE] [\-\-config FILE] [\-\-hooks FILE] [\-\-cache FILE]
+.IP
+[\-\-list] [\-\-add JOB] [\-\-delete JOB]
+.IP
+[\-\-edit] [\-\-edit\-config] [\-\-edit\-hooks]
+.IP
+[\-\-features] [\-\-gc\-cache]
+.PP
+.SH DESCRIPTION
+.PP
+urlwatch is intended to help you watch changes in webpages and get notified
+(via email, in your terminal or with a custom-written reporter class) of any
+changes. The change notification will include the URL that has changed and
+a unified diff of what has changed.
+.SS "optional arguments:"
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show this help message and exit
+.TP
+\fB\-\-version\fR
+show program's version number and exit
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+show debug output
+.SS "files and directories:"
+.TP
+\fB\-\-urls\fR FILE
+read job list (URLs) from FILE
+.TP
+\fB\-\-config\fR FILE
+read configuration from FILE
+.TP
+\fB\-\-hooks\fR FILE
+use FILE as hooks.py module
+.TP
+\fB\-\-cache\fR FILE
+use FILE as cache database
+.SS "job list management:"
+.TP
+\fB\-\-list\fR
+list jobs
+.TP
+\fB\-\-add\fR JOB
+add job (key1=value1,key2=value2,...)
+.TP
+\fB\-\-delete\fR JOB
+delete job by location or index
+.SS "interactive commands ($EDITOR/$VISUAL):"
+.TP
+\fB\-\-edit\fR
+edit URL/job list
+.TP
+\fB\-\-edit\-config\fR
+edit configuration file
+.TP
+\fB\-\-edit\-hooks\fR
+edit hooks script
+.SS "miscellaneous:"
+.TP
+\fB\-\-features\fR
+list supported jobs/filters/reporters
+.TP
+\fB\-\-gc\-cache\fR
+remove old cache entries
+.SH "FILES"
+.TP
+.B ~/.urlwatch/urls.yaml
+A list of URLs, commands and other jobs to watch
+.TP
+.B ~/.urlwatch/hooks.py
+A Python module that can implement new job types, filters and reporters
+.TP
+.B ~/.urlwatch/cache.db
+A SQLite 3 database that contains the state history of jobs (for diffing)
+.SH AUTHOR
+Thomas Perl <thp.io/about>
+.SH WEBSITE
+http://thp.io/2008/urlwatch/
