@@ -29,47 +29,54 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # File and folder paths
-import sys
-import os.path
-import os
-
-import shutil
-import requests
-import socket
 import argparse
-import logging
+
 import imp
+import logging
+import os
+import os.path
+import shutil
+import socket
 import subprocess
-import concurrent.futures
+import sys
 
+import requests
 
-# Duplicated here
-pkgname = 'urlwatch'
+class Config(object):
 
-urlwatch_dir = os.path.expanduser(os.path.join('~', '.'+pkgname))
-urls_txt = os.path.join(urlwatch_dir, 'urls.txt')
-urls_yaml = os.path.join(urlwatch_dir, 'urls.yaml')
-config_yaml = os.path.join(urlwatch_dir, 'urlwatch.yaml')
-cache_dir = os.path.join(urlwatch_dir, 'cache')
-cache_db = os.path.join(urlwatch_dir, 'cache.db')
-hooks_py = os.path.join(urlwatch_dir, 'hooks.py')
+    def __init__(self):
 
-# Check if we are installed in the system already
-(prefix, bindir) = os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))
+        # Duplicated here
+        self.pkgname = 'urlwatch'
 
-if bindir == 'bin':
-    # Installed system-wide
-    examples_dir = os.path.join(prefix, 'share', pkgname, 'examples')
-else:
-    # Assume we are not yet installed
-    sys.path.insert(0, os.path.join(prefix, bindir, 'lib'))
-    examples_dir = os.path.join(prefix, bindir, 'share', pkgname, 'examples')
+        self.urlwatch_dir = os.path.expanduser(os.path.join('~', '.' + self.pkgname))
+        self.urls_txt = os.path.join(self.urlwatch_dir, 'urls.txt')
+        self.urls_yaml = os.path.join(self.urlwatch_dir, 'urls.yaml')
+        self.config_yaml = os.path.join(self.urlwatch_dir, 'urlwatch.yaml')
+        self.cache_dir = os.path.join(self.urlwatch_dir, 'cache')
+        self.cache_db = os.path.join(self.urlwatch_dir, 'cache.db')
+        self.hooks_py = os.path.join(self.urlwatch_dir, 'hooks.py')
 
-urls_yaml_example = os.path.join(examples_dir, 'urls.yaml.example')
-hooks_py_example = os.path.join(examples_dir, 'hooks.py.example')
+        # Check if we are installed in the system already
+        (self.prefix, self.bindir) = os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))
+
+    def setup(self):
+
+        if self.bindir == 'bin':
+            # Installed system-wide
+            examples_dir = os.path.join(self.prefix, 'share', self.pkgname, 'examples')
+        else:
+            # Assume we are not yet installed
+            sys.path.insert(0, os.path.join(self.prefix, self.bindir, 'lib'))
+            examples_dir = os.path.join(self.prefix, self.bindir, 'share', self.pkgname, 'examples')
+
+        self.urls_yaml_example = os.path.join(examples_dir, 'urls.yaml.example')
+        self.hooks_py_example = os.path.join(examples_dir, 'hooks.py.example')
+
+urlwatch_config = Config()
+urlwatch_config.setup()
 
 # Code section
-
 import urlwatch
 
 from urlwatch.handler import JobState, Report
@@ -79,273 +86,149 @@ from urlwatch.storage import UrlsYaml, UrlsTxt, ConfigStorage, CacheDirStorage, 
 from urlwatch.jobs import JobBase, NotModifiedError
 from urlwatch.filters import FilterBase
 from urlwatch.reporters import ReporterBase
+from urlwatch.migration import MigrationManager
+from urlwatch.console import edit_hooks, edit_yaml, show_features
+from urlwatch.worker import run_parallel
 
 # One minute (=60 seconds) timeout for each request to avoid hanging
 socket.setdefaulttimeout(60)
 
-logger = logging.getLogger(pkgname)
+logger = logging.getLogger(urlwatch_config.pkgname)
 
-MAX_WORKERS = 10
-
-def run_parallel(func, items):
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
-    for future in concurrent.futures.as_completed(executor.submit(func, item) for item in items):
-        exception = future.exception()
-        if exception is not None:
-            raise exception
-        yield future.result()
+class Urlwatch:
 
 
-def show_features():
-    print()
-    print('Supported jobs:\n')
-    print(JobBase.job_documentation())
+    def execute_jobs(self):
 
-    print('Supported filters:\n')
-    print(FilterBase.filter_documentation())
-    print()
-    print('Supported reporters:\n')
-    print(ReporterBase.reporter_documentation())
-    print()
-    return 0
+        logger.debug('Processing %d jobs', len(self.jobs))
+        for job_state in run_parallel(lambda job_state: job_state.process(),
+                                      (JobState(self.cache_storage, job) for job in self.jobs)):
+            logger.debug('Job finished: %s', job_state.job)
 
-
-def edit_yaml(yaml_file, parser, example_file=None):
-    editor = os.environ.get('EDITOR', None)
-    if editor is None:
-        editor = os.environ.get('VISUAL', None)
-    if editor is None:
-        print('Please set $VISUAL or $EDITOR.')
-        return 1
-
-    fn_base, fn_ext = os.path.splitext(yaml_file)
-    yaml_edit = fn_base + '.edit' + fn_ext
-    try:
-        if os.path.exists(yaml_file):
-            shutil.copy(yaml_file, yaml_edit)
-        elif example_file is not None:
-            shutil.copy(example_file, yaml_edit)
-        subprocess.check_call([editor, yaml_edit])
-        # Check if we can still parse it
-        if parser is not None:
-            parser(yaml_edit).load()
-        os.rename(yaml_edit, yaml_file)
-        print('Saving edit changes in', yaml_file)
-    except Exception as e:
-        print('Parsing failed:')
-        print('======')
-        print(e)
-        print('======')
-        print('')
-        print('The file', yaml_file, 'was NOT updated.')
-        print('Your changes have been saved in', yaml_edit)
-        return 1
-
-    return 0
-
-
-def edit_hooks(hooks_file, example_file):
-    editor = os.environ.get('EDITOR', None)
-    if editor is None:
-        editor = os.environ.get('VISUAL', None)
-    if editor is None:
-        print('Please set $VISUAL or $EDITOR.')
-        return 1
-
-    fn_base, fn_ext = os.path.splitext(hooks_file)
-    hooks_edit = fn_base + '.edit' + fn_ext
-    try:
-        if os.path.exists(hooks_file):
-            shutil.copy(hooks_file, hooks_edit)
-        else:
-            shutil.copy(example_file, hooks_edit)
-        subprocess.check_call([editor, hooks_edit])
-        imp.load_source('hooks', hooks_edit)
-        os.rename(hooks_edit, hooks_file)
-        print('Saving edit changes in', hooks_file)
-    except Exception as e:
-        print('Parsing failed:')
-        print('======')
-        print(e)
-        print('======')
-        print('')
-        print('The file', hooks_file, 'was NOT updated.')
-        print('Your changes have been saved in', hooks_edit)
-        return 1
-
-    return 0
-
-def list_urls(jobs, verbose):
-    for idx, job in enumerate(jobs):
-        if verbose:
-            print('%d: %s' % (idx+1, repr(job)))
-        else:
-            pretty_name = job.pretty_name()
-            location = job.get_location()
-            if pretty_name != location:
-                print('%d: %s (%s)' % (idx+1, pretty_name, location))
+            if job_state.exception is not None:
+                if isinstance(job_state.exception, NotModifiedError):
+                    logger.info('Job %s has not changed (HTTP 304)', job_state.job)
+                    self.report.unchanged(job_state)
+                elif isinstance(job_state.exception, requests.exceptions.RequestException):
+                    # Instead of a full traceback, just show the HTTP error
+                    job_state.traceback = str(job_state.exception)
+                    self.report.error(job_state)
+                else:
+                    self.report.error(job_state)
+            elif job_state.old_data is not None:
+                if job_state.old_data.splitlines() != job_state.new_data.splitlines():
+                    self.report.changed(job_state)
+                    job_state.save()
+                else:
+                    self.report.unchanged(job_state)
             else:
-                print('%d: %s' % (idx+1, pretty_name))
-    return 0
-
-
-def modify_urls(jobs, urls, add, delete):
-    save = True
-    if delete is not None:
-        try:
-            index = int(delete) - 1
-            try:
-                job = jobs.pop(index)
-                print('Removed %r' % (job,))
-            except IndexError:
-                print('Not found: %r' % (index,))
-                save = False
-        except ValueError:
-            job = next((job for job in jobs if job.get_location() == delete), None)
-            try:
-                jobs.remove(job)
-                print('Removed %r' % (job,))
-            except ValueError:
-                print('Not found: %r' % (delete,))
-                save = False
-
-    if add is not None:
-        d = {k: v for k, v in (item.split('=', 1) for item in add.split(','))}
-        job = JobBase.unserialize(d)
-        print('Adding %r' % (job,))
-        jobs.append(job)
-
-    if save:
-        print('Saving updated list to %r' % (urls,))
-        UrlsYaml(urls).save(jobs)
-
-    return 0
-
-
-def main(args):
-    if args.verbose:
-        root_logger = logging.getLogger('')
-        console = logging.StreamHandler()
-        console.setFormatter(logging.Formatter('%(asctime)s %(module)s %(levelname)s: %(message)s'))
-        root_logger.addHandler(console)
-        root_logger.setLevel(logging.DEBUG)
-        root_logger.info('turning on verbose logging mode')
-
-    logger.info('Using %s as URLs file', args.urls)
-    logger.info('Using %s for hooks', args.hooks)
-    logger.info('Using %s as cache directory', args.cache)
-
-    if not os.path.isdir(urlwatch_dir):
-        os.makedirs(urlwatch_dir)
-        print("""
-        Created directory: {urlwatch_dir}
-        """.format(urlwatch_dir=urlwatch_dir))
-
-    if not os.path.exists(args.config):
-        ConfigStorage.write_default_config(args.config)
-        print("""
-        A default config has been written to {config_yaml}.
-        Use "{pkgname} --edit-config" to customize it.
-        """.format(config_yaml=args.config, pkgname=pkgname))
-
-    if args.edit_config:
-        sys.exit(edit_yaml(args.config, ConfigStorage))
-
-    config = ConfigStorage(args.config)
-
-    # Migrate urlwatch 1.x URLs to urlwatch 2.x
-    if os.path.isfile(urls_txt) and not os.path.isfile(args.urls):
-        print("""
-        Migrating URLs: {urls_txt} -> {urls_yaml}
-        Use "{pkgname} --edit" to customize it.
-        """.format(urls_txt=urls_txt, urls_yaml=args.urls, pkgname=pkgname))
-        UrlsYaml(args.urls).save(UrlsTxt(urls_txt).load_secure())
-        os.rename(urls_txt, urls_txt + '.migrated')
-
-    if not os.path.isfile(args.urls) and not args.edit and not args.add:
-        print("""
-        You need to create {urls_yaml} in order to use {pkgname}.
-        Use "{pkgname} --edit" to open the file with your editor.
-        """.format(urls_yaml=args.urls, pkgname=pkgname))
-
-        sys.exit(1)
-
-    if os.path.exists(args.hooks):
-        imp.load_source('hooks', args.hooks)
-
-    if os.path.isfile(args.urls):
-        jobs = UrlsYaml(args.urls).load_secure()
-    else:
-        logger.warn('No jobs file found')
-        jobs = []
-
-    # Migrate urlwatch 1.x cache to urlwatch 2.x
-    if not os.path.isfile(args.cache) and os.path.isdir(cache_dir):
-        print("""
-        Migrating cache: {cache_dir} -> {cache_db}
-        """.format(cache_dir=cache_dir, cache_db=args.cache))
-        cache_storage = CacheMiniDBStorage(args.cache)
-        old_cache_storage = CacheDirStorage(cache_dir)
-        cache_storage.restore(old_cache_storage.backup())
-        cache_storage.gc([job.get_guid() for job in jobs])
-        os.rename(cache_dir, cache_dir + '.migrated')
-    else:
-        cache_storage = CacheMiniDBStorage(args.cache)
-
-    report = Report(config.config)
-
-    if args.features:
-        sys.exit(show_features())
-
-    if args.gc_cache:
-        cache_storage.gc([job.get_guid() for job in jobs])
-        sys.exit(0)
-
-    if args.edit:
-        sys.exit(edit_yaml(args.urls, UrlsYaml, urls_yaml_example))
-
-    if args.edit_hooks:
-        sys.exit(edit_hooks(args.hooks, hooks_py_example))
-
-    if args.list:
-        sys.exit(list_urls(jobs, args.verbose))
-
-    if args.add is not None or args.delete is not None:
-        sys.exit(modify_urls(jobs, args.urls, args.add, args.delete))
-
-    logger.debug('Processing %d jobs', len(jobs))
-    for job_state in run_parallel(lambda job_state: job_state.process(),
-                                  (JobState(cache_storage, job) for job in jobs)):
-        logger.debug('Job finished: %s', job_state.job)
-
-        if job_state.exception is not None:
-            if isinstance(job_state.exception, NotModifiedError):
-                logger.info('Job %s has not changed (HTTP 304)', job_state.job)
-                report.unchanged(job_state)
-            elif isinstance(job_state.exception, requests.exceptions.RequestException):
-                # Instead of a full traceback, just show the HTTP error
-                job_state.traceback = str(job_state.exception)
-                report.error(job_state)
-            else:
-                report.error(job_state)
-        elif job_state.old_data is not None:
-            if job_state.old_data.splitlines() != job_state.new_data.splitlines():
-                report.changed(job_state)
+                self.report.new(job_state)
                 job_state.save()
-            else:
-                report.unchanged(job_state)
+
+    def handle_actions(self):
+
+        if self.args.features:
+            sys.exit(self.show_features())
+        if self.args.gc_cache:
+            self.cache_storage.gc([job.get_guid() for job in self.jobs])
+            sys.exit(0)
+        if self.args.edit:
+            sys.exit(edit_yaml(self.args.urls, UrlsYaml, self.config.urls_yaml_example))
+        if self.args.edit_hooks:
+            sys.exit(edit_hooks(self.args.hooks, self.config.hooks_py_example))
+        if self.args.list:
+            sys.exit(self.list_urls(self.jobs, self.args.verbose))
+        if self.args.add is not None or self.args.delete is not None:
+            sys.exit(self.modify_urls(self.jobs, self.args.urls, self.args.add, self.args.delete))
+
+    def load_jobs_config(self):
+        if os.path.isfile(self.args.urls):
+            jobs = UrlsYaml(self.args.urls).load_secure()
         else:
-            report.new(job_state)
-            job_state.save()
+            logger.warn('No jobs file found')
+            jobs = []
 
-    # Output everything
-    report.finish()
+        return jobs
 
-    # Close cache
-    cache_storage.close()
+    def load_hooks_modules(self):
+        if os.path.exists(self.args.hooks):
+            imp.load_source('hooks', self.args.hooks)
+
+    def check_jobs_available(self):
+        if not os.path.isfile(self.args.urls) and not self.args.edit and not self.args.add:
+            print("""
+            You need to create {urls_yaml} in order to use {pkgname}.
+            Use "{pkgname} --edit" to open the file with your editor.
+            """.format(urls_yaml=self.args.urls, pkgname=self.config.pkgname))
+            sys.exit(1)
+
+    def check_urlwatch_config(self):
+        if not os.path.exists(self.args.config):
+            ConfigStorage.write_default_config(self.args.config)
+            print("""
+            A default config has been written to {config_yaml}.
+            Use "{pkgname} --edit-config" to customize it.
+            """.format(config_yaml=self.args.config, pkgname=self.config.pkgname))
+
+    def check_urlwatch_dir(self):
+        if not os.path.isdir(self.config.urlwatch_dir):
+            os.makedirs(config.urlwatch_dir)
+            print("""
+            Created directory: {urlwatch_dir}
+            """.format(urlwatch_dir=self.config.urlwatch_dir))
+
+    def init_loggers(self):
+        if self.args.verbose:
+            root_logger = logging.getLogger('')
+            console = logging.StreamHandler()
+            console.setFormatter(logging.Formatter('%(asctime)s %(module)s %(levelname)s: %(message)s'))
+            root_logger.addHandler(console)
+            root_logger.setLevel(logging.DEBUG)
+            root_logger.info('turning on verbose logging mode')
+
+    def __init__(self, config, args):
+
+        self.config = config
+        self.args = args
+        self.init_loggers()
+        self.migration_manager = MigrationManager(self.config, self.args)
+
+    def main(self):
+
+        logger.info('Using %s as URLs file', self.args.urls)
+        logger.info('Using %s for hooks', self.args.hooks)
+        logger.info('Using %s as cache directory', self.args.cache)
+
+        self.check_urlwatch_dir()
+        self.check_urlwatch_config()
+
+        if self.args.edit_config:
+            sys.exit(edit_yaml(self.args.config, ConfigStorage))
+
+        self.migration_manager.migrate_jobs_to_urlwatch_2x()
+
+        self.check_jobs_available()
+        self.load_hooks_modules()
+        self.jobs = self.load_jobs_config()
+
+        self.cache_storage = self.migration_manager.migrate_cache_to_urlwatch_2x(self.jobs)
+
+        self.config = ConfigStorage(self.args.config)
+        self.report = Report(self.config.config)
+
+        self.handle_actions()
+
+        self.execute_jobs()
+
+        # Output everything
+        self.report.finish()
+
+        # Close cache
+        self.cache_storage.close()
 
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser(description=urlwatch.__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
 
@@ -353,10 +236,10 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='store_true', help='show debug output')
 
     group = parser.add_argument_group('files and directories')
-    group.add_argument('--urls', metavar='FILE', help='read job list (URLs) from FILE', default=urls_yaml)
-    group.add_argument('--config', metavar='FILE', help='read configuration from FILE', default=config_yaml)
-    group.add_argument('--hooks', metavar='FILE', help='use FILE as hooks.py module', default=hooks_py)
-    group.add_argument('--cache', metavar='FILE', help='use FILE as cache database', default=cache_db)
+    group.add_argument('--urls', metavar='FILE', help='read job list (URLs) from FILE', default=urlwatch_config.urls_yaml)
+    group.add_argument('--config', metavar='FILE', help='read configuration from FILE', default=urlwatch_config.config_yaml)
+    group.add_argument('--hooks', metavar='FILE', help='use FILE as hooks.py module', default=urlwatch_config.hooks_py)
+    group.add_argument('--cache', metavar='FILE', help='use FILE as cache database', default=urlwatch_config.cache_db)
 
     group = parser.add_argument_group('job list management')
     group.add_argument('--list', action='store_true', help='list jobs')
@@ -372,4 +255,5 @@ if __name__ == '__main__':
     group.add_argument('--features', action='store_true', help='list supported jobs/filters/reporters')
     group.add_argument('--gc-cache', action='store_true', help='remove old cache entries')
 
-    main(parser.parse_args())
+    urlwatch = Urlwatch(urlwatch_config, parser.parse_args())
+    urlwatch.main()
