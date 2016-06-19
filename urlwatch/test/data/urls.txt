@@ -1,0 +1,28 @@
+
+# This is an example urls.txt file for urlwatch
+# Empty lines and lines starting with "#" are ignored
+
+http://www.dubclub-vienna.com/
+http://www.openpandora.org/developers.php
+#http://www.statistik.tuwien.ac.at/lv-guide/u107.369/info.html
+#http://www.statistik.tuwien.ac.at/lv-guide/u107.369/blatter.html
+#http://www.dbai.tuwien.ac.at/education/dbs/current/index.html
+#http://www.dbai.tuwien.ac.at/education/dbs/current/uebung.html
+http://ti.tuwien.ac.at/rts/teaching/courses/systems_programming
+http://ti.tuwien.ac.at/rts/teaching/courses/systems_programming/labor
+http://ti.tuwien.ac.at/rts/teaching/courses/betriebssysteme
+#http://www.complang.tuwien.ac.at/anton/lvas/effiziente-programme.html
+#http://www.complang.tuwien.ac.at/anton/lvas/effizienz-aufgabe08/
+http://www.kukuk.at/ical/events
+http://guckes.net/cal/
+
+# You can use the pipe character to "watch" the output of shell commands
+|ls -al ~
+
+# If you want to use spaces in URLs, you have to URL-encode them (e.g. %20)
+http://example.org/With%20Spaces/
+
+# You can do POST requests by writing the POST data behind the URL,
+# separated by a single space character. POST data is URL-encoded.
+http://example.com/search.cgi button=Search&q=something&category=4
+

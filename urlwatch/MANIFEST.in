@@ -1,0 +1,3 @@
+include ChangeLog COPYING README.md
+recursive-include share *
+recursive-include test/data *
