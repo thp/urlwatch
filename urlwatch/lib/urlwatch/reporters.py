@@ -414,6 +414,7 @@ class MailGunReporter(TextReporter):
             logger.debug('Not calling mailgun API (no changes)')
             return
 
+        logger.debug("Sending mailgun request for domain:'{0}'".format(domain))
         result = requests.post(
             "https://api.mailgun.net/v3/{0}/messages".format(domain),
             auth=("api", apikey),
@@ -424,5 +425,5 @@ class MailGunReporter(TextReporter):
                   "html": body_html})
 
         json_res = json.loads(result.content.decode("utf-8"))
-        logger.debug("Mailgun response. id:'{0}', message: '{1}'".format(json_res['id'],json_res['message']))
+        logger.info("Mailgun response. id:'{0}', message: '{1}'".format(json_res['id'],json_res['message']))
         return result
