@@ -65,7 +65,8 @@ class ContentOnlyFilter(filters.FilterBase):
                        'text-indent', 'text-shadow', 'textarea', 'title', 'track', 'vertical-align', 'video',
                        'visibility', 'xmp']
 
-        PRESERVE_ATTRIBUTES = ['href', 'title', 'target', 'src', 'alt', 'id', 'class']
+        PRESERVE_ATTRIBUTES = ['href', 'title', 'target', 'src', 'alt']
+        # PRESERVE_ATTRIBUTES.append(['id', 'class'])
 
         soup = BeautifulSoup(data, 'lxml')
 
