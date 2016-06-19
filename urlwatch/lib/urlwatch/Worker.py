@@ -27,42 +27,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import logging
+import concurrent.futures
+MAX_WORKERS = 10
 
-logger = logging.getLogger(__name__)
-
-class TrackSubClasses(type):
-    """A metaclass that stores subclass name-to-class mappings in the base class"""
-
-    def __init__(cls, name, bases, namespace):
-        for base in bases:
-            if base == object:
-                continue
-
-            for attr in ('__required__', '__optional__'):
-                if not hasattr(base, attr):
-                    continue
-
-                inherited = getattr(base, attr, ())
-                new_value = tuple(namespace.get(attr, ())) + tuple(inherited)
-                namespace[attr] = new_value
-                setattr(cls, attr, new_value)
-
-        for base in bases:
-            if base == object:
-                continue
-
-            if hasattr(cls, '__kind__'):
-                subclasses = getattr(base, '__subclasses__', None)
-                if subclasses is not None:
-                    logger.info('Registering %r as %s', cls, cls.__kind__)
-                    subclasses[cls.__kind__] = cls
-                    break
-            else:
-                anonymous_subclasses = getattr(base, '__anonymous_subclasses__', None)
-                if anonymous_subclasses is not None:
-                    logger.info('Registering %r', cls)
-                    anonymous_subclasses.append(cls)
-                    break
-
-        super().__init__(name, bases, namespace)
+def run_parallel(func, items):
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
+    for future in concurrent.futures.as_completed(executor.submit(func, item) for item in items):
+        exception = future.exception()
+        if exception is not None:
+            raise exception
+        yield future.result()
