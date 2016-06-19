@@ -48,32 +48,26 @@ class ContentOnlyFilter(filters.FilterBase):
 
     def filter(self, data, subfilter=None):
 
-        REMOVE_TAGS = ['script', 'style', 'applet', 'area', 'audio', 'base', 'basefont', 'bdi', 'bdo', 'big', 'br',
-                          'center', 'colgroup', 'datalist', 'form', 'frameset', 'head', 'link', 'map', 'meta',
-                          'noframes', 'noscript', 'optgroup', 'option', 'param', 'rp', 'rt', 'ruby', 'script', 'source',
-                          'style', 'title', 'track', 'xmp', 'img', 'canvas', 'input', 'textarea', 'audio', 'video',
-                          'hr', 'embed', 'object', 'progress', 'select', 'table', 'margin-left', 'margin-top',
-                          'margin-right', 'margin-bottom', 'border-left-color', 'border-left-style',
-                          'border-left-width', 'border-top-color', 'border-top-style', 'border-top-width',
-                          'border-right-color', 'border-right-style', 'border-right-width', 'border-bottom-color',
-                          'border-bottom-style', 'border-bottom-width', 'border-top-left-radius',
-                          'border-top-right-radius', 'border-bottom-left-radius', 'border-bottom-right-radius',
-                          'padding-left', 'padding-top', 'padding-right', 'padding-bottom', 'background-color',
-                          'background-image', 'background-repeat', 'background-size', 'background-position',
-                          'list-style-image', 'list-style-position', 'list-style-type', 'outline-color',
-                          'outline-style', 'outline-width', 'font-size', 'font-family', 'font-weight', 'font-style',
-                          'line-height', 'box-shadow', 'clear', 'color', 'display', 'float', 'opacity', 'text-align',
-                          'text-decoration', 'text-indent', 'text-shadow', 'vertical-align', 'visibility', 'position']
+        REMOVE_TAGS = ['applet', 'area', 'audio', 'audio', 'background-color', 'background-image',
+                       'background-position', 'background-repeat', 'background-size', 'base', 'basefont', 'bdi', 'bdo',
+                       'big', 'border-bottom-color', 'border-bottom-left-radius', 'border-bottom-right-radius',
+                       'border-bottom-style', 'border-bottom-width', 'border-left-color', 'border-left-style',
+                       'border-left-width', 'border-right-color', 'border-right-style', 'border-right-width',
+                       'border-top-color', 'border-top-left-radius', 'border-top-right-radius', 'border-top-style',
+                       'border-top-width', 'box-shadow', 'br', 'canvas', 'center', 'clear', 'colgroup', 'color',
+                       'datalist', 'display', 'embed', 'float', 'font-family', 'font-size', 'font-style', 'font-weight',
+                       'form', 'frameset', 'head', 'hr', 'img', 'input', 'line-height', 'link', 'list-style-image',
+                       'list-style-position', 'list-style-type', 'map', 'margin-bottom', 'margin-left', 'margin-right',
+                       'margin-top', 'meta', 'noframes', 'noscript', 'object', 'opacity', 'optgroup', 'option',
+                       'outline-color', 'outline-style', 'outline-width', 'padding-bottom', 'padding-left',
+                       'padding-right', 'padding-top', 'param', 'position', 'progress', 'rp', 'rt', 'ruby', 'script',
+                       'script', 'select', 'source', 'style', 'style', 'table', 'text-align', 'text-decoration',
+                       'text-indent', 'text-shadow', 'textarea', 'title', 'track', 'vertical-align', 'video',
+                       'visibility', 'xmp']
 
-        REMOVE_ATTRIBUTES = ['lang', 'language', 'onmouseover', 'onmouseout', 'script', 'style', 'font', 'dir', 'face',
-                             'size', 'color', 'style', 'class', 'width', 'height', 'hspace', 'border', 'valign',
-                             'align', 'background', 'bgcolor', 'text', 'link', 'vlink', 'alink', 'cellpadding',
-                             'cellspacing', 'data-sharebuttons', 'data-href', 'id', 'fck_savedurl', 'role',
-                             'frameborder', 'scrolling', 'marginheight', 'data-template', 'datetime', 'marginwidth']
-
+        PRESERVE_ATTRIBUTES = ['href', 'title', 'target', 'src', 'alt', 'id', 'class']
 
         soup = BeautifulSoup(data, 'lxml')
-
 
         # Remove comments
         removed_comment_count = 0
@@ -98,7 +92,7 @@ class ContentOnlyFilter(filters.FilterBase):
 
             try:
                 attrs_count = len(tag.attrs)
-                tag.attrs = {key: value for key, value in tag.attrs.items() if key not in REMOVE_ATTRIBUTES}
+                tag.attrs = {key: value for key, value in tag.attrs.items() if key in PRESERVE_ATTRIBUTES}
                 removed_attrs_count += attrs_count - len(tag.attrs)
 
                 for key in tag.attrs.keys():
@@ -114,73 +108,12 @@ class ContentOnlyFilter(filters.FilterBase):
                 print(e)
                 pass
 
-        preserved_attrs = sorted(preserved_attrs.items(), key=lambda x:x[1], reverse=True)
+        preserved_attrs = sorted(preserved_attrs.items(), key=lambda x: x[1], reverse=True)
         logger.debug("Removed {0} unwanted attributes from HTML".format(removed_attrs_count))
         logger.debug("Preserved attributes: '{0}'".format(preserved_attrs))
 
         result = soup.prettify()
+
+        # logger.debug("Cleanup result:\n\n{0}\n\n".format(result))
+
         return result
-
-# class CaseFilter(filters.FilterBase):
-
-# """Custom filter for changing case, needs to be selected manually"""
-#
-#    __kind__ = 'case'
-#
-#    def filter(self, data, subfilter=None):
-#        # The subfilter is specified using a colon, for example the "case"
-#        # filter here can be specified as "case:upper" and "case:lower"
-#
-#        if subfilter is None:
-#            subfilter = 'upper'
-#
-#        if subfilter == 'upper':
-#            return data.upper()
-#        elif subfilter == 'lower':
-#            return data.lower()
-#        else:
-#            raise ValueError('Unknown case subfilter: %r' % (subfilter,))
-
-
-# class IndentFilter(filters.FilterBase):
-#    """Custom filter for indenting, needs to be selected manually"""
-#
-#    __kind__ = 'indent'
-#
-#    def filter(self, data, subfilter=None):
-#        # The subfilter here is a number of characters to indent
-#
-#        if subfilter is None:
-#            indent = 8
-#        else:
-#            indent = int(subfilter)
-#
-#        return '\n'.join((' '*indent) + line for line in data.splitlines())
-
-# class CustomMatchUrlFilter(filters.AutoMatchFilter):
-#     # The AutoMatchFilter will apply automatically to all filters
-#     # that have the given properties set
-#     MATCH = {'url': 'http://example.org/'}
-#
-#     def filter(self, data):
-#         return data.replace('foo', 'bar')
-#
-#
-# class CustomRegexMatchUrlFilter(filters.RegexMatchFilter):
-#     # Similar to AutoMatchFilter
-#     MATCH = {'url': re.compile('http://example.org/.*')}
-#
-#     def filter(self, data):
-#         return data.replace('foo', 'bar')
-#
-#
-#
-#
-# class CustomHtmlFileReporter(reporters.HtmlReporter):
-#     """Custom reporter that writes the HTML report to a file"""
-#
-#     __kind__ = 'custom_html'
-#
-#     def submit(self):
-#         with open(self.config['filename'], 'w') as fp:
-#             fp.write('\n'.join(super().submit()))

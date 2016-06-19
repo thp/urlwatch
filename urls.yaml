@@ -1,5 +1,5 @@
-filter: content_only,html2text:bs4
 kind: url
+filter: content_only,html2text:bs4
 name: repubblica
 url: http://www.repubblica.it/
 ---
@@ -8,5 +8,11 @@ name: local
 path: /Users/Marco/Documents/y.html
 ---
 kind: url
+filter: content_only,html2text:bs4
 name: gazzetta
 url: http://www.gazzetta.it/
+---
+kind: url
+filter: content_only,html2text:bs4
+name: gazzetta
+url: http://www.ansa.it/
