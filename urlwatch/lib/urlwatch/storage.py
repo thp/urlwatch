@@ -35,6 +35,7 @@ import copy
 import yaml
 import minidb
 import logging
+import sys
 
 from .jobs import JobBase, UrlJob, ShellJob
 
@@ -144,20 +145,23 @@ class UrlsStorage(object):
 
     def shelljob_security_checks(self):
         shelljob_errors = []
-        current_uid = os.getuid()
 
-        dirname = os.path.dirname(self.filename) or '.'
-        dir_st = os.stat(dirname)
-        if (dir_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
-            shelljob_errors.append('%s is group/world-writable' % dirname)
-        if dir_st.st_uid != current_uid:
-            shelljob_errors.append('%s not owned by %s' % (dirname, get_current_user()))
+        logger.debug("Running on {0}".format(sys.platform))
+        if (sys.platform != 'win32'):
+            current_uid = os.getuid()
 
-        file_st = os.stat(self.filename)
-        if (file_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
-            shelljob_errors.append('%s is group/world-writable' % self.filename)
-        if file_st.st_uid != current_uid:
-            shelljob_errors.append('%s not owned by %s' % (self.filename, get_current_user()))
+            dirname = os.path.dirname(self.filename) or '.'
+            dir_st = os.stat(dirname)
+            if (dir_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
+                shelljob_errors.append('%s is group/world-writable' % dirname)
+            if dir_st.st_uid != current_uid:
+                shelljob_errors.append('%s not owned by %s' % (dirname, get_current_user()))
+
+            file_st = os.stat(self.filename)
+            if (file_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
+                shelljob_errors.append('%s is group/world-writable' % self.filename)
+            if file_st.st_uid != current_uid:
+                shelljob_errors.append('%s not owned by %s' % (self.filename, get_current_user()))
 
         return shelljob_errors
 
