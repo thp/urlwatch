@@ -1,0 +1,3 @@
+#!/bin/bash      tells the terminal that you are using bash shell
+echo Calling urlwatch...
+python urlwatch/urlwatch -v --urls urls.yaml --config urlwatch.yaml --hooks hooks.py --cache cache.db
