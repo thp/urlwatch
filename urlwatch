@@ -36,6 +36,7 @@ import os
 import shutil
 import requests
 import socket
+import signal
 import argparse
 import logging
 import imp
@@ -82,6 +83,13 @@ from urlwatch.reporters import ReporterBase
 
 # One minute (=60 seconds) timeout for each request to avoid hanging
 socket.setdefaulttimeout(60)
+
+# Ignore SIGPIPE for stdout (see https://github.com/thp/urlwatch/issues/77)
+try:
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+except AttributeError:
+    # Windows does not have signal.SIGPIPE
+    ...
 
 logger = logging.getLogger(pkgname)
 
