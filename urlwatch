@@ -134,7 +134,7 @@ def edit_yaml(yaml_file, parser, example_file=None):
     try:
         if os.path.exists(yaml_file):
             shutil.copy(yaml_file, yaml_edit)
-        elif example_file is not None:
+        elif example_file is not None and os.path.exists(example_file):
             shutil.copy(example_file, yaml_edit)
         subprocess.check_call([editor, yaml_edit])
         # Check if we can still parse it
@@ -168,7 +168,7 @@ def edit_hooks(hooks_file, example_file):
     try:
         if os.path.exists(hooks_file):
             shutil.copy(hooks_file, hooks_edit)
-        else:
+        elif example_file is not None and os.path.exists(example_file):
             shutil.copy(example_file, hooks_edit)
         subprocess.check_call([editor, hooks_edit])
         imp.load_source('hooks', hooks_edit)
