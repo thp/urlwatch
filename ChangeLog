@@ -184,3 +184,7 @@
 	* Add option to use sendmail instead of SMTP (by e-dschungel)
 	* Add InverseGrepFilter which removes lines matching a regex (by e-dschungel)
 	* New html2text method "pyhtml2text" using the Python module "html2text" (by e-dschungel)
+
+2016-07-12 Thomas Perl <thp.io/about>
+	* Check current directory and use os.path.relpath (Fixes #73)
+	* Add link to watched location in email report (by Guillaume Maudoux)
