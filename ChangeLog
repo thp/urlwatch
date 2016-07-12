@@ -188,3 +188,4 @@
 2016-07-12 Thomas Perl <thp.io/about>
 	* Check current directory and use os.path.relpath (Fixes #73)
 	* Add link to watched location in email report (by Guillaume Maudoux)
+	* setup.py: Remove the discovery logic that fails with pip, just hardcode most things
