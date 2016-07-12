@@ -42,6 +42,7 @@ import logging
 import imp
 import subprocess
 import concurrent.futures
+import platform
 
 
 # Duplicated here
@@ -104,6 +105,19 @@ def run_parallel(func, items):
         yield future.result()
 
 
+def atomic_rename(old_filename, new_filename):
+    if platform.system() == 'Windows' and os.path.exists(new_filename):
+        new_old_filename = new_filename + '.bak'
+        if os.path.exists(new_old_filename):
+            os.remove(new_old_filename)
+        os.rename(new_filename, new_old_filename)
+        os.rename(old_filename, new_filename)
+        if os.path.exists(new_old_filename):
+            os.remove(new_old_filename)
+    else:
+        os.rename(old_filename, new_filename)
+
+
 def show_features():
     print()
     print('Supported jobs:\n')
@@ -137,7 +151,7 @@ def edit_yaml(yaml_file, parser, example_file=None):
         # Check if we can still parse it
         if parser is not None:
             parser(yaml_edit).load()
-        os.rename(yaml_edit, yaml_file)
+        atomic_rename(yaml_edit, yaml_file)
         print('Saving edit changes in', yaml_file)
     except Exception as e:
         print('Parsing failed:')
@@ -169,7 +183,7 @@ def edit_hooks(hooks_file, example_file):
             shutil.copy(example_file, hooks_edit)
         subprocess.check_call([editor, hooks_edit])
         imp.load_source('hooks', hooks_edit)
-        os.rename(hooks_edit, hooks_file)
+        atomic_rename(hooks_edit, hooks_file)
         print('Saving edit changes in', hooks_file)
     except Exception as e:
         print('Parsing failed:')
@@ -268,7 +282,7 @@ def main(args):
         Use "{pkgname} --edit" to customize it.
         """.format(urls_txt=urls_txt, urls_yaml=args.urls, pkgname=pkgname))
         UrlsYaml(args.urls).save(UrlsTxt(urls_txt).load_secure())
-        os.rename(urls_txt, urls_txt + '.migrated')
+        atomic_rename(urls_txt, urls_txt + '.migrated')
 
     if not os.path.isfile(args.urls) and not args.edit and not args.add:
         print("""
@@ -296,7 +310,7 @@ def main(args):
         old_cache_storage = CacheDirStorage(cache_dir)
         cache_storage.restore(old_cache_storage.backup())
         cache_storage.gc([job.get_guid() for job in jobs])
-        os.rename(cache_dir, cache_dir + '.migrated')
+        atomic_rename(cache_dir, cache_dir + '.migrated')
     else:
         cache_storage = CacheMiniDBStorage(args.cache)
 
