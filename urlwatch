@@ -42,7 +42,6 @@ import logging
 import imp
 import subprocess
 import concurrent.futures
-import platform
 
 
 # Duplicated here
@@ -123,8 +122,6 @@ def edit_yaml(yaml_file, parser, example_file=None):
     editor = os.environ.get('EDITOR', None)
     if editor is None:
         editor = os.environ.get('VISUAL', None)
-    if editor is None and platform.system() == 'Windows':
-        editor = 'notepad'
     if editor is None:
         print('Please set $VISUAL or $EDITOR.')
         return 1
