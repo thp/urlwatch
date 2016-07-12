@@ -189,3 +189,6 @@
 	* Check current directory and use os.path.relpath (Fixes #73)
 	* Add link to watched location in email report (by Guillaume Maudoux)
 	* setup.py: Remove the discovery logic that fails with pip, just hardcode most things
+	* Windows compatibility fixes (os.rename, shelljob checks)
+	* Do not copy example files if they do not exist
+	* Handle SIGPIPE (fixes #77)
