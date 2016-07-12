@@ -31,6 +31,7 @@
 import os
 import stat
 import copy
+import platform
 
 import yaml
 import minidb
@@ -143,6 +144,9 @@ class UrlsStorage(object):
         self.filename = filename
 
     def shelljob_security_checks(self):
+        if platform.system() == 'Windows':
+            return []
+
         shelljob_errors = []
         current_uid = os.getuid()
 
