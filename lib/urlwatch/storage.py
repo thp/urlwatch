@@ -88,6 +88,10 @@ DEFAULT_CONFIG = {
             'app': '',
             'user': ''
         },
+        'pushbullet': {
+            enabled: False,
+            api_key: ''
+        },
     },
 }
 
