@@ -86,11 +86,11 @@ DEFAULT_CONFIG = {
         'pushover': {
             'enabled': False,
             'app': '',
-            'user': ''
+            'user': '',
         },
         'pushbullet': {
-            enabled: False,
-            api_key: ''
+            'enabled': False,
+            'api_key': '',
         },
     },
 }
