@@ -48,6 +48,10 @@ try:
 except ImportError:
     chump = None
 
+try:
+    from pushbullet import Pushbullet
+except ImportError:
+    Pushbullet = None
 
 logger = logging.getLogger(__name__)
 
@@ -391,3 +395,27 @@ class PushoverReport(TextReporter):
             sound='spacealarm')
 
         msg.send()
+
+class PushbulletReport(TextReporter):
+    """Send summary via Pushbullet"""
+
+    __kind__ = 'pushbullet'
+
+    def submit(self):
+
+        body_text = '\n'.join(super().submit())
+
+        if not body_text:
+            logger.debug('Not sending pushbullet (no changes)')
+            return
+
+        if len(body_text) > 1024:
+            body_text = body_text[0:1023]
+            
+        try:
+            pb = Pushbullet(self.config['api_key'])
+        except:
+            logger.error("Failed to load Pushbullet - is it installed ('pip install pushbullet.py')")
+            return
+
+        push = pb.push_note("Website Change Detected", body_text)
