@@ -364,58 +364,56 @@ class EMailReporter(TextReporter):
         mailer.send(msg)
 
 
-class PushoverReport(TextReporter):
-    """Send summary via Pushover"""
+class WebServiceReporter(TextReporter):
+    MAX_LENGTH = 1024
+
+    def web_service_get(self):
+        raise NotImplementedError
+
+    def web_service_submit(self, service, title, body):
+        raise NotImplementedError
+
+    def submit(self):
+        body_text = '\n'.join(super().submit())
+
+        if not body_text:
+            logger.debug('Not sending %s (no changes)', self.__kind__)
+            return
+
+        if len(body_text) > self.MAX_LENGTH:
+            body_text = body_text[:MAX_LENGTH]
+
+        try:
+            service = self.web_service_get()
+        except:
+            logger.error('Failed to load or connect to %s - are the dependencies installed and configured?',
+                         self.__kind__, exc_info=True)
+            return
+
+        self.web_service_submit(service, 'Website Change Detected', body_text)
+
+
+class PushoverReport(WebServiceReporter):
+    """Send summary via pushover.net"""
 
     __kind__ = 'pushover'
 
-    def submit(self):
+    def web_service_get(self):
+        app = chump.Application(self.config['app'])
+        return app.get_user(self.config['user'])
 
-        body_text = '\n'.join(super().submit())
-
-        if not body_text:
-            logger.debug('Not sending pushover (no changes)')
-            return
-
-        if len(body_text) > 1024:
-            body_text = body_text[0:1023]
-
-        try:
-            app = chump.Application(self.config['app'])
-        except:
-            logger.error("Failed to load chump - is it installed ('pip install chump')")
-            return
-
-        user = app.get_user(self.config['user'])
-
-        msg = user.create_message(
-            title='Website Change Detected',
-            message=body_text,
-            html=True,
-            sound='spacealarm')
-
+    def web_service_submit(self, service, title, body):
+        msg = service.create_message(title=title, message=body, html=True, sound='spacealarm')
         msg.send()
 
-class PushbulletReport(TextReporter):
-    """Send summary via Pushbullet"""
+
+class PushbulletReport(WebServiceReporter):
+    """Send summary via pushbullet.com"""
 
     __kind__ = 'pushbullet'
 
-    def submit(self):
+    def web_service_get(self):
+        return Pushbullet(self.config['api_key'])
 
-        body_text = '\n'.join(super().submit())
-
-        if not body_text:
-            logger.debug('Not sending pushbullet (no changes)')
-            return
-
-        if len(body_text) > 1024:
-            body_text = body_text[0:1023]
-            
-        try:
-            pb = Pushbullet(self.config['api_key'])
-        except:
-            logger.error("Failed to load Pushbullet - is it installed ('pip install pushbullet.py')")
-            return
-
-        push = pb.push_note("Website Change Detected", body_text)
+    def web_service_submit(self, service, title, body):
+        service.push_note(title, body)
