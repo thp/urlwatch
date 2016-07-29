@@ -263,3 +263,17 @@ class Sha1Filter(FilterBase):
         sha = hashlib.sha1()
         sha.update(data.encode('utf-8', 'ignore'))
         return sha.hexdigest()
+
+
+class HexdumpFilter(FilterBase):
+    """Convert binary data to hex dump format"""
+
+    __kind__ = 'hexdump'
+
+    def filter(self, data, subfilter=None):
+        self._no_subfilters(subfilter)
+        data = bytearray(data.encode('utf-8', 'ignore'))
+        blocks = [data[i*16:(i+1)*16] for i in range(int((len(data)+(16-1))/16))]
+        return '\n'.join('%s  %s' % (' '.join('%02x' % c for c in block),
+                                     ''.join((chr(c) if (c > 31 and c < 127) else '.')
+                                             for c in block)) for block in blocks)
