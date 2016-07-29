@@ -34,6 +34,7 @@ import itertools
 import os
 import imp
 import html.parser
+import hashlib
 
 from .util import TrackSubClasses
 
@@ -250,3 +251,15 @@ class GetElementById(FilterBase):
         element_by_id = ElementByID(subfilter)
         element_by_id.feed(data)
         return element_by_id.get_html()
+
+
+class Sha1Filter(FilterBase):
+    """Calculate the SHA-1 checksum of the content"""
+
+    __kind__ = 'sha1sum'
+
+    def filter(self, data, subfilter=None):
+        self._no_subfilters(subfilter)
+        sha = hashlib.sha1()
+        sha.update(data.encode('utf-8', 'ignore'))
+        return sha.hexdigest()
