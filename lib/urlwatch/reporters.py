@@ -381,7 +381,7 @@ class WebServiceReporter(TextReporter):
             return
 
         if len(body_text) > self.MAX_LENGTH:
-            body_text = body_text[:MAX_LENGTH]
+            body_text = body_text[:self.MAX_LENGTH]
 
         try:
             service = self.web_service_get()
