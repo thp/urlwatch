@@ -92,6 +92,15 @@ DEFAULT_CONFIG = {
             'enabled': False,
             'api_key': '',
         },
+        'mailgun': {
+            'enabled': False,
+            'api_key': '',
+            'domain': '',
+            'from_mail': '',
+            'from_name': '',
+            'to': '',
+            'subject': '{count} changes: {jobs}'
+        },
     },
 }
 
