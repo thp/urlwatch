@@ -34,6 +34,9 @@ import time
 import email.utils
 import sys
 import cgi
+import json
+
+import requests
 
 import urlwatch
 
@@ -417,3 +420,53 @@ class PushbulletReport(WebServiceReporter):
 
     def web_service_submit(self, service, title, body):
         service.push_note(title, body)
+
+
+class MailGunReporter(TextReporter):
+    """Custom email reporter that use mailgun service"""
+
+    __kind__ = 'mailgun'
+
+    def submit(self):
+        domain = self.config['domain']
+        api_key = self.config['api_key']
+        from_name = self.config['from_name']
+        from_mail = self.config['from_mail']
+        to = self.config['to']
+
+        filtered_job_states = list(self.report.get_filtered_job_states(self.job_states))
+        subject_args = {
+            'count': len(filtered_job_states),
+            'jobs': ', '.join(job_state.job.pretty_name() for job_state in filtered_job_states),
+        }
+        subject = self.config['subject'].format(**subject_args)
+
+        body_text = '\n'.join(super().submit())
+        body_html = '\n'.join(self.convert(HtmlReporter).submit())
+
+        if not body_text:
+            logger.debug('Not calling mailgun API (no changes)')
+            return
+
+        logger.debug("Sending mailgun request for domain:'{0}'".format(domain))
+        result = requests.post(
+            "https://api.mailgun.net/v3/{0}/messages".format(domain),
+            auth=("api", api_key),
+            data={"from": "{0} <{1}>".format(from_name, from_mail),
+                  "to": to,
+                  "subject": subject,
+                  "text": body_text,
+                  "html": body_html})
+
+        try:
+            json_res = json.loads(result.content.decode("utf-8"))
+
+            if (result.status_code == 200):
+                logger.info("Mailgun response: id '{0}'. {1}".format(json_res['id'],json_res['message']))
+            else:
+                logger.error("Mailgun error: {0}".format(json_res['message']))
+        except ValueError:
+            logger.error("Failed to parse Mailgun response. HTTP status code: {0}, content: {1}".format(result.status_code, result.content))
+
+        return result
+
