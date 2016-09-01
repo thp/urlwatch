@@ -45,7 +45,7 @@ def html2text(data, method='lynx'):
     Method may be one of:
      'lynx' (default) - Use "lynx -dump" for conversion
      'html2text'      - Use "html2text -nobs" for conversion
-     'bs4'            - Use beautiful soap library to prettify the HTML
+     'bs4'            - Use Beautiful Soup library to prettify the HTML
      're'             - A simple regex-based HTML tag stripper
      'pyhtml2text'    - Use Python module "html2text", keeps link targets
     """
