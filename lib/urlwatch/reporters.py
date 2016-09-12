@@ -27,21 +27,21 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import itertools
-import logging
-import difflib
-import time
-import email.utils
-import sys
 import cgi
+import difflib
+import email.utils
+import itertools
+import json
+import logging
+import sys
+import time
+
+import requests
 
 import urlwatch
-
-from .util import TrackSubClasses
-from .mailer import Mailer
-from .mailer import SendmailMailer
 from .mailer import SMTPMailer
-import subprocess
+from .mailer import SendmailMailer
+from .util import TrackSubClasses
 
 try:
     import chump
@@ -85,12 +85,12 @@ class ReporterBase(object, metaclass=TrackSubClasses):
     @classmethod
     def submit_all(cls, report, job_states, duration):
         any_enabled = False
-        for name, cls in cls.__subclasses__.items():
+        for name, subclass in cls.__subclasses__.items():
             cfg = report.config['report'].get(name, {'enabled': False})
             if cfg['enabled']:
                 any_enabled = True
-                logger.info('Submitting with %s (%r)', name, cls)
-                cls(report, cfg, job_states, duration).submit()
+                logger.info('Submitting with %s (%r)', name, subclass)
+                subclass(report, cfg, job_states, duration).submit()
 
         if not any_enabled:
             logger.warn('No reporters enabled.')
@@ -152,12 +152,11 @@ class HtmlReporter(ReporterBase):
                 title = '<span title="{location}">{pretty_name}</span>'
             else:
                 title = '{location}'
-            title = '<h2><span class="verb">{verb}:</span> '+title+'</h2>'
+            title = '<h2><span class="verb">{verb}:</span> ' + title + '</h2>'
 
-            yield SafeHtml(title).format(
-                    verb=job_state.verb,
-                    location=job.get_location(),
-                    pretty_name=job.pretty_name())
+            yield SafeHtml(title).format(verb=job_state.verb,
+                                         location=job.get_location(),
+                                         pretty_name=job.pretty_name())
 
             content = self._format_content(job_state, cfg['diff'])
             if content is not None:
@@ -229,7 +228,7 @@ class TextReporter(ReporterBase):
             sep = line_length * '='
             yield from itertools.chain(
                 (sep,),
-                ('%02d. %s' % (idx+1, line) for idx, line in enumerate(summary)),
+                ('%02d. %s' % (idx + 1, line) for idx, line in enumerate(summary)),
                 (sep, ''),
             )
 
@@ -350,7 +349,7 @@ class EMailReporter(TextReporter):
         elif self.config['method'] == "sendmail":
             mailer = SendmailMailer(self.config['sendmail']['path'])
         else:
-            logger.error('Invalid entry for method {method}'.format(method = self.config['method']))
+            logger.error('Invalid entry for method {method}'.format(method=self.config['method']))
 
         # TODO set_password(options.email_smtp, options.email_from)
 
@@ -417,3 +416,54 @@ class PushbulletReport(WebServiceReporter):
 
     def web_service_submit(self, service, title, body):
         service.push_note(title, body)
+
+
+class MailGunReporter(TextReporter):
+    """Custom email reporter that use mailgun service"""
+
+    __kind__ = 'mailgun'
+
+    def submit(self):
+        domain = self.config['domain']
+        api_key = self.config['api_key']
+        from_name = self.config['from_name']
+        from_mail = self.config['from_mail']
+        to = self.config['to']
+
+        filtered_job_states = list(self.report.get_filtered_job_states(self.job_states))
+        subject_args = {
+            'count': len(filtered_job_states),
+            'jobs': ', '.join(job_state.job.pretty_name() for job_state in filtered_job_states),
+        }
+        subject = self.config['subject'].format(**subject_args)
+
+        body_text = '\n'.join(super().submit())
+        body_html = '\n'.join(self.convert(HtmlReporter).submit())
+
+        if not body_text:
+            logger.debug('Not calling mailgun API (no changes)')
+            return
+
+        logger.debug("Sending mailgun request for domain:'{0}'".format(domain))
+        result = requests.post(
+            "https://api.mailgun.net/v3/{0}/messages".format(domain),
+            auth=("api", api_key),
+            data={"from": "{0} <{1}>".format(from_name, from_mail),
+                  "to": to,
+                  "subject": subject,
+                  "text": body_text,
+                  "html": body_html})
+
+        try:
+            json_res = json.loads(result.content.decode("utf-8"))
+
+            if (result.status_code == 200):
+                logger.info("Mailgun response: id '{0}'. {1}".format(json_res['id'], json_res['message']))
+            else:
+                logger.error("Mailgun error: {0}".format(json_res['message']))
+        except ValueError:
+            logger.error(
+                "Failed to parse Mailgun response. HTTP status code: {0}, content: {1}".format(result.status_code,
+                                                                                               result.content))
+
+        return result

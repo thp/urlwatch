@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/thp/urlwatch.svg)](https://travis-ci.org/thp/urlwatch)
+
 ```
                          _               _       _       ____
               _   _ _ __| |_      ____ _| |_ ___| |__   |___ \
