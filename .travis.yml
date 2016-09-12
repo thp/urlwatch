@@ -9,4 +9,4 @@ python:
 install:
   - pip install pyyaml minidb requests keyring
 # command to run tests
-script: nosetests
+script: nosetests -v
