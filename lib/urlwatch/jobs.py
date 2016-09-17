@@ -28,6 +28,7 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+import os
 import subprocess
 import re
 
@@ -182,7 +183,7 @@ class UrlJob(Job):
     __kind__ = 'url'
 
     __required__ = ('url',)
-    __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify')
+    __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'http_proxy', 'https_proxy')
 
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
@@ -194,6 +195,11 @@ class UrlJob(Job):
             'User-agent': urlwatch.__user_agent__,
         }
 
+        proxies = {
+            'http': os.getenv('HTTP_PROXY'),
+            'https': os.getenv('HTTPS_PROXY'),
+        }
+
         if job_state.timestamp is not None:
             headers['If-Modified-Since'] = email.utils.formatdate(job_state.timestamp)
 
@@ -203,10 +209,19 @@ class UrlJob(Job):
             self.method = "POST"
             logger.info('Sending POST request to %s', self.url)
 
-        response = requests.request(url=self.url, data=self.data,
-                                    headers=headers, method=self.method,
+        if self.http_proxy is not None:
+            proxies['http'] = self.http_proxy
+        if self.https_proxy is not None:
+            proxies['https'] = self.https_proxy
+
+        response = requests.request(url=self.url,
+                                    data=self.data,
+                                    headers=headers,
+                                    method=self.method,
                                     verify=(not self.ssl_no_verify),
-                                    cookies=self.cookies)
+                                    cookies=self.cookies,
+                                    proxies=proxies)
+
         response.raise_for_status()
         if response.status_code == 304:
             raise NotModifiedError()
