@@ -27,16 +27,13 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import cgi
 import difflib
 import email.utils
 import itertools
-import json
 import logging
 import sys
 import time
-
-import requests
+import cgi
 
 import urlwatch
 from .mailer import SMTPMailer
