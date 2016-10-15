@@ -142,27 +142,34 @@ def edit_yaml(yaml_file, parser, example_file=None):
 
     fn_base, fn_ext = os.path.splitext(yaml_file)
     yaml_edit = fn_base + '.edit' + fn_ext
-    try:
-        if os.path.exists(yaml_file):
-            shutil.copy(yaml_file, yaml_edit)
-        elif example_file is not None and os.path.exists(example_file):
-            shutil.copy(example_file, yaml_edit)
-        subprocess.check_call([editor, yaml_edit])
-        # Check if we can still parse it
-        if parser is not None:
-            parser(yaml_edit).load()
-        atomic_rename(yaml_edit, yaml_file)
-        print('Saving edit changes in', yaml_file)
-    except Exception as e:
-        print('Parsing failed:')
-        print('======')
-        print(e)
-        print('======')
-        print('')
-        print('The file', yaml_file, 'was NOT updated.')
-        print('Your changes have been saved in', yaml_edit)
-        return 1
 
+    if os.path.exists(yaml_file):
+        shutil.copy(yaml_file, yaml_edit)
+    elif example_file is not None and os.path.exists(example_file):
+        shutil.copy(example_file, yaml_edit)
+
+    while True:
+        try:
+            subprocess.check_call([editor, yaml_edit])
+            # Check if we can still parse it
+            if parser is not None:
+                parser(yaml_edit).load()
+            break  # stop if no exception on parser
+        except Exception as e:
+            print('Parsing failed:')
+            print('======')
+            print(e)
+            print('======')
+            print('')
+            print('The file', yaml_file, 'was NOT updated.')
+            user_input = input("Do you want to retry the same edit? (y/n)")
+            if user_input.lower()[0] == 'y':
+                continue
+            print('Your changes have been saved in', yaml_edit)
+            return 1
+
+    atomic_rename(yaml_edit, yaml_file)
+    print('Saving edit changes in', yaml_file)
     return 0
 
 
@@ -176,26 +183,35 @@ def edit_hooks(hooks_file, example_file):
 
     fn_base, fn_ext = os.path.splitext(hooks_file)
     hooks_edit = fn_base + '.edit' + fn_ext
-    try:
-        if os.path.exists(hooks_file):
-            shutil.copy(hooks_file, hooks_edit)
-        elif example_file is not None and os.path.exists(example_file):
-            shutil.copy(example_file, hooks_edit)
-        subprocess.check_call([editor, hooks_edit])
-        imp.load_source('hooks', hooks_edit)
-        atomic_rename(hooks_edit, hooks_file)
-        print('Saving edit changes in', hooks_file)
-    except Exception as e:
-        print('Parsing failed:')
-        print('======')
-        print(e)
-        print('======')
-        print('')
-        print('The file', hooks_file, 'was NOT updated.')
-        print('Your changes have been saved in', hooks_edit)
-        return 1
 
+    if os.path.exists(hooks_file):
+        shutil.copy(hooks_file, hooks_edit)
+    elif example_file is not None and os.path.exists(example_file):
+        shutil.copy(example_file, hooks_edit)
+
+    while True:
+        try:
+            subprocess.check_call([editor, hooks_edit])
+            # Check if we can still parse it
+            imp.load_source('hooks', hooks_edit)
+            break  # stop if no exception on parser
+        except Exception as e:
+            print('Parsing failed:')
+            print('======')
+            print(e)
+            print('======')
+            print('')
+            print('The file', hooks_file, 'was NOT updated.')
+            user_input = input("Do you want to retry the same edit? (y/n)")
+            if user_input.lower()[0] == 'y':
+                continue
+            print('Your changes have been saved in', hooks_edit)
+            return 1
+
+    atomic_rename(hooks_edit, hooks_file)
+    print('Saving edit changes in', hooks_file)
     return 0
+
 
 def list_urls(jobs, verbose):
     for idx, job in enumerate(jobs):
