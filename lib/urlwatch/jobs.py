@@ -40,6 +40,7 @@ import hashlib
 import base64
 import logging
 import ssl
+import os.path
 
 import urlwatch
 
@@ -245,3 +246,29 @@ class UrlJob(Job):
                 return response.content.decode('ascii', 'ignore')
 
         return response.text
+
+class FileJob(Job):
+    """Read the content of a local file"""
+
+    __kind__ = 'file'
+    __required__ = ('path',)
+
+    def get_location(self):
+        return str(self.path)
+
+    def retrieve(self, job_state):
+
+        path_string = str(self.path)
+
+        if not path_string:
+            raise ValueError('Path cannot be null or empty')
+
+        if path_string.startswith('file://'):
+            path_string = path_string.replace('file://', '')
+
+        if not os.path.exists(path_string):
+            raise ValueError("Cannot find file: '{0}'".format(path_string))
+
+        response = open(path_string, 'r').read()
+        return response
+
