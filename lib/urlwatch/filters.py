@@ -287,7 +287,7 @@ class ElementByclass(html.parser.HTMLParser):
             self._result.append(data)
 
 
-class GetElementByclass(FilterBase):
+class GetElementByClass(FilterBase):
     """Get a HTML element by its class"""
 
     __kind__ = 'element-by-class'
