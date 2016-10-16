@@ -172,7 +172,7 @@ class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
         fn_base, fn_ext = os.path.splitext(self.filename)
         file_edit = fn_base + '.edit' + fn_ext
 
-        if os.path.exists(file_edit):
+        if os.path.exists(self.filename):
             shutil.copy(self.filename, file_edit)
         elif example_file is not None and os.path.exists(example_file):
             shutil.copy(example_file, file_edit)
@@ -182,7 +182,7 @@ class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
                 subprocess.check_call([editor, file_edit])
                 # Check if we can still parse it
                 if self.parse is not None:
-                    self.parse(file_edit).load()
+                    self.parse(file_edit)
                 break  # stop if no exception on parser
             except Exception as e:
                 print('Parsing failed:')
