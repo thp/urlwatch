@@ -171,24 +171,34 @@ class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
 
         fn_base, fn_ext = os.path.splitext(self.filename)
         file_edit = fn_base + '.edit' + fn_ext
-        try:
-            if os.path.exists(self.filename):
-                shutil.copy(self.filename, file_edit)
-            elif example_file is not None and os.path.exists(example_file):
-                shutil.copy(example_file, file_edit)
-            subprocess.check_call([editor, file_edit])
-            self.parse(file_edit)
-            atomic_rename(file_edit, self.filename)
-            print('Saving edit changes in', self.filename)
-        except Exception as e:
-            print('Parsing failed:')
-            print('======')
-            print(e)
-            print('======')
-            print('')
-            print('The file', self.filename, 'was NOT updated.')
-            print('Your changes have been saved in', file_edit)
-            return 1
+
+        if os.path.exists(file_edit):
+            shutil.copy(self.filename, file_edit)
+        elif example_file is not None and os.path.exists(example_file):
+            shutil.copy(example_file, file_edit)
+
+        while True:
+            try:
+                subprocess.check_call([editor, file_edit])
+                # Check if we can still parse it
+                if self.parse is not None:
+                    self.parse(file_edit).load()
+                break  # stop if no exception on parser
+            except Exception as e:
+                print('Parsing failed:')
+                print('======')
+                print(e)
+                print('======')
+                print('')
+                print('The file', file_edit, 'was NOT updated.')
+                user_input = input("Do you want to retry the same edit? (y/n)")
+                if user_input.lower()[0] == 'y':
+                    continue
+                print('Your changes have been saved in', file_edit)
+                return 1
+
+        atomic_rename(file_edit, self.filename)
+        print('Saving edit changes in', self.filename)
         return 0
 
     @classmethod
