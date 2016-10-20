@@ -240,7 +240,7 @@ class ElementByID(html.parser.HTMLParser):
 
 
 class GetElementById(FilterBase):
-    """Get a HTML element by its ID"""
+    """Get an HTML element by its ID"""
 
     __kind__ = 'element-by-id'
 
