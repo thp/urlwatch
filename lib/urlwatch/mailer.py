@@ -31,6 +31,7 @@
 import smtplib
 import getpass
 import subprocess
+import logging
 
 try:
     import keyring
@@ -41,6 +42,7 @@ import email.mime.multipart
 import email.mime.text
 import email.utils
 
+logger = logging.getLogger(__name__)
 
 class Mailer(object):
     def send(self, msg):
