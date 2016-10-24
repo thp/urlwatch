@@ -44,6 +44,7 @@ import email.utils
 
 logger = logging.getLogger(__name__)
 
+
 class Mailer(object):
     def send(self, msg):
         raise NotImplementedError
