@@ -40,6 +40,10 @@ For optional pushbullet support the pushbullet.py package is required:
 
 `python3 -m pip install pushbullet.py`
 
+For unit tests, you also need to install pycodestyle:
+
+`python3 -m pip install pycodestyle`
+
 
 MIGRATION FROM URLWATCH 1.x
 ---------------------------
