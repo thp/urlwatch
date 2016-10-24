@@ -29,6 +29,8 @@
 
 
 import logging
+import os
+import platform
 
 logger = logging.getLogger(__name__)
 
@@ -68,3 +70,16 @@ class TrackSubClasses(type):
                     break
 
         super().__init__(name, bases, namespace)
+
+
+def atomic_rename(old_filename, new_filename):
+    if platform.system() == 'Windows' and os.path.exists(new_filename):
+        new_old_filename = new_filename + '.bak'
+        if os.path.exists(new_old_filename):
+            os.remove(new_old_filename)
+        os.rename(new_filename, new_old_filename)
+        os.rename(old_filename, new_filename)
+        if os.path.exists(new_old_filename):
+            os.remove(new_old_filename)
+    else:
+        os.rename(old_filename, new_filename)

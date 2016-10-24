@@ -1,0 +1,44 @@
+{
+  "urls": [
+    {
+      "filter": "html2text,grep:Current.*version,strip",
+      "kind": "url",
+      "name": "urlwatch webpage",
+      "url": "https://thp.io/2008/urlwatch/"
+    },
+    {
+      "kind": "shell",
+      "name": "Home Listing",
+      "command": "ls -al ~"
+    },
+    {
+      "kind": "url",
+      "name": "Example.org with spaces",
+      "url": "http://example.org/With%20Spaces/"
+    },
+    {
+      "kind": "url",
+      "name": "Example.org with POST",
+      "url": "http://example.com/search.cgi",
+      "method": "POST",
+      "data": "button=Search&q=something&category=4"
+    },
+    {
+      "kind": "url",
+      "name": "Example.org with POST with exploded parameters",
+      "url": "http://example.com/search.cgi",
+      "method": "POST",
+      "data": {
+        "button": "Search",
+        "q": "something",
+        "category": 4
+      }
+    },
+    {
+      "kind": "url",
+      "name": "Custom HTTP method",
+      "url": "http://example.com/foo",
+      "method": "PURGE"
+    }
+  ]
+}

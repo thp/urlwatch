@@ -28,16 +28,13 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import os
-import stat
 import datetime
-import traceback
 import logging
 import time
+import traceback
 
 from .filters import FilterBase
 from .reporters import ReporterBase
-
 
 logger = logging.getLogger(__name__)
 
@@ -90,8 +87,8 @@ class JobState(object):
 
 
 class Report(object):
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, urlwatch_config):
+        self.config = urlwatch_config.config_storage.config
 
         self.job_states = []
         self.start = datetime.datetime.now()

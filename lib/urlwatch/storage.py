@@ -32,15 +32,20 @@ import os
 import stat
 import copy
 import platform
+from abc import ABCMeta, abstractmethod
 
+import shutil
+
+import subprocess
 import yaml
+import json
 import minidb
 import logging
 
+from .util import atomic_rename
 from .jobs import JobBase, UrlJob, ShellJob
 
 logger = logging.getLogger(__name__)
-
 
 DEFAULT_CONFIG = {
     'display': {
@@ -79,7 +84,7 @@ DEFAULT_CONFIG = {
                 'starttls': True,
                 'keyring': True,
             },
-            'sendmail':{
+            'sendmail': {
                 'path': 'sendmail',
             }
         },
@@ -129,11 +134,72 @@ def get_current_user():
         return pwd.getpwuid(os.getuid()).pw_name
 
 
-class ConfigStorage(object):
+class BaseStorage(metaclass=ABCMeta):
+    @abstractmethod
+    def load(self, *args):
+        ...
+
+    @abstractmethod
+    def save(self, *args):
+        ...
+
+
+class BaseFileStorage(BaseStorage, metaclass=ABCMeta):
     def __init__(self, filename):
         self.filename = filename
+
+
+class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
+    def __init__(self, filename):
+        super().__init__(filename)
         self.config = {}
         self.load()
+
+    @classmethod
+    @abstractmethod
+    def parse(cls, *args):
+        ...
+
+    def edit(self, example_file=None):
+
+        editor = os.environ.get('EDITOR', None)
+        if editor is None:
+            editor = os.environ.get('VISUAL', None)
+        if editor is None:
+            print('Please set $VISUAL or $EDITOR.')
+            return 1
+
+        fn_base, fn_ext = os.path.splitext(self.filename)
+        file_edit = fn_base + '.edit' + fn_ext
+
+        if os.path.exists(self.filename):
+            shutil.copy(self.filename, file_edit)
+        elif example_file is not None and os.path.exists(example_file):
+            shutil.copy(example_file, file_edit)
+
+        while True:
+            try:
+                subprocess.check_call([editor, file_edit])
+                # Check if we can still parse it
+                if self.parse is not None:
+                    self.parse(file_edit)
+                break  # stop if no exception on parser
+            except Exception as e:
+                print('Parsing failed:')
+                print('======')
+                print(e)
+                print('======')
+                print('')
+                print('The file', file_edit, 'was NOT updated.')
+                user_input = input("Do you want to retry the same edit? (y/n)")
+                if user_input.lower()[0] == 'y':
+                    continue
+                print('Your changes have been saved in', file_edit)
+                return 1
+
+        atomic_rename(file_edit, self.filename)
+        print('Saving edit changes in', self.filename)
+        return 0
 
     @classmethod
     def write_default_config(cls, filename):
@@ -141,22 +207,13 @@ class ConfigStorage(object):
         config_storage.filename = filename
         config_storage.save()
 
-    def load(self):
-        self.config = copy.deepcopy(DEFAULT_CONFIG)
-        if self.filename is not None and os.path.exists(self.filename):
-            with open(self.filename) as fp:
-                self.config = merge(yaml.load(fp), self.config)
 
-    def save(self):
-        with open(self.filename, 'w') as fp:
-            yaml.dump(self.config, fp, default_flow_style=False)
-
-
-class UrlsStorage(object):
+class UrlsBaseFileStorage(BaseTextualFileStorage, metaclass=ABCMeta):
     def __init__(self, filename):
         self.filename = filename
 
     def shelljob_security_checks(self):
+
         if platform.system() == 'Windows':
             return []
 
@@ -190,66 +247,134 @@ class UrlsStorage(object):
 
         return jobs
 
-    def save(self, jobs):
-        raise NotImplementedError()
 
-    def load(self):
-        raise NotImplementedError()
+class BaseTxtFileStorage(BaseTextualFileStorage, metaclass=ABCMeta):
+    @classmethod
+    def parse(cls, *args):
+        filename = args[0]
+        if filename is not None and os.path.exists(filename):
+            with open(filename) as fp:
+                for line in fp:
+                    line = line.strip()
+                    if not line or line.startswith('#'):
+                        continue
+
+                    if line.startswith('|'):
+                        yield ShellJob(command=line[1:])
+                    else:
+                        args = line.split(None, 2)
+                        if len(args) == 1:
+                            yield UrlJob(url=args[0])
+                        elif len(args) == 2:
+                            yield UrlJob(url=args[0], post=args[1])
+                        else:
+                            raise ValueError('Unsupported line format: %r' % (line,))
 
 
-class UrlsYaml(UrlsStorage):
-    def save(self, jobs):
+class BaseYamlFileStorage(BaseTextualFileStorage, metaclass=ABCMeta):
+    @classmethod
+    def parse(cls, *args):
+        filename = args[0]
+        if filename is not None and os.path.exists(filename):
+            with open(filename) as fp:
+                return yaml.load(fp)
+
+
+class BaseJsonFileStorage(BaseTextualFileStorage, metaclass=ABCMeta):
+    @classmethod
+    def parse(cls, *args):
+        filename = args[0]
+        if filename is not None and os.path.exists(filename):
+            with open(filename) as fp:
+                return json.load(fp)
+
+
+class YamlConfigStorage(BaseYamlFileStorage):
+    def load(self, *args):
+        self.config = merge(self.parse(self.filename), copy.deepcopy(DEFAULT_CONFIG))
+
+    def save(self, *args):
+        with open(self.filename, 'w') as fp:
+            yaml.dump(self.config, fp, default_flow_style=False)
+
+
+class JsonConfigStorage(BaseJsonFileStorage):
+    def load(self, *args):
+        self.config = merge(self.parse(self.filename), copy.deepcopy(DEFAULT_CONFIG))
+
+    def save(self, *args):
+        with open(self.filename, 'w') as fp:
+            json.dump(self.config, fp, default_flow_style=False)
+
+
+class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
+
+    @classmethod
+    def parse(cls, *args):
+        filename = args[0]
+        if filename is not None and os.path.exists(filename):
+            with open(filename) as fp:
+                return yaml.load_all(fp)
+
+    def save(self, *args):
+        jobs = args[0]
+        print('Saving updated list to %r' % self.filename)
+
         with open(self.filename, 'w') as fp:
             yaml.dump_all([job.serialize() for job in jobs], fp, default_flow_style=False)
 
-    def load(self):
+    def load(self, *args):
         with open(self.filename) as fp:
             return [JobBase.unserialize(job) for job in yaml.load_all(fp) if job is not None]
 
 
-class UrlsTxt(UrlsStorage):
-    def _parse(self, fp):
-        for line in fp:
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
+class UrlsJson(BaseJsonFileStorage, UrlsBaseFileStorage):
+    def save(self, *args):
+        jobs = args[0]
+        print('Saving updated list to %r' % self.filename)
 
-            if line.startswith('|'):
-                yield ShellJob(command=line[1:])
-            else:
-                args = line.split(None, 2)
-                if len(args) == 1:
-                    yield UrlJob(url=args[0])
-                elif len(args) == 2:
-                    yield UrlJob(url=args[0], post=args[1])
-                else:
-                    raise ValueError('Unsupported line format: %r' % (line,))
+        with open(self.filename, 'w') as fp:
+            yaml.dump_all([job.serialize() for job in jobs], fp, default_flow_style=False)
 
+    def load(self, *args):
+        with open(self.filename) as fp:
+            json_data = fp.read()
+            return [JobBase.unserialize(job) for job in json.loads(json_data)['urls'] if job is not None]
+
+
+class UrlsTxt(BaseTxtFileStorage, UrlsBaseFileStorage):
     def load(self):
-        return list(self._parse(open(self.filename)))
+        return list(self.parse(self.filename))
+
+    def save(self, jobs):
+        print(jobs)
+        raise NotImplementedError()
 
 
-class CacheStorage(object):
-    def __init__(self, filename):
-        self.filename = filename
-
+class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
+    @abstractmethod
     def close(self):
         ...
 
+    @abstractmethod
     def get_guids(self):
-        raise NotImplementedError()
+        ...
 
+    @abstractmethod
     def load(self, job, guid):
-        raise NotImplementedError()
+        ...
 
+    @abstractmethod
     def save(self, job, guid, data, timestamp):
-        raise NotImplementedError()
+        ...
 
+    @abstractmethod
     def delete(self, guid):
-        raise NotImplementedError()
+        ...
 
+    @abstractmethod
     def clean(self, guid):
-        raise NotImplementedError()
+        ...
 
     def backup(self):
         for guid in self.get_guids():
@@ -272,6 +397,15 @@ class CacheStorage(object):
 
 
 class CacheDirStorage(CacheStorage):
+    def __init__(self, filename):
+        super().__init__(filename)
+        if not os.path.exists(filename):
+            os.makedirs(filename)
+
+    def close(self):
+        #  No need to close
+        return 0
+
     def _get_filename(self, guid):
         return os.path.join(self.filename, guid)
 
@@ -297,7 +431,7 @@ class CacheDirStorage(CacheStorage):
     def save(self, job, guid, data, timestamp):
         # Timestamp is always ignored
         filename = self._get_filename(guid)
-        with open(filename, 'w') as fp:
+        with open(filename, 'w+') as fp:
             fp.write(data)
 
     def delete(self, guid):

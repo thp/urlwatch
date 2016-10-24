@@ -38,7 +38,6 @@ import hashlib
 
 from .util import TrackSubClasses
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -103,6 +102,7 @@ class AutoMatchFilter(FilterBase):
         result = all(d.get(k, None) == v for k, v in self.MATCH.items())
         logger.debug('Matching %r with %r result: %r', self, self.job, result)
         return result
+
 
 class RegexMatchFilter(FilterBase):
     """Same as AutoMatchFilter but matching is done with regexes"""
@@ -180,6 +180,7 @@ class GrepFilter(FilterBase):
 
         return '\n'.join(line for line in data.splitlines()
                          if re.search(subfilter, line) is not None)
+
 
 class InverseGrepFilter(FilterBase):
     """Filter which removes lines matching a regular expression"""
@@ -273,7 +274,7 @@ class HexdumpFilter(FilterBase):
     def filter(self, data, subfilter=None):
         self._no_subfilters(subfilter)
         data = bytearray(data.encode('utf-8', 'ignore'))
-        blocks = [data[i*16:(i+1)*16] for i in range(int((len(data)+(16-1))/16))]
+        blocks = [data[i * 16:(i + 1) * 16] for i in range(int((len(data) + (16 - 1)) / 16))]
         return '\n'.join('%s  %s' % (' '.join('%02x' % c for c in block),
                                      ''.join((chr(c) if (c > 31 and c < 127) else '.')
                                              for c in block)) for block in blocks)

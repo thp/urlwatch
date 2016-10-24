@@ -1,0 +1,32 @@
+display:
+  error: true
+  new: true
+  unchanged: false
+report:
+  email:
+    enabled: false
+    from: ''
+    html: false
+    method: smtp
+    sendmail:
+      path: sendmail
+    smtp:
+      host: localhost
+      keyring: true
+      port: 25
+      starttls: true
+    subject: '{count} changes: {jobs}'
+    to: ''
+  html:
+    diff: unified
+  pushover:
+    app: ''
+    enabled: false
+    user: ''
+  stdout:
+    color: true
+    enabled: true
+  text:
+    details: true
+    footer: true
+    line_length: 75

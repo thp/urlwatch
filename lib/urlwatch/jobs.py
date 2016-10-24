@@ -28,23 +28,17 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import os
-import subprocess
-import re
-
-import requests
-
 import email.utils
-import zlib
 import hashlib
-import base64
 import logging
-import ssl
-
+import os
+import re
+import subprocess
+import requests
 import urlwatch
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from .util import TrackSubClasses
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -61,9 +55,11 @@ class ShellError(Exception):
     def __str__(self):
         return '%s: Exit status %d' % (self.__class__.__name__, self.result)
 
+
 class NotModifiedError(Exception):
     """Exception raised on HTTP 304 responses"""
     ...
+
 
 class JobBase(object, metaclass=TrackSubClasses):
     __subclasses__ = {}

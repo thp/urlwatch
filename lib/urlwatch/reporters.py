@@ -27,24 +27,18 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+import difflib
+import email.utils
 import itertools
 import logging
-import difflib
-import time
-import email.utils
 import sys
+import time
 import cgi
-import json
-
-import requests
 
 import urlwatch
-
-from .util import TrackSubClasses
-from .mailer import Mailer
-from .mailer import SendmailMailer
 from .mailer import SMTPMailer
-import subprocess
+from .mailer import SendmailMailer
+from .util import TrackSubClasses
 
 try:
     import chump
@@ -88,12 +82,12 @@ class ReporterBase(object, metaclass=TrackSubClasses):
     @classmethod
     def submit_all(cls, report, job_states, duration):
         any_enabled = False
-        for name, cls in cls.__subclasses__.items():
+        for name, subclass in cls.__subclasses__.items():
             cfg = report.config['report'].get(name, {'enabled': False})
             if cfg['enabled']:
                 any_enabled = True
-                logger.info('Submitting with %s (%r)', name, cls)
-                cls(report, cfg, job_states, duration).submit()
+                logger.info('Submitting with %s (%r)', name, subclass)
+                subclass(report, cfg, job_states, duration).submit()
 
         if not any_enabled:
             logger.warn('No reporters enabled.')
@@ -155,12 +149,11 @@ class HtmlReporter(ReporterBase):
                 title = '<span title="{location}">{pretty_name}</span>'
             else:
                 title = '{location}'
-            title = '<h2><span class="verb">{verb}:</span> '+title+'</h2>'
+            title = '<h2><span class="verb">{verb}:</span> ' + title + '</h2>'
 
-            yield SafeHtml(title).format(
-                    verb=job_state.verb,
-                    location=job.get_location(),
-                    pretty_name=job.pretty_name())
+            yield SafeHtml(title).format(verb=job_state.verb,
+                                         location=job.get_location(),
+                                         pretty_name=job.pretty_name())
 
             content = self._format_content(job_state, cfg['diff'])
             if content is not None:
@@ -232,7 +225,7 @@ class TextReporter(ReporterBase):
             sep = line_length * '='
             yield from itertools.chain(
                 (sep,),
-                ('%02d. %s' % (idx+1, line) for idx, line in enumerate(summary)),
+                ('%02d. %s' % (idx + 1, line) for idx, line in enumerate(summary)),
                 (sep, ''),
             )
 
@@ -353,7 +346,7 @@ class EMailReporter(TextReporter):
         elif self.config['method'] == "sendmail":
             mailer = SendmailMailer(self.config['sendmail']['path'])
         else:
-            logger.error('Invalid entry for method {method}'.format(method = self.config['method']))
+            logger.error('Invalid entry for method {method}'.format(method=self.config['method']))
 
         # TODO set_password(options.email_smtp, options.email_from)
 
@@ -462,11 +455,12 @@ class MailGunReporter(TextReporter):
             json_res = json.loads(result.content.decode("utf-8"))
 
             if (result.status_code == 200):
-                logger.info("Mailgun response: id '{0}'. {1}".format(json_res['id'],json_res['message']))
+                logger.info("Mailgun response: id '{0}'. {1}".format(json_res['id'], json_res['message']))
             else:
                 logger.error("Mailgun error: {0}".format(json_res['message']))
         except ValueError:
-            logger.error("Failed to parse Mailgun response. HTTP status code: {0}, content: {1}".format(result.status_code, result.content))
+            logger.error(
+                "Failed to parse Mailgun response. HTTP status code: {0}, content: {1}".format(result.status_code,
+                                                                                               result.content))
 
         return result
-
