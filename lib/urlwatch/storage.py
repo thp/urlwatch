@@ -291,7 +291,7 @@ class BaseJsonFileStorage(BaseTextualFileStorage, metaclass=ABCMeta):
 
 class YamlConfigStorage(BaseYamlFileStorage):
     def load(self, *args):
-        self.config = merge(self.parse(self.filename), copy.deepcopy(DEFAULT_CONFIG))
+        self.config = merge(self.parse(self.filename) or {}, copy.deepcopy(DEFAULT_CONFIG))
 
     def save(self, *args):
         with open(self.filename, 'w') as fp:
@@ -300,7 +300,7 @@ class YamlConfigStorage(BaseYamlFileStorage):
 
 class JsonConfigStorage(BaseJsonFileStorage):
     def load(self, *args):
-        self.config = merge(self.parse(self.filename), copy.deepcopy(DEFAULT_CONFIG))
+        self.config = merge(self.parse(self.filename) or {}, copy.deepcopy(DEFAULT_CONFIG))
 
     def save(self, *args):
         with open(self.filename, 'w') as fp:
@@ -453,6 +453,11 @@ class CacheEntry(minidb.Model):
 class CacheMiniDBStorage(CacheStorage):
     def __init__(self, filename):
         super().__init__(filename)
+
+        dirname = os.path.dirname(filename)
+        if not os.path.isdir(dirname):
+            os.makedirs(dirname)
+
         self.db = minidb.Store(self.filename, debug=True)
         self.db.register(CacheEntry)
 
