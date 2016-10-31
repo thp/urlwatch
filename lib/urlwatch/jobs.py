@@ -210,6 +210,11 @@ class UrlJob(Job):
         if self.https_proxy is not None:
             proxies['https'] = self.https_proxy
 
+        file_scheme = 'file://'
+        if self.url.startswith(file_scheme):
+            logger.info('Using local filesystem (%s URI scheme)', file_scheme)
+            return open(self.url[len(file_scheme):], 'rt').read()
+
         response = requests.request(url=self.url,
                                     data=self.data,
                                     headers=headers,
