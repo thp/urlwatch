@@ -104,5 +104,3 @@ class CommandConfig(BaseConfig):
         for i, arg in enumerate(vars(args)):
             argval = getattr(args, arg)
             setattr(self, arg, argval)
-            if self.verbose:
-                print("Arg #{0}: {1} = {2}".format(str(i), arg, str(argval)))
