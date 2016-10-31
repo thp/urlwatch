@@ -205,11 +205,11 @@ class StripFilter(FilterBase):
         return data.strip()
 
 
-class ElementByID(html.parser.HTMLParser):
-    def __init__(self, element_id):
+class ElementsByAttribute(html.parser.HTMLParser):
+    def __init__(self, name, value):
         super().__init__()
 
-        self._element_id = element_id
+        self._attributes = {name: value}
         self._result = []
         self._inside = False
         self._depth = 0
@@ -220,7 +220,7 @@ class ElementByID(html.parser.HTMLParser):
     def handle_starttag(self, tag, attrs):
         ad = dict(attrs)
 
-        if ad.get('id', None) == self._element_id:
+        if all(ad.get(k, None) == v for k, v in self._attributes.items()):
             self._inside = True
 
         if self._inside:
@@ -249,9 +249,23 @@ class GetElementById(FilterBase):
         if subfilter is None:
             raise ValueError('Need an element ID for filtering')
 
-        element_by_id = ElementByID(subfilter)
+        element_by_id = ElementsByAttribute('id', subfilter)
         element_by_id.feed(data)
         return element_by_id.get_html()
+
+
+class GetElementByClass(FilterBase):
+    """Get all HTML elements by class"""
+
+    __kind__ = 'element-by-class'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            raise ValueError('Need an element class for filtering')
+
+        element_by_class = ElementsByAttribute('class', subfilter)
+        element_by_class.feed(data)
+        return element_by_class.get_html()
 
 
 class Sha1Filter(FilterBase):
