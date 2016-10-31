@@ -68,14 +68,11 @@ class Urlwatch(object):
     def check_directories(self):
         if not os.path.isdir(self.urlwatch_config.urlwatch_dir):
             os.makedirs(self.urlwatch_config.urlwatch_dir)
-            print("""
-        Created directory: {urlwatch_dir}
-        """.format(urlwatch_dir=self.urlwatch_config.urlwatch_dir))
         if not os.path.exists(self.urlwatch_config.config):
             self.config_storage.write_default_config(self.urlwatch_config.config)
             print("""
-        A default config has been written to {config_yaml}.
-        Use "{pkgname} --edit-config" to customize it.
+    A default config has been written to {config_yaml}.
+    Use "{pkgname} --edit-config" to customize it.
         """.format(config_yaml=self.urlwatch_config.config, pkgname=self.urlwatch_config.pkgname))
 
     def load_hooks(self):
