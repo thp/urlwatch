@@ -73,7 +73,7 @@ class ReporterBase(object, metaclass=TrackSubClasses):
     @classmethod
     def reporter_documentation(cls):
         result = []
-        for sc in list(cls.__subclasses__.values()):
+        for sc in TrackSubClasses.sorted_by_kind(cls):
             result.extend((
                 '  * %s - %s' % (sc.__kind__, sc.__doc__),
             ))

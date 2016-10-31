@@ -84,7 +84,7 @@ class JobBase(object, metaclass=TrackSubClasses):
     @classmethod
     def job_documentation(cls):
         result = []
-        for sc in list(cls.__subclasses__.values()):
+        for sc in TrackSubClasses.sorted_by_kind(cls):
             result.extend((
                 '  * %s - %s' % (sc.__kind__, sc.__doc__),
                 '    Required keys: %s' % (', '.join(sc.__required__),),

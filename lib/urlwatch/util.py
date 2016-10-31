@@ -38,6 +38,10 @@ logger = logging.getLogger(__name__)
 class TrackSubClasses(type):
     """A metaclass that stores subclass name-to-class mappings in the base class"""
 
+    @staticmethod
+    def sorted_by_kind(cls):
+        return [item for _, item in sorted((it.__kind__, it) for it in cls.__subclasses__.values())]
+
     def __init__(cls, name, bases, namespace):
         for base in bases:
             if base == object:
