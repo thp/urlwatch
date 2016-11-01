@@ -50,6 +50,11 @@ try:
 except ImportError:
     Pushbullet = None
 
+try:
+    import requests
+except ImportError:
+    requests = None
+
 logger = logging.getLogger(__name__)
 
 
