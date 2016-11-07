@@ -35,6 +35,8 @@ import sys
 import time
 import cgi
 
+import requests
+
 import urlwatch
 from .mailer import SMTPMailer
 from .mailer import SendmailMailer
@@ -49,11 +51,6 @@ try:
     from pushbullet import Pushbullet
 except ImportError:
     Pushbullet = None
-
-try:
-    import requests
-except ImportError:
-    requests = None
 
 logger = logging.getLogger(__name__)
 
