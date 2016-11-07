@@ -457,7 +457,7 @@ class MailGunReporter(TextReporter):
                   "html": body_html})
 
         try:
-            json_res = json.loads(result.content.decode("utf-8"))
+            json_res = result.json()
 
             if (result.status_code == 200):
                 logger.info("Mailgun response: id '{0}'. {1}".format(json_res['id'], json_res['message']))
