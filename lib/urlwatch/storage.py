@@ -455,7 +455,7 @@ class CacheMiniDBStorage(CacheStorage):
         super().__init__(filename)
 
         dirname = os.path.dirname(filename)
-        if not os.path.isdir(dirname):
+        if dirname and not os.path.isdir(dirname):
             os.makedirs(dirname)
 
         self.db = minidb.Store(self.filename, debug=True)
