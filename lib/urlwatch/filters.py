@@ -113,7 +113,11 @@ class RegexMatchFilter(FilterBase):
             return False
 
         d = self.job.to_dict()
-        result = all(v.match(d.get(k, None)) for k, v in self.MATCH.items())
+
+        # It's a match if we have at least one key/value pair that matches,
+        # and no key/value pairs that do not match
+        matches = [v.match(d[k]) for k, v in self.MATCH.items() if k in d]
+        result = len(matches) > 0 and all(matches)
         logger.debug('Matching %r with %r result: %r', self, self.job, result)
         return result
 
