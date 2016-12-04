@@ -192,3 +192,14 @@
 	* Windows compatibility fixes (os.rename, shelljob checks)
 	* Do not copy example files if they do not exist
 	* Handle SIGPIPE (fixes #77)
+
+2016-12-04 Thomas Perl <thp.io/about>
+	* New filters: sha1sum, hexdump, element-by-class
+	* New reporters: pushbullet (by R0nd); mailgun (by lechuckcaptain)
+	* Improved filters: BeautifulSoup support for html2txt (by lechuckcaptain)
+	* Improved handlers: HTTP Proxy (by lechuckcaptain); support for file:// URIs
+	* CI Integration: Build configuration for Travis CI (by lechuckcaptain)
+	* Consistency: Feature list is now sorted by name
+	* Issue #108: Fix creation of example files on first startup
+	* Issue #118: Fix match filters for missing keys
+	* Small fixes by: Jakub Wilk, Marc Urben, Adam Dobrawy and Louis Sautier
