@@ -206,7 +206,7 @@ class HtmlReporter(ReporterBase):
                 '</pre>',
             ))
         else:
-            raise ValueError('Diff style not supported: %r', cfg['diff'])
+            raise ValueError('Diff style not supported: %r' % (difftype,))
 
 
 class TextReporter(ReporterBase):
