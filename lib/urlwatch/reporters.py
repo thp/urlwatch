@@ -383,7 +383,7 @@ class WebServiceReporter(TextReporter):
 
         try:
             service = self.web_service_get()
-        except:
+        except Exception as e:
             logger.error('Failed to load or connect to %s - are the dependencies installed and configured?',
                          self.__kind__, exc_info=True)
             return
