@@ -35,6 +35,7 @@ import os
 import imp
 import html.parser
 import hashlib
+import parsel
 
 from .util import TrackSubClasses
 
@@ -296,3 +297,16 @@ class HexdumpFilter(FilterBase):
         return '\n'.join('%s  %s' % (' '.join('%02x' % c for c in block),
                                      ''.join((chr(c) if (c > 31 and c < 127) else '.')
                                              for c in block)) for block in blocks)
+
+
+class XPathFilter(FilterBase):
+    """Get an element by its XPath path"""
+
+    __kind__ = 'xpath'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            raise ValueError('The XPath filter needs an XPath path')
+
+        selector = parsel.Selector(data)
+        return selector.xpath(subfilter).extract()[0]
