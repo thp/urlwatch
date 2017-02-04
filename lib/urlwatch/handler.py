@@ -70,7 +70,7 @@ class JobState(object):
             if filter_list is not None:
                 for filter_kind in filter_list.split(','):
                     if ':' in filter_kind:
-                        filter_kind, subfilter = filter_kind.split(':', 2)
+                        filter_kind, subfilter = filter_kind.split(':', 1)
                     else:
                         subfilter = None
 
