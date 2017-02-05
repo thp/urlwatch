@@ -300,13 +300,14 @@ class HexdumpFilter(FilterBase):
 
 
 class XPathFilter(FilterBase):
-    """Get an element by its XPath path"""
+    """Get an element matching an XPath expression"""
 
     __kind__ = 'xpath'
 
     def filter(self, data, subfilter=None):
         if subfilter is None:
-            raise ValueError('The XPath filter needs an XPath path')
+            raise ValueError('The XPath filter needs an XPath expression')
 
         selector = parsel.Selector(data)
-        return selector.xpath(subfilter).extract()[0]
+        result = selector.xpath(subfilter).extract()
+        return ' '.join(result)
