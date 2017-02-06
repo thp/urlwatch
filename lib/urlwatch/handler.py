@@ -68,9 +68,9 @@ class JobState(object):
             # Apply any specified filters
             filter_list = self.job.filter
             if filter_list is not None:
-                for filter_kind in filter_list.split(','):
+                for filter_kind in re.split(',', filter_list):
                     if ':' in filter_kind:
-                        filter_kind, subfilter = filter_kind.split(':', 2)
+                        filter_kind, subfilter = re.split(':', filter_kind, 1)
                     else:
                         subfilter = None
 
