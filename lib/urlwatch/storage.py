@@ -37,6 +37,7 @@ from abc import ABCMeta, abstractmethod
 import shutil
 
 import subprocess
+import shlex
 import yaml
 import json
 import minidb
@@ -179,7 +180,9 @@ class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
 
         while True:
             try:
-                subprocess.check_call([editor, file_edit])
+                editor = shlex.split(editor)
+                editor.append(file_edit)
+                subprocess.check_call(editor)
                 # Check if we can still parse it
                 if self.parse is not None:
                     self.parse(file_edit)
