@@ -477,28 +477,27 @@ class TelegramReporter(TextReporter):
         bot_token = self.config['bot_token']
         chat_id = self.config['chat_id']
 
-        body_text = '\n'.join(super().submit())
+        text = '\n'.join(super().submit())
 
-        if not body_text:
+        if not text:
             logger.debug('Not calling telegram API (no changes)')
             return
 
         logger.debug("Sending telegram request to chat id:'{0}'".format(chat_id))
         result = requests.post(
             "https://api.telegram.org/bot{0}/sendMessage".format(bot_token),
-            data={"chat_id": chat_id,
-                  "text": body_text})
+            data={"chat_id": chat_id, "text": text, "disable_web_page_preview": "true"})
 
         try:
             json_res = result.json()
 
             if (result.status_code == 200):
-                logger.info("Telegram response: id '{0}'. {1}".format(json_res['ok'], json_res['result']))
+                logger.info("Telegram response: ok '{0}'. {1}".format(json_res['ok'], json_res['result']))
             else:
                 logger.error("Telegram error: {0}".format(json_res['description']))
         except ValueError:
             logger.error(
-                "Failed to parse Telegram response. HTTP status code: {0}, content: {1}".format(result.status_code,
+                "Failed to parse telegram response. HTTP status code: {0}, content: {1}".format(result.status_code,
                                                                                                result.content))
 
         return result
