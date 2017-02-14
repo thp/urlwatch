@@ -271,6 +271,7 @@ class GetElementByClass(FilterBase):
         element_by_class.feed(data)
         return element_by_class.get_html()
 
+
 class GetElementByStyle(FilterBase):
     """Get all HTML elements by style"""
 

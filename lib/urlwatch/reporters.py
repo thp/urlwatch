@@ -467,6 +467,7 @@ class MailGunReporter(TextReporter):
 
         return result
 
+
 class TelegramReporter(TextReporter):
     """Custom Telegram reporter"""
 
@@ -498,6 +499,6 @@ class TelegramReporter(TextReporter):
         except ValueError:
             logger.error(
                 "Failed to parse telegram response. HTTP status code: {0}, content: {1}".format(result.status_code,
-                                                                                               result.content))
+                                                                                                result.content))
 
         return result
