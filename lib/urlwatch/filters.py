@@ -278,7 +278,7 @@ class GetElementByStyle(FilterBase):
 
     def filter(self, data, subfilter=None):
         if subfilter is None:
-            raise ValueError('Need an element class for filtering')
+            raise ValueError('Need an element style for filtering')
 
         element_by_style = ElementsByAttribute('style', subfilter)
         element_by_style.feed(data)
