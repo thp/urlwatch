@@ -470,6 +470,7 @@ class MailGunReporter(TextReporter):
 
 class TelegramReporter(TextReporter):
     """Custom Telegram reporter"""
+    MAX_LENGTH = 4096
 
     __kind__ = 'telegram'
 
@@ -483,6 +484,9 @@ class TelegramReporter(TextReporter):
         if not text:
             logger.debug('Not calling telegram API (no changes)')
             return
+
+        if len(text) > self.MAX_LENGTH:
+            text = text[:self.MAX_LENGTH]
 
         logger.debug("Sending telegram request to chat id:'{0}'".format(chat_id))
         result = requests.post(
