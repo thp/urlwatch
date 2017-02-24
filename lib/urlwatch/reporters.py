@@ -470,6 +470,7 @@ class MailGunReporter(TextReporter):
 
 class TelegramReporter(TextReporter):
     """Custom Telegram reporter"""
+    MAX_LENGTH = 4096
 
     __kind__ = 'telegram'
 
@@ -484,11 +485,18 @@ class TelegramReporter(TextReporter):
             logger.debug('Not calling telegram API (no changes)')
             return
 
+        result = None
+
+        for chunk in self.chunkstring(text, self.MAX_LENGTH):
+            result = self.submitToTelegram(bot_token, chat_id, chunk)
+
+        return result
+
+    def submitToTelegram(self, bot_token, chat_id, text):
         logger.debug("Sending telegram request to chat id:'{0}'".format(chat_id))
         result = requests.post(
             "https://api.telegram.org/bot{0}/sendMessage".format(bot_token),
             data={"chat_id": chat_id, "text": text, "disable_web_page_preview": "true"})
-
         try:
             json_res = result.json()
 
@@ -500,5 +508,7 @@ class TelegramReporter(TextReporter):
             logger.error(
                 "Failed to parse telegram response. HTTP status code: {0}, content: {1}".format(result.status_code,
                                                                                                 result.content))
-
         return result
+
+    def chunkstring(self, string, length):
+        return (string[0 + i:length + i] for i in range(0, len(string), length))
