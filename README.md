@@ -126,6 +126,19 @@ Pushbullet notification are configured similarly to Pushover (see above).
 You'll need to add to the config your Pushbullet Access Token, which you 
 can generate at https://www.pushbullet.com/#settings
 
+TELEGRAM
+--------
+
+Telegram notifications are configured using the Telegram Bot API.
+For this, you'll need a Bot API token and a chat id (see https://core.telegram.org/bots).
+Sample configuration:
+```yaml
+telegram:
+  bot_token: '999999999:3tOhy2CuZE0pTaCtszRfKpnagOG8IQbP5gf' # your bot api token
+  chat_id: '88888888' # the chat id where the messages should be sent
+  enabled: true
+```
+
 CONTACT
 -------
 
