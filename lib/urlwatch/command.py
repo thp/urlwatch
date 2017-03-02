@@ -130,7 +130,7 @@ class UrlwatchCommand:
                     save = False
 
         if self.urlwatch_config.add is not None:
-            d = {k: v for k, v in (item.split('=', 1) for item in self.urlwatch_config.add.split(','))}
+            d = {k: v for k, v in (item.split('=', 1) for item in self.urlwatch_config.add.rsplit(',', 1))}
             job = JobBase.unserialize(d)
             print('Adding %r' % (job,))
             self.urlwatcher.jobs.append(job)
