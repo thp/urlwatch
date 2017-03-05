@@ -36,7 +36,7 @@ def ical2text(ical_string):
     else:
         try:
             parsedCal = vobject.readOne(ical_string)
-        except:
+        except Exception as e:
             parsedCal = vobject.readOne(ical_string.decode('utf-8', 'ignore'))
 
     for event in parsedCal.getChildren():

@@ -50,7 +50,7 @@ class Mailer(object):
         raise NotImplementedError
 
     def msg_plain(self, from_email, to_email, subject, body):
-        msg = email.mime.text.MIMEText(body, 'plain', 'utf_8')
+        msg = email.mime.text.MIMEText(body, 'plain', 'utf-8')
         msg['Subject'] = subject
         msg['From'] = from_email
         msg['To'] = to_email
@@ -65,8 +65,8 @@ class Mailer(object):
         msg['To'] = to_email
         msg['Date'] = email.utils.formatdate()
 
-        msg.attach(email.mime.text.MIMEText(body_text, 'plain', 'utf_8'))
-        msg.attach(email.mime.text.MIMEText(body_html, 'html', 'utf_8'))
+        msg.attach(email.mime.text.MIMEText(body_text, 'plain', 'utf-8'))
+        msg.attach(email.mime.text.MIMEText(body_html, 'html', 'utf-8'))
 
         return msg
 

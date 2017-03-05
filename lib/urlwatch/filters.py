@@ -273,6 +273,20 @@ class GetElementByClass(FilterBase):
         return element_by_class.get_html()
 
 
+class GetElementByStyle(FilterBase):
+    """Get all HTML elements by style"""
+
+    __kind__ = 'element-by-style'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            raise ValueError('Need an element style for filtering')
+
+        element_by_style = ElementsByAttribute('style', subfilter)
+        element_by_style.feed(data)
+        return element_by_style.get_html()
+
+
 class Sha1Filter(FilterBase):
     """Calculate the SHA-1 checksum of the content"""
 
