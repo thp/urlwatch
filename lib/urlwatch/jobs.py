@@ -208,6 +208,7 @@ class UrlJob(Job):
             self.method = "GET"
         if self.data is not None:
             self.method = "POST"
+            headers['Content-type'] = 'application/x-www-form-urlencoded'
             logger.info('Sending POST request to %s', self.url)
 
         if self.http_proxy is not None:
