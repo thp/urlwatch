@@ -179,7 +179,7 @@ class UrlJob(Job):
     __kind__ = 'url'
 
     __required__ = ('url',)
-    __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'http_proxy', 'https_proxy')
+    __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy')
 
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
@@ -198,6 +198,11 @@ class UrlJob(Job):
 
         if job_state.timestamp is not None:
             headers['If-Modified-Since'] = email.utils.formatdate(job_state.timestamp)
+
+        if self.ignore_cached:
+            headers['If-Modified-Since'] = email.utils.formatdate(0)
+            headers['Cache-Control'] = 'max-age=172800'
+            headers['Expires'] = email.utils.formatdate()
 
         if self.method is None:
             self.method = "GET"
