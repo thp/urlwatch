@@ -60,6 +60,13 @@ def html2text(data, method='lynx'):
         d = pyhtml2text.handle(data)
         return d
 
+    if method == 'pyhtml2text_nolinebreak':
+        import html2text
+        pyhtml2text = html2text.HTML2Text()
+        pyhtml2text.body_width = 0
+        d = pyhtml2text.handle(data)
+        return d
+
     if method == 'bs4':
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(data, 'html.parser')
