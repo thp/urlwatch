@@ -216,7 +216,7 @@ class ElementsByAttribute(html.parser.HTMLParser):
         self._attributes = {name: value}
         self._result = []
         self._inside = False
-        self._depth = 0
+        self._elts = []
 
     def get_html(self):
         return ''.join(self._result)
@@ -230,13 +230,16 @@ class ElementsByAttribute(html.parser.HTMLParser):
         if self._inside:
             self._result.append('<%s%s%s>' % (tag, ' ' if attrs else '',
                                               ' '.join('%s="%s"' % (k, v) for k, v in attrs)))
-            self._depth += 1
+            self._elts.append(tag)
 
     def handle_endtag(self, tag):
         if self._inside:
             self._result.append('</%s>' % (tag,))
-            self._depth -= 1
-            if self._depth == 0:
+            if tag in self._elts:
+                t = self._elts.pop()
+                while t != tag and self._elts:
+                    t = self._elts.pop()
+            if not self._elts:
                 self._inside = False
 
     def handle_data(self, data):
