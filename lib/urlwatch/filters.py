@@ -260,6 +260,53 @@ class GetElementById(FilterBase):
         element_by_id.feed(data)
         return element_by_id.get_html()
 
+class ElementByclass(html.parser.HTMLParser):
+    def __init__(self, element_class):
+        super().__init__()
+
+        self._element_class = element_class
+        self._result = []
+        self._inside = False
+        self._depth = 0
+
+    def get_html(self):
+        return ''.join(self._result)
+
+    def handle_starttag(self, tag, attrs):
+        ad = dict(attrs)
+
+        if ad.get('class', None) == self._element_class:
+            self._inside = True
+
+        if self._inside:
+            self._result.append('<%s%s%s>' % (tag, ' ' if attrs else '',
+                                              ' '.join('%s="%s"' % (k, v) for k, v in attrs)))
+            self._depth += 1
+
+    def handle_endtag(self, tag):
+        if self._inside:
+            self._result.append('</%s>' % (tag,))
+            self._depth -= 1
+            if self._depth == 0:
+                self._inside = False
+
+    def handle_data(self, data):
+        if self._inside:
+            self._result.append(data)
+
+
+class GetElementByClass(FilterBase):
+    """Get a HTML element by its class"""
+
+    __kind__ = 'element-by-class'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            raise ValueError('Need an element class for filtering')
+
+        element_by_class = ElementByclass(subfilter)
+        element_by_class.feed(data)
+        return element_by_class.get_html()
 
 class GetElementByClass(FilterBase):
     """Get all HTML elements by class"""
