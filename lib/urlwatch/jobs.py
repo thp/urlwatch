@@ -158,7 +158,7 @@ class ShellJob(Job):
     __kind__ = 'shell'
 
     __required__ = ('command',)
-    __optional__ = ()
+    __optional__ = ('interval')
 
     def get_location(self):
         return self.command
@@ -179,7 +179,7 @@ class UrlJob(Job):
     __kind__ = 'url'
 
     __required__ = ('url',)
-    __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy')
+    __optional__ = ('interval', 'cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy')
 
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 

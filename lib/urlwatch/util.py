@@ -31,6 +31,8 @@
 import logging
 import os
 import platform
+import re
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -87,3 +89,12 @@ def atomic_rename(old_filename, new_filename):
             os.remove(new_old_filename)
     else:
         os.rename(old_filename, new_filename)
+
+def get_timedelta(line):
+    timespaces = {"days": 0}
+    for timeunit in "year month week day hour minute second".split():
+        content = re.findall(r"([0-9]*?)\s*?" + timeunit, line)
+        if content:
+            timespaces[timeunit + "s"] = int(content[0])
+    timespaces["days"] += 30 * timespaces.pop("months", 0) + 365 * timespaces.pop("years", 0)
+    return timedelta(**timespaces).total_seconds()

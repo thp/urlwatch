@@ -32,9 +32,11 @@ import concurrent.futures
 import logging
 
 import requests
+from time import time
 
 from .handler import JobState
 from .jobs import NotModifiedError
+from .util import get_timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +56,16 @@ def run_jobs(urlwatcher):
     cache_storage = urlwatcher.cache_storage
     jobs = urlwatcher.jobs
     report = urlwatcher.report
+
+    skipped = 0
+    for job in jobs[:]:
+        if job.interval is not None \
+            and cache_storage.load(job, job.get_guid())[1] + get_timedelta(job.interval) > time():
+            logger.debug('Skipping job: %s', job)
+            jobs.remove(job)
+            skipped += 1
+    if skipped > 0:
+        logger.debug('Skipped %d jobs', skipped)
 
     logger.debug('Processing %d jobs', len(jobs))
     for job_state in run_parallel(lambda job_state: job_state.process(),
