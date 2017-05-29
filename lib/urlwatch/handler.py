@@ -67,17 +67,20 @@ class JobState(object):
 
             # Apply any specified filters
             filter_list = self.job.filter
+
             if filter_list is not None:
-                for filter_kind in filter_list.split(','):
-                    if ':' in filter_kind:
-                        filter_kind, subfilter = filter_kind.split(':', 1)
-                    else:
-                        subfilter = None
-
-                    logger.info('Applying filter %r, subfilter %r to %s',
-                                filter_kind, subfilter, self.job.get_location())
-                    data = FilterBase.process(filter_kind, subfilter, self, data)
-
+                if isinstance(filter_list, list):
+                    for item in filter_list:
+                        key = next(iter(item))
+                        filter_kind, subfilter = key, item[key]
+                        data = FilterBase.process(filter_kind, subfilter, self, data)
+                elif isinstance(filter_list, str):
+                    for filter_kind in filter_list.split(','):
+                        if ':' in filter_kind:
+                            filter_kind, subfilter = filter_kind.split(':', 1)
+                        else:
+                            subfilter = None
+                        data = FilterBase.process(filter_kind, subfilter, self, data)
             self.new_data = data
         except Exception as e:
             self.exception = e

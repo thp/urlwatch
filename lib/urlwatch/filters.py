@@ -78,6 +78,7 @@ class FilterBase(object, metaclass=TrackSubClasses):
 
     @classmethod
     def process(cls, filter_kind, subfilter, state, data):
+        logger.info('Applying filter %r, subfilter %r to %s', filter_kind, subfilter, state.job.get_location())
         filtercls = cls.__subclasses__.get(filter_kind, None)
         if filtercls is None:
             raise ValueError('Unknown filter kind: %s:%s' % (filter_kind, subfilter))
@@ -155,11 +156,18 @@ class Html2TextFilter(FilterBase):
     __kind__ = 'html2text'
 
     def filter(self, data, subfilter=None):
-        if subfilter is None:
-            subfilter = 're'
 
+        if subfilter is None:
+            method = 're'
+            options = {}
+        elif isinstance(subfilter, dict):
+            method = subfilter.pop('method')
+            options = subfilter
+        elif isinstance(subfilter, str):
+            method = subfilter
+            options = {}
         from .html2txt import html2text
-        return html2text(data, method=subfilter)
+        return html2text(data, method=method, options=options)
 
 
 class Ical2TextFilter(FilterBase):

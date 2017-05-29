@@ -36,7 +36,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def html2text(data, method='lynx'):
+def html2text(data, method='lynx', options=None):
 
     """
     Convert a string consisting of HTML to plain text
@@ -44,11 +44,19 @@ def html2text(data, method='lynx'):
 
     Method may be one of:
      'lynx' (default) - Use "lynx -dump" for conversion
+                        options: see "lynx -help" output for options that work with "-dump"
      'html2text'      - Use "html2text -nobs" for conversion
+                        options: https://linux.die.net/man/1/html2text
      'bs4'            - Use Beautiful Soup library to prettify the HTML
+                        options: "parser" only, bs4 supports "lxml", "html5lib", and "html.parser"
+                        http://beautiful-soup-4.readthedocs.io/en/latest/#specifying-the-parser-to-use
      're'             - A simple regex-based HTML tag stripper
-     'pyhtml2text'    - Use Python module "html2text", keeps link targets
+     'pyhtml2text'    - Use Python module "html2text"
+                        options: https://github.com/Alir3z4/html2text/blob/master/docs/usage.md#available-options
     """
+    if options is None:
+        options = {}
+
     if method == 're':
         stripped_tags = re.sub(r'<[^>]*>', '', data)
         d = '\n'.join((l.rstrip() for l in stripped_tags.splitlines() if l.strip() != ''))
@@ -56,24 +64,30 @@ def html2text(data, method='lynx'):
 
     if method == 'pyhtml2text':
         import html2text
-        pyhtml2text = html2text.HTML2Text()
-        d = pyhtml2text.handle(data)
+        parser = html2text.HTML2Text()
+        for k, v in options.items():
+            setattr(parser, k.lower(), v)
+        d = parser.handle(data)
         return d
 
     if method == 'bs4':
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(data, 'html.parser')
+        parser = options.pop('parser', 'html.parser')
+        soup = BeautifulSoup(data, parser)
         d = soup.prettify()
         return d
 
     if method == 'lynx':
-        cmd = ['lynx', '-nonumbers', '-dump', '-stdin', '-assume_charset=UTF-8', '-display_charset=UTF-8']
-        stdout_encoding = 'utf-8'
+        cmd = ['lynx', '-nonumbers', '-dump', '-stdin', '-assume_charset UTF-8', '-display_charset UTF-8']
     elif method == 'html2text':
         cmd = ['html2text', '-nobs', '-utf8']
-        stdout_encoding = 'utf-8'
     else:
         raise ValueError('Unknown html2text method: %r' % (method,))
+
+    stdout_encoding = 'utf-8'
+
+    for k, v in options.items():
+        cmd.append('-%s %s' % (k, v) if v is True else '-%s' % k)
 
     logger.debug('Command: %r, stdout encoding: %s', cmd, stdout_encoding)
 
