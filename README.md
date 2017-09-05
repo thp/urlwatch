@@ -30,7 +30,7 @@ urlwatch 2 requires:
 
 The dependencies can be installed with (add `--user` to install to `$HOME`):
 
-`python3 -m pip install pyyaml minidb requests keyring`
+`python3 -m pip install pyyaml minidb requests keyring appdirs`
 
 For optional pushover support the chump package is required:
 
