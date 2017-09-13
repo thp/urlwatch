@@ -36,6 +36,8 @@ import imp
 import html.parser
 import hashlib
 
+from enum import Enum
+
 from .util import TrackSubClasses
 
 logger = logging.getLogger(__name__)
@@ -217,11 +219,21 @@ class StripFilter(FilterBase):
         return data.strip()
 
 
-class ElementsByAttribute(html.parser.HTMLParser):
-    def __init__(self, name, value):
+class FilterBy(Enum):
+    ATTRIBUTE = 1
+    TAG = 2
+
+
+class ElementsBy(html.parser.HTMLParser):
+    def __init__(self, filter_by, name, value=None):
         super().__init__()
 
-        self._attributes = {name: value}
+        self._filter_by = filter_by
+        if self._filter_by == FilterBy.ATTRIBUTE:
+            self._attributes = {name: value}
+        else:
+            self._name = name
+
         self._result = []
         self._inside = False
         self._elts = []
@@ -232,7 +244,9 @@ class ElementsByAttribute(html.parser.HTMLParser):
     def handle_starttag(self, tag, attrs):
         ad = dict(attrs)
 
-        if all(ad.get(k, None) == v for k, v in self._attributes.items()):
+        if self._filter_by == FilterBy.ATTRIBUTE and all(ad.get(k, None) == v for k, v in self._attributes.items()):
+            self._inside = True
+        elif self._filter_by == FilterBy.TAG and tag == self._name:
             self._inside = True
 
         if self._inside:
@@ -264,7 +278,7 @@ class GetElementById(FilterBase):
         if subfilter is None:
             raise ValueError('Need an element ID for filtering')
 
-        element_by_id = ElementsByAttribute('id', subfilter)
+        element_by_id = ElementsBy(FilterBy.ATTRIBUTE, 'id', subfilter)
         element_by_id.feed(data)
         return element_by_id.get_html()
 
@@ -278,7 +292,7 @@ class GetElementByClass(FilterBase):
         if subfilter is None:
             raise ValueError('Need an element class for filtering')
 
-        element_by_class = ElementsByAttribute('class', subfilter)
+        element_by_class = ElementsBy(FilterBy.ATTRIBUTE, 'class', subfilter)
         element_by_class.feed(data)
         return element_by_class.get_html()
 
@@ -292,9 +306,23 @@ class GetElementByStyle(FilterBase):
         if subfilter is None:
             raise ValueError('Need an element style for filtering')
 
-        element_by_style = ElementsByAttribute('style', subfilter)
+        element_by_style = ElementsBy(FilterBy.ATTRIBUTE, 'style', subfilter)
         element_by_style.feed(data)
         return element_by_style.get_html()
+
+
+class GetElementByTag(FilterBase):
+    """Get an HTML element by its tag"""
+
+    __kind__ = 'element-by-tag'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            raise ValueError('Need a tag for filtering')
+
+        element_by_tag = ElementsBy(FilterBy.TAG, subfilter)
+        element_by_tag.feed(data)
+        return element_by_tag.get_html()
 
 
 class Sha1Filter(FilterBase):
