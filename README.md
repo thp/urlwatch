@@ -108,6 +108,12 @@ For most cases, this means that you can specify a filter chain in
 your urls.yaml page without requiring a custom hook where previously
 you would have needed to write custom filtering code in Python.
 
+If you want to extract only the body tag you can use this filer:
+```yaml
+url: http://thp.io/2008/urlwatch/
+filter: element-by-tag:body
+```
+
 PUSHOVER
 --------
 
