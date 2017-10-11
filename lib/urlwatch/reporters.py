@@ -310,15 +310,15 @@ class StdoutReporter(TextReporter):
             if line in separators:
                 print(line)
             elif line.startswith('+'):
-                print(self._green(line))
+                print(self._green(line).encode('utf-8'))
             elif line.startswith('-'):
-                print(self._red(line))
+                print(self._red(line).encode('utf-8'))
             elif any(line.startswith(prefix) for prefix in ('NEW:', 'CHANGED:', 'UNCHANGED:', 'ERROR:')):
                 first, second = line.split(' ', 1)
                 if line.startswith('ERROR:'):
-                    print(first, self._red(second))
+                    print(first, self._red(second).encode('utf-8'))
                 else:
-                    print(first, self._blue(second))
+                    print(first, self._blue(second).encode('utf-8'))
             else:
                 print(line)
 
