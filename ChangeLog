@@ -203,3 +203,13 @@
 	* Issue #108: Fix creation of example files on first startup
 	* Issue #118: Fix match filters for missing keys
 	* Small fixes by: Jakub Wilk, Marc Urben, Adam Dobrawy and Louis Sautier
+
+2017-11-08 Thomas Perl <thp.io/about>
+	* Issue #127: Fix error reporting
+	* ElementsByAttribute: look for matching tag in handle_endtag (by Gaetan Leurent)
+	* Paths: Add XDG_CONFIG_DIR support (by Jelle van der Waa)
+	* E-Mail: Fix encodings (by Seokjin Han), Allow 'user' parameter for SMTP (by Jay Sitter)
+	* HTTP: Option to avoid 304 responses, Content-Type header (by Vinicius Massuchetto)
+	* html2text: Configuration options (by Vinicius Massuchetto)
+	* Filtering: style (by gvandenbroucke), tag (by cmichi)
+	* New reporter: Telegram support (by gvandenbroucke)
