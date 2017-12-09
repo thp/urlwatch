@@ -25,6 +25,7 @@ urlwatch 2 requires:
   * [minidb](https://thp.io/2010/minidb/)
   * [requests](http://python-requests.org/)
   * [keyring](https://github.com/jaraco/keyring/)
+  * [appdirs](https://github.com/ActiveState/appdirs)
   * [chump](https://github.com/karanlyons/chump/) (for Pushover support)
   * [pushbullet.py](https://github.com/randomchars/pushbullet.py) (for Pushbullet support)
 
