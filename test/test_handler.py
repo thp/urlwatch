@@ -11,10 +11,10 @@ import tempfile
 import os
 import imp
 
-from lib.urlwatch import storage
-from lib.urlwatch.config import BaseConfig
-from lib.urlwatch.storage import JsonConfigStorage, YamlConfigStorage, UrlsJson, CacheMiniDBStorage
-from lib.urlwatch.main import Urlwatch
+from urlwatch import storage
+from urlwatch.config import BaseConfig
+from urlwatch.storage import JsonConfigStorage, YamlConfigStorage, UrlsJson, CacheMiniDBStorage
+from urlwatch.main import Urlwatch
 
 
 def test_required_classattrs_in_subclasses():
