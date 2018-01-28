@@ -213,3 +213,9 @@
 	* html2text: Configuration options (by Vinicius Massuchetto)
 	* Filtering: style (by gvandenbroucke), tag (by cmichi)
 	* New reporter: Telegram support (by gvandenbroucke)
+
+2018-01-28 Thomas Perl <m@thp.io>
+	* Documentation: Mention appdirs (by e-dschungel)
+	* SMTP: Fix handling of missing user field (by e-dschungel)
+	* Manpage: Fix documentation of XDG environment variables (by Jelle van der Waa)
+	* Unit tests: Fix imports for out-of-source-tree tests (by Maxime Werlen)
