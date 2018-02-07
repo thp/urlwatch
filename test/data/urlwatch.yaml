@@ -21,7 +21,9 @@ report:
     diff: unified
   pushover:
     app: ''
+    device: ''
     enabled: false
+    sound: 'spacealarm'
     user: ''
   stdout:
     color: true

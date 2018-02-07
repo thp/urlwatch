@@ -402,7 +402,9 @@ class PushoverReport(WebServiceReporter):
         return app.get_user(self.config['user'])
 
     def web_service_submit(self, service, title, body):
-        msg = service.create_message(title=title, message=body, html=True, sound='spacealarm')
+        sound = self.config['sound']
+        device = self.config['device']
+        msg = service.create_message(title=title, message=body, html=True, sound=sound, device=device)
         msg.send()
 
 
