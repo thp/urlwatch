@@ -92,6 +92,8 @@ DEFAULT_CONFIG = {
         'pushover': {
             'enabled': False,
             'app': '',
+            'device': '',
+            'sound': 'spacealarm',
             'user': '',
         },
         'pushbullet': {
