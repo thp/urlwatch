@@ -25,4 +25,5 @@ m['data_files'] = [
     ]),
 ]
 
+del m['copyright']
 setup(**m)
