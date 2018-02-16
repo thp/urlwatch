@@ -45,7 +45,7 @@ class Urlwatch(object):
 
         logger.info('Using %s as URLs file', self.urlwatch_config.urls)
         logger.info('Using %s for hooks', self.urlwatch_config.hooks)
-        logger.info('Using %s as cache directory', self.urlwatch_config.cache)
+        logger.info('Using %s as cache database', self.urlwatch_config.cache)
 
         self.config_storage = config_storage
         self.cache_storage = cache_storage
