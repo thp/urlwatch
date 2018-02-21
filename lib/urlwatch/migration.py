@@ -71,7 +71,7 @@ def migrate_cache(urlwatcher):
     cache = urlwatch_config.cache
     cache_dir = os.path.join(urlwatch_config.urlwatch_dir, 'cache')
 
-    if not os.path.isfile(cache) and os.path.isdir(cache_dir):
+    if os.path.isdir(cache_dir):
         print("""
     Migrating cache: {cache_dir} -> {cache_db}
     """.format(cache_dir=cache_dir, cache_db=cache))
