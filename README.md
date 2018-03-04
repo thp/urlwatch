@@ -102,7 +102,7 @@ The example urls.yaml file also demonstrates the use of built-in
 filters, here 3 filters are used: html2text, line-grep and whitespace
 removal to get just a certain info field from a webpage:
 ```yaml
-url: http://thp.io/2008/urlwatch/
+url: https://thp.io/2008/urlwatch/
 filter: html2text,grep:Current.*version,strip
 ```
 For most cases, this means that you can specify a filter chain in
@@ -111,7 +111,7 @@ you would have needed to write custom filtering code in Python.
 
 If you want to extract only the body tag you can use this filer:
 ```yaml
-url: http://thp.io/2008/urlwatch/
+url: https://thp.io/2008/urlwatch/
 filter: element-by-tag:body
 ```
 
@@ -149,6 +149,6 @@ telegram:
 CONTACT
 -------
 
-Website: http://thp.io/2008/urlwatch/
+Website: https://thp.io/2008/urlwatch/
 
 E-Mail: m@thp.io
