@@ -55,6 +55,8 @@ class UrlwatchCommand:
         if editor is None:
             editor = os.environ.get('VISUAL', None)
         if editor is None:
+            editor = shutil.which('editor', os.X_OK)
+        if editor is None:
             print('Please set $VISUAL or $EDITOR.')
             return 1
 
