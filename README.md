@@ -146,6 +146,35 @@ telegram:
   enabled: true
 ```
 
+
+E-MAIL VIA GMAIL SMTP
+---------------------
+
+You need to configure your GMail account to allow for "less secure" (password-based)
+apps to login:
+
+1. Go to https://myaccount.google.com/
+2. Click on "Sign-in & security"
+3. Scroll all the way down to "Allow less secure apps" and enable it
+
+Now, start the configuration editor: `urlwatch --edit-config`
+
+These are the keys you need to configure (see #158):
+
+- `report/email/enabled`: `true`
+- `report/email/from`: `your.username@gmail.com` (edit accordingly)
+- `report/email/method`: `smtp`
+- `report/email/smtp/host`: `smtp.gmail.com`
+- `report/email/smtp/keyring`: `true`
+- `report/email/smtp/port`: `587`
+- `report/email/smtp/starttls`: `true`
+- `report/email/to`: The e-mail address you want to send reports to
+
+Now, for setting the password, it's not stored in the config file, but in your
+keychain. To store the password, run: `urlwatch --smtp-login` and enter your
+password.
+
+
 CONTACT
 -------
 
