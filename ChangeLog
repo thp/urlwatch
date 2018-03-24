@@ -219,3 +219,10 @@
 	* SMTP: Fix handling of missing user field (by e-dschungel)
 	* Manpage: Fix documentation of XDG environment variables (by Jelle van der Waa)
 	* Unit tests: Fix imports for out-of-source-tree tests (by Maxime Werlen)
+
+2018-03-24 Thomas Perl <m@thp.io>
+	* Pushover: Device and sound attribute (by Tobias Haupenthal)
+	* XDG: Move cache file to XDG_CACHE_DIR (by Maxime Werlen)
+	* E-Mail: Add support for --smtp-login and document GMail SMTP usage
+	* Cleanups: Fix out-of-date debug message, use https (by Jakub Wilk)
+	* Migration: Unconditionally migrate urlwatch 1.x cache dirs (Fixes #206)
