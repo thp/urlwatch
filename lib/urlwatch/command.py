@@ -39,6 +39,7 @@ from .filters import FilterBase
 from .jobs import JobBase
 from .reporters import ReporterBase
 from .util import atomic_rename
+from .mailer import set_password, have_password
 
 logger = logging.getLogger(__name__)
 
@@ -159,9 +160,53 @@ class UrlwatchCommand:
         if self.urlwatch_config.edit_config:
             sys.exit(self.urlwatcher.config_storage.edit())
 
-    def run(self):
+    def check_smtp_login(self):
+        if self.urlwatch_config.smtp_login:
+            config = self.urlwatcher.config_storage.config['report']['email']
+            smtp_config = config['smtp']
 
+            success = True
+
+            if not config['enabled']:
+                print('Please enable e-mail reporting in the config first.')
+                success = False
+
+            if config['method'] != 'smtp':
+                print('Please set the method to SMTP for the e-mail reporter.')
+                success = False
+
+            if not smtp_config['keyring']:
+                print('Keyring authentication must be enabled for SMTP.')
+                success = False
+
+            smtp_hostname = smtp_config['host']
+            if not smtp_hostname:
+                print('Please configure the SMTP hostname in the config first.')
+                success = False
+
+            smtp_username = smtp_config.get('user', config['from'])
+            if not smtp_username:
+                print('Please configure the SMTP username in the config first.')
+                success = False
+
+            if not success:
+                sys.exit(1)
+
+            if have_password(smtp_hostname, smtp_username):
+                message = 'Password for %s / %s already set, update? [y/N] ' % (smtp_username, smtp_hostname)
+                if input(message).lower() != 'y':
+                    print('Password unchanged.')
+                    sys.exit(0)
+
+            if success:
+                set_password(smtp_hostname, smtp_username)
+                # TODO: Actually verify that the login to the server works
+
+            sys.exit(0)
+
+    def run(self):
         self.check_edit_config()
+        self.check_smtp_login()
         self.handle_actions()
         self.urlwatcher.run_jobs()
         self.urlwatcher.close()

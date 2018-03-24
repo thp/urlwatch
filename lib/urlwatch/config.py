@@ -87,6 +87,9 @@ class CommandConfig(BaseConfig):
         group.add_argument('--cache', metavar='FILE', help='use FILE as cache database',
                            default=self.cache)
 
+        group = parser.add_argument_group('Authentication')
+        group.add_argument('--smtp-login', action='store_true', help='Enter password for SMTP (store in keyring)')
+
         group = parser.add_argument_group('job list management')
         group.add_argument('--list', action='store_true', help='list jobs')
         group.add_argument('--add', metavar='JOB', help='add job (key1=value1,key2=value2,...)')

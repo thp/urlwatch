@@ -110,6 +110,10 @@ class SendmailMailer(Mailer):
             logger.error('Sendmail failed with {result}'.format(result=result))
 
 
+def have_password(smtp_server, from_email):
+    return keyring.get_password(smtp_server, from_email) is not None
+
+
 def set_password(smtp_server, from_email):
     ''' Set the keyring password for the mail connection. Interactive.'''
     if keyring is None:

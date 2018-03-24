@@ -351,8 +351,6 @@ class EMailReporter(TextReporter):
         else:
             logger.error('Invalid entry for method {method}'.format(method=self.config['method']))
 
-        # TODO set_password(options.email_smtp, options.email_from)
-
         if self.config['html']:
             body_html = '\n'.join(self.convert(HtmlReporter).submit())
 
