@@ -259,13 +259,13 @@ class BrowserJob(Job):
 
     __kind__ = 'browser'
 
-    __required__ = ('url',)
+    __required__ = ('navigate',)
 
     def get_location(self):
-        return self.url
+        return self.navigate
 
     def retrieve(self, job_state):
         from requests_html import HTMLSession
         session = HTMLSession()
-        response = session.get(self.url)
+        response = session.get(self.navigate)
         return response.html.html

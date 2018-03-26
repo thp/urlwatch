@@ -158,14 +158,14 @@ render the page, [Requests-HTML](http://html.python-requests.org) can
 now be used to render the page in a headless Chromium instance first
 and then use the HTML of the resulting page.
 
-Use the `browser` kind in the configuration and the `url` key to set the
+Use the `browser` kind in the configuration and the `navigate` key to set the
 URL to retrieve. note that the normal `url` job keys are not supported
 for the `browser` job types at the moment, for example:
 
 ```yaml
 kind: browser
 name: "A Page With JavaScript"
-url: http://example.org/
+navigate: http://example.org/
 ```
 
 
