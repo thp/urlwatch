@@ -32,13 +32,12 @@ import imp
 import logging
 import os
 import shutil
-import subprocess
 import sys
 
 from .filters import FilterBase
 from .jobs import JobBase
 from .reporters import ReporterBase
-from .util import atomic_rename
+from .util import atomic_rename, edit_file
 from .mailer import set_password, have_password
 
 logger = logging.getLogger(__name__)
@@ -51,14 +50,6 @@ class UrlwatchCommand:
         self.urlwatch_config = urlwatcher.urlwatch_config
 
     def edit_hooks(self):
-
-        editor = os.environ.get('EDITOR', None)
-        if editor is None:
-            editor = os.environ.get('VISUAL', None)
-        if editor is None:
-            print('Please set $VISUAL or $EDITOR.')
-            return 1
-
         fn_base, fn_ext = os.path.splitext(self.urlwatch_config.hooks)
         hooks_edit = fn_base + '.edit' + fn_ext
         try:
@@ -67,10 +58,12 @@ class UrlwatchCommand:
             elif self.urlwatch_config.hooks_py_example is not None and os.path.exists(
                     self.urlwatch_config.hooks_py_example):
                 shutil.copy(self.urlwatch_config.hooks_py_example, hooks_edit)
-            subprocess.check_call([editor, hooks_edit])
+            edit_file(hooks_edit)
             imp.load_source('hooks', hooks_edit)
             atomic_rename(hooks_edit, self.urlwatch_config.hooks)
             print('Saving edit changes in', self.urlwatch_config.hooks)
+        except SystemExit:
+            raise
         except Exception as e:
             print('Parsing failed:')
             print('======')

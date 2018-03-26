@@ -31,6 +31,8 @@
 import logging
 import os
 import platform
+import subprocess
+import shlex
 
 logger = logging.getLogger(__name__)
 
@@ -87,3 +89,13 @@ def atomic_rename(old_filename, new_filename):
             os.remove(new_old_filename)
     else:
         os.rename(old_filename, new_filename)
+
+
+def edit_file(filename):
+    editor = os.environ.get('EDITOR', None)
+    if not editor:
+        editor = os.environ.get('VISUAL', None)
+    if not editor:
+        raise SystemExit('Please set $VISUAL or $EDITOR.')
+
+    subprocess.check_call(shlex.split(editor) + [filename])

@@ -35,15 +35,12 @@ import platform
 from abc import ABCMeta, abstractmethod
 
 import shutil
-
-import subprocess
-import shlex
 import yaml
 import json
 import minidb
 import logging
 
-from .util import atomic_rename
+from .util import atomic_rename, edit_file
 from .jobs import JobBase, UrlJob, ShellJob
 
 logger = logging.getLogger(__name__)
@@ -164,14 +161,6 @@ class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
         ...
 
     def edit(self, example_file=None):
-
-        editor = os.environ.get('EDITOR', None)
-        if editor is None:
-            editor = os.environ.get('VISUAL', None)
-        if editor is None:
-            print('Please set $VISUAL or $EDITOR.')
-            return 1
-
         fn_base, fn_ext = os.path.splitext(self.filename)
         file_edit = fn_base + '.edit' + fn_ext
 
@@ -182,13 +171,13 @@ class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
 
         while True:
             try:
-                editor = shlex.split(editor)
-                editor.append(file_edit)
-                subprocess.check_call(editor)
+                edit_file(file_edit)
                 # Check if we can still parse it
                 if self.parse is not None:
                     self.parse(file_edit)
                 break  # stop if no exception on parser
+            except SystemExit:
+                raise
             except Exception as e:
                 print('Parsing failed:')
                 print('======')
