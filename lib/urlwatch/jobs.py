@@ -109,8 +109,9 @@ class JobBase(object, metaclass=TrackSubClasses):
         if 'kind' not in data:
             # Try to auto-detect the kind of job based on the available keys
             kinds = [subclass.__kind__ for subclass in list(cls.__subclasses__.values())
-                     if all(required in data for required in subclass.__required__) and
-                     not any(key not in subclass.__required__ and key not in subclass.__optional__ for key in data)]
+                     if all(required in data for required in subclass.__required__)
+                     and not any(key not in subclass.__required__
+                                 and key not in subclass.__optional__ for key in data)]
 
             if len(kinds) == 1:
                 kind = kinds[0]
