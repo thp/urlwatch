@@ -41,6 +41,10 @@ For optional pushbullet support the pushbullet.py package is required:
 
 `python3 -m pip install pushbullet.py`
 
+For optional support for the "browser" job kind, Requests-HTML is needed:
+
+`python3 -m pip install requests-html`
+
 For unit tests, you also need to install pycodestyle:
 
 `python3 -m pip install pycodestyle`
@@ -144,6 +148,24 @@ telegram:
   bot_token: '999999999:3tOhy2CuZE0pTaCtszRfKpnagOG8IQbP5gf' # your bot api token
   chat_id: '88888888' # the chat id where the messages should be sent
   enabled: true
+```
+
+BROWSER
+-------
+
+If the webpage you are trying to watch runs client-side JavaScript to
+render the page, [Requests-HTML](http://html.python-requests.org) can
+now be used to render the page in a headless Chromium instance first
+and then use the HTML of the resulting page.
+
+Use the `browser` kind in the configuration and the `navigate` key to set the
+URL to retrieve. note that the normal `url` job keys are not supported
+for the `browser` job types at the moment, for example:
+
+```yaml
+kind: browser
+name: "A Page With JavaScript"
+navigate: http://example.org/
 ```
 
 

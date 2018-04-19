@@ -252,3 +252,20 @@ class UrlJob(Job):
                 return response.content.decode('ascii', 'ignore')
 
         return response.text
+
+
+class BrowserJob(Job):
+    """Retrieve an URL, emulating a real web browser"""
+
+    __kind__ = 'browser'
+
+    __required__ = ('navigate',)
+
+    def get_location(self):
+        return self.navigate
+
+    def retrieve(self, job_state):
+        from requests_html import HTMLSession
+        session = HTMLSession()
+        response = session.get(self.navigate)
+        return response.html.html
