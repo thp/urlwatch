@@ -260,7 +260,7 @@ class UrlJob(Job):
     def add_custom_headers(self, headers):
         """
         Adds custom request headers from the job list (URLs) to the pre-filled dictionary `headers`.
-        Conflicting headers are overwritten case-insensitively.
+        Pre-filled values of conflicting header keys (case-insensitive) are overwritten by custom value.
         """
         headers_to_remove = [x for x in headers if x.lower() in [y.lower() for y in self.headers]]
         for header in headers_to_remove:
