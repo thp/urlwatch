@@ -179,7 +179,8 @@ class UrlJob(Job):
     __kind__ = 'url'
 
     __required__ = ('url',)
-    __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy')
+    __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
+                    'headers')
 
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
@@ -221,6 +222,9 @@ class UrlJob(Job):
             logger.info('Using local filesystem (%s URI scheme)', file_scheme)
             return open(self.url[len(file_scheme):], 'rt').read()
 
+        if self.headers:
+            self.add_custom_headers(headers)
+
         response = requests.request(url=self.url,
                                     data=self.data,
                                     headers=headers,
@@ -252,6 +256,16 @@ class UrlJob(Job):
                 return response.content.decode('ascii', 'ignore')
 
         return response.text
+
+    def add_custom_headers(self, headers):
+        """
+        Adds custom request headers from the job list (URLs) to the pre-filled dictionary `headers`.
+        Pre-filled values of conflicting header keys (case-insensitive) are overwritten by custom value.
+        """
+        headers_to_remove = [x for x in headers if x.lower() in [y.lower() for y in self.headers]]
+        for header in headers_to_remove:
+            headers.pop(header, None)
+        headers.update(self.headers)
 
 
 class BrowserJob(Job):
