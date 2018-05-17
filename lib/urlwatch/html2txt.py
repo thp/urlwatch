@@ -74,7 +74,7 @@ def html2text(data, method='lynx', options=None):
         from bs4 import BeautifulSoup
         parser = options.pop('parser', 'html.parser')
         soup = BeautifulSoup(data, parser)
-        d = soup.prettify()
+        d = soup.get_text(strip=True)
         return d
 
     if method == 'lynx':
