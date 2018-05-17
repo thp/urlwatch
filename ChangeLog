@@ -193,7 +193,7 @@
 	* Do not copy example files if they do not exist
 	* Handle SIGPIPE (fixes #77)
 
-2016-12-04 Thomas Perl <thp.io/about>
+2016-12-04 Thomas Perl <thp.io/about> [2.6]
 	* New filters: sha1sum, hexdump, element-by-class
 	* New reporters: pushbullet (by R0nd); mailgun (by lechuckcaptain)
 	* Improved filters: BeautifulSoup support for html2txt (by lechuckcaptain)
@@ -204,7 +204,7 @@
 	* Issue #118: Fix match filters for missing keys
 	* Small fixes by: Jakub Wilk, Marc Urben, Adam Dobrawy and Louis Sautier
 
-2017-11-08 Thomas Perl <thp.io/about>
+2017-11-08 Thomas Perl <thp.io/about> [2.7]
 	* Issue #127: Fix error reporting
 	* ElementsByAttribute: look for matching tag in handle_endtag (by Gaetan Leurent)
 	* Paths: Add XDG_CONFIG_DIR support (by Jelle van der Waa)
@@ -214,13 +214,13 @@
 	* Filtering: style (by gvandenbroucke), tag (by cmichi)
 	* New reporter: Telegram support (by gvandenbroucke)
 
-2018-01-28 Thomas Perl <m@thp.io>
+2018-01-28 Thomas Perl <m@thp.io> [2.8]
 	* Documentation: Mention appdirs (by e-dschungel)
 	* SMTP: Fix handling of missing user field (by e-dschungel)
 	* Manpage: Fix documentation of XDG environment variables (by Jelle van der Waa)
 	* Unit tests: Fix imports for out-of-source-tree tests (by Maxime Werlen)
 
-2018-03-24 Thomas Perl <m@thp.io>
+2018-03-24 Thomas Perl <m@thp.io> [2.9]
 	* Pushover: Device and sound attribute (by Tobias Haupenthal)
 	* XDG: Move cache file to XDG_CACHE_DIR (by Maxime Werlen)
 	* E-Mail: Add support for --smtp-login and document GMail SMTP usage
