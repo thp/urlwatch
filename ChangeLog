@@ -226,3 +226,10 @@
 	* E-Mail: Add support for --smtp-login and document GMail SMTP usage
 	* Cleanups: Fix out-of-date debug message, use https (by Jakub Wilk)
 	* Migration: Unconditionally migrate urlwatch 1.x cache dirs (Fixes #206)
+
+2018-05-17 Thomas Perl <m@thp.io> [2.10]
+	* File editing: Fix issue when $EDITOR contains spaces (Fixes #220)
+	* Browser: Add support for browser jobs using requests-html (Fixes #215)
+	* Retry: Add support for optional retry count in job list (by cmichi, fixes #235)
+	* HTTP: Add support for specifying optional headers (by Tero Mononen)
+	* ChangeLog: Add versions to recent ChangeLog entries (Fixes #235)
