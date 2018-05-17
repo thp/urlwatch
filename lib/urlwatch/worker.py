@@ -60,16 +60,30 @@ def run_jobs(urlwatcher):
                                   (JobState(cache_storage, job) for job in jobs)):
         logger.debug('Job finished: %s', job_state.job)
 
+        if not job_state.job.max_tries:
+            max_tries = 0
+        else:
+            max_tries = job_state.job.max_tries
+        logger.debug('Using max_tries of %i for %s', max_tries, job_state.job)
+
         if job_state.exception is not None:
             if isinstance(job_state.exception, NotModifiedError):
                 logger.info('Job %s has not changed (HTTP 304)', job_state.job)
                 report.unchanged(job_state)
-            elif isinstance(job_state.exception, requests.exceptions.RequestException):
-                # Instead of a full traceback, just show the HTTP error
-                job_state.traceback = str(job_state.exception)
-                report.error(job_state)
-            else:
-                report.error(job_state)
+            elif job_state.tries < max_tries:
+                logger.debug('This was try %i of %i for job %s', job_state.tries,
+                             max_tries, job_state.job)
+                job_state.save()
+            elif job_state.tries >= max_tries:
+                logger.debug('We are now at %i tries ', job_state.tries)
+                job_state.save()
+                if isinstance(job_state.exception, requests.exceptions.RequestException):
+                    # Instead of a full traceback, just show the HTTP error
+                    job_state.traceback = str(job_state.exception)
+                    report.error(job_state)
+                else:
+                    report.error(job_state)
+
         elif job_state.old_data is not None:
             if job_state.old_data.splitlines() != job_state.new_data.splitlines():
                 report.changed(job_state)

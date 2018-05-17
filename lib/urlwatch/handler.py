@@ -34,6 +34,7 @@ import time
 import traceback
 
 from .filters import FilterBase
+from .jobs import NotModifiedError
 from .reporters import ReporterBase
 
 logger = logging.getLogger(__name__)
@@ -49,12 +50,13 @@ class JobState(object):
         self.timestamp = None
         self.exception = None
         self.traceback = None
+        self.tries = 0
 
     def load(self):
-        self.old_data, self.timestamp = self.cache_storage.load(self.job, self.job.get_guid())
+        self.old_data, self.timestamp, self.tries = self.cache_storage.load(self.job, self.job.get_guid())
 
     def save(self):
-        self.cache_storage.save(self.job, self.job.get_guid(), self.new_data, time.time())
+        self.cache_storage.save(self.job, self.job.get_guid(), self.new_data, time.time(), self.tries)
 
     def process(self):
         logger.info('Processing: %s', self.job)
@@ -82,9 +84,14 @@ class JobState(object):
                             subfilter = None
                         data = FilterBase.process(filter_kind, subfilter, self, data)
             self.new_data = data
+            self.tries = 0
+
         except Exception as e:
             self.exception = e
             self.traceback = traceback.format_exc()
+            if not isinstance(e, NotModifiedError):
+                self.tries += 1
+                logger.debug('Increasing number of tries to %i for %s', self.tries, self.job)
 
         return self
 

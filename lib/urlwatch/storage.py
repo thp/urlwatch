@@ -359,7 +359,7 @@ class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def save(self, job, guid, data, timestamp):
+    def save(self, job, guid, data, timestamp, tries):
         ...
 
     @abstractmethod
@@ -372,12 +372,12 @@ class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
 
     def backup(self):
         for guid in self.get_guids():
-            data, timestamp = self.load(None, guid)
-            yield guid, data, timestamp
+            data, timestamp, tries = self.load(None, guid)
+            yield guid, data, timestamp, tries
 
     def restore(self, entries):
-        for guid, data, timestamp in entries:
-            self.save(None, guid, data, timestamp)
+        for guid, data, timestamp, tries in entries:
+            self.save(None, guid, data, timestamp, tries)
 
     def gc(self, known_guids):
         for guid in set(self.get_guids()) - set(known_guids):
@@ -442,6 +442,7 @@ class CacheEntry(minidb.Model):
     guid = str
     timestamp = int
     data = str
+    tries = int
 
 
 class CacheMiniDBStorage(CacheStorage):
@@ -463,15 +464,15 @@ class CacheMiniDBStorage(CacheStorage):
         return (guid for guid, in CacheEntry.query(self.db, minidb.Function('distinct', CacheEntry.c.guid)))
 
     def load(self, job, guid):
-        for data, timestamp in CacheEntry.query(self.db, CacheEntry.c.data // CacheEntry.c.timestamp,
-                                                order_by=CacheEntry.c.timestamp.desc,
-                                                where=CacheEntry.c.guid == guid, limit=1):
-            return data, timestamp
+        for data, timestamp, tries in CacheEntry.query(self.db, CacheEntry.c.data // CacheEntry.c.timestamp // CacheEntry.c.tries,
+                                                       order_by=minidb.columns(CacheEntry.c.timestamp.desc, CacheEntry.c.tries.desc),
+                                                       where=CacheEntry.c.guid == guid, limit=1):
+            return data, timestamp, tries
 
-        return None, None
+        return None, None, 0
 
-    def save(self, job, guid, data, timestamp):
-        self.db.save(CacheEntry(guid=guid, timestamp=timestamp, data=data))
+    def save(self, job, guid, data, timestamp, tries):
+        self.db.save(CacheEntry(guid=guid, timestamp=timestamp, data=data, tries=tries))
         self.db.commit()
 
     def delete(self, guid):

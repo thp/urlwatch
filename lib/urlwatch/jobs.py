@@ -146,7 +146,7 @@ class JobBase(object, metaclass=TrackSubClasses):
 
 class Job(JobBase):
     __required__ = ()
-    __optional__ = ('name', 'filter')
+    __optional__ = ('name', 'filter', 'max_tries')
 
     def pretty_name(self):
         return self.name if self.name else self.get_location()
