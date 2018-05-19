@@ -233,3 +233,7 @@
 	* Retry: Add support for optional retry count in job list (by cmichi, fixes #235)
 	* HTTP: Add support for specifying optional headers (by Tero Mononen)
 	* ChangeLog: Add versions to recent ChangeLog entries (Fixes #235)
+
+2018-05-19 Thomas Perl <m@thp.io> [2.11]
+	* Retry: Make sure "tries" is initialized to zero on load (Fixes #241)
+	* html2text: Make sure the bs4 method strips HTML tags (by Louis Sautier)
