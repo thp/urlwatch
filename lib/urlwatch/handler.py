@@ -58,6 +58,10 @@ class JobState(object):
             self.tries = 0
 
     def save(self):
+        if self.new_data is None and self.exception is not None:
+            # If no new data has been retrieved due to an exception, use the old job data
+            self.new_data = self.old_data
+
         self.cache_storage.save(self.job, self.job.get_guid(), self.new_data, time.time(), self.tries)
 
     def process(self):
