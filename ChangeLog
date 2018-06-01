@@ -237,3 +237,6 @@
 2018-05-19 Thomas Perl <m@thp.io> [2.11]
 	* Retry: Make sure "tries" is initialized to zero on load (Fixes #241)
 	* html2text: Make sure the bs4 method strips HTML tags (by Louis Sautier)
+
+2018-06-01 Thomas Perl <m@thp.io> [2.12]
+	* Bugfix: Do not 'forget' old data if an exception occurs (Fixes #242)
