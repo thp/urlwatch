@@ -99,3 +99,8 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Issue #108: Fix creation of example files on first startup
 - Issue #118: Fix match filters for missing keys
 - Small fixes by: Jakub Wilk, Marc Urben, Adam Dobrawy and Louis Sautier
+
+
+Older ChangeLog entries can be found in the
+[old ChangeLog file](https://github.com/thp/urlwatch/blob/2.12/ChangeLog),
+or with `git show 2.12:ChangeLog` on the command line.
