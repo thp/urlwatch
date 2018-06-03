@@ -111,7 +111,9 @@ class Report(object):
 
     def _result(self, verb, job_state):
         if job_state.exception is not None:
-            logger.debug('Got exception while processing %r', job_state.job, exc_info=job_state.exception)
+            # TODO: Once we require Python >= 3.5, we can just pass in job_state.exception as "exc_info" parameter
+            exc_info = (type(job_state.exception), job_state.exception, job_state.exception.__traceback__)
+            logger.debug('Got exception while processing %r', job_state.job, exc_info=exc_info)
 
         job_state.verb = verb
         self.job_states.append(job_state)
