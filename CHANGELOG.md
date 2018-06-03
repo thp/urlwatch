@@ -8,6 +8,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ### Added
 - Support for specifying a `diff_tool` (e.g. `wdiff`) for each job (Fixes #243)
+- Support for testing filters via `--test-filter JOB` (Fixes #237)
 
 ### Changed
 - Moved ChangeLog file to CHANGELOG.md and using Keep a Changelog format.

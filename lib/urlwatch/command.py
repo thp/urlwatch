@@ -35,7 +35,8 @@ import shutil
 import sys
 
 from .filters import FilterBase
-from .jobs import JobBase
+from .handler import JobState
+from .jobs import JobBase, UrlJob
 from .reporters import ReporterBase
 from .util import atomic_rename, edit_file
 from .mailer import set_password, have_password
@@ -102,26 +103,45 @@ class UrlwatchCommand:
                     print('%d: %s' % (idx + 1, pretty_name))
         return 0
 
+    def _find_job(self, query):
+        try:
+            index = int(query)
+            if index <= 0:
+                return None
+            try:
+                return self.urlwatcher.jobs[index - 1]
+            except IndexError:
+                return None
+        except ValueError:
+            return next((job for job in self.urlwatcher.jobs if job.get_location() == query), None)
+
+    def test_filter(self):
+        job = self._find_job(self.urlwatch_config.test_filter)
+        if job is None:
+            print('Not found: %r' % (self.urlwatch_config.test_filter,))
+            return 1
+
+        if isinstance(job, UrlJob):
+            # Force re-retrieval of job, as we're testing filters
+            job.ignore_cached = True
+
+        job_state = JobState(self.urlwatcher.cache_storage, job)
+        job_state.process()
+        print(job_state.new_data)
+        # We do not save the job state or job on purpose here, since we are possibly modifying the job
+        # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
+        return 0
+
     def modify_urls(self):
         save = True
         if self.urlwatch_config.delete is not None:
-            try:
-                index = int(self.urlwatch_config.delete) - 1
-                try:
-                    job = self.urlwatcher.jobs.pop(index)
-                    print('Removed %r' % (job,))
-                except IndexError:
-                    print('Not found: %r' % (index,))
-                    save = False
-            except ValueError:
-                job = next((job for job in self.urlwatcher.jobs if job.get_location() == self.urlwatch_config.delete),
-                           None)
-                try:
-                    self.urlwatcher.jobs.remove(job)
-                    print('Removed %r' % (job,))
-                except ValueError:
-                    print('Not found: %r' % (self.urlwatch_config.delete,))
-                    save = False
+            job = self._find_job(self.urlwatch_config.delete)
+            if job is not None:
+                self.urlwatcher.jobs.remove(job)
+                print('Removed %r' % (job,))
+            else:
+                print('Not found: %r' % (self.urlwatch_config.delete,))
+                save = False
 
         if self.urlwatch_config.add is not None:
             d = {k: v for k, v in (item.split('=', 1) for item in self.urlwatch_config.add.split(','))}
@@ -144,6 +164,8 @@ class UrlwatchCommand:
             sys.exit(self.urlwatcher.urls_storage.edit(self.urlwatch_config.urls_yaml_example))
         if self.urlwatch_config.edit_hooks:
             sys.exit(self.edit_hooks())
+        if self.urlwatch_config.test_filter:
+            sys.exit(self.test_filter())
         if self.urlwatch_config.list:
             sys.exit(self.list_urls())
         if self.urlwatch_config.add is not None or self.urlwatch_config.delete is not None:

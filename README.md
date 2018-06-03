@@ -212,6 +212,23 @@ keychain. To store the password, run: `urlwatch --smtp-login` and enter your
 password.
 
 
+TESTING FILTERS
+---------------
+
+While creating your filter pipeline, you might want to preview what the filtered
+output looks like. You can do so by first configuring your job and then running
+urlwatch with the `--test-filter` command, passing in the index (from `--list`)
+or the URL/location of the job to be tested:
+
+```
+urlwatch --test-filter 1   # Test the first job in the list
+urlwatch --test-filter https://example.net/  # Test the job with the given URL
+```
+
+The output of this command will be the filtered plaintext of the job, this is the
+output that will (in a real urlwatch run) be the input to the diff algorithm.
+
+
 CONTACT
 -------
 
