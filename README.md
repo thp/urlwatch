@@ -113,6 +113,16 @@ For most cases, this means that you can specify a filter chain in
 your urls.yaml page without requiring a custom hook where previously
 you would have needed to write custom filtering code in Python.
 
+If you are using the `grep` filter, you can grep for a comma (`,`)
+by using `\054` (`:` does not need to be escaped separately and
+can be used as-is), for example to convert HTML to text, then grep
+for `a,b:`, and then strip whitespace, use this:
+
+```yaml
+url: https://example.org/
+filter: html2text,grep:a\054b:,strip
+```
+
 If you want to extract only the body tag you can use this filer:
 ```yaml
 url: https://thp.io/2008/urlwatch/
@@ -124,7 +134,7 @@ two filenames (old, new) as parameter and returns on its standard output
 the difference of the files), for example to use GNU `wdiff` to get
 word-based differences instead of line-based difference:
 
-```
+```yaml
 url: https://example.com/
 diff_tool: wdiff
 ```
