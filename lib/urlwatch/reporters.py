@@ -28,6 +28,10 @@
 
 
 import difflib
+import tempfile
+import subprocess
+import re
+import shlex
 import email.utils
 import itertools
 import logging
@@ -53,6 +57,11 @@ except ImportError:
     Pushbullet = None
 
 logger = logging.getLogger(__name__)
+
+
+# Regular expressions that match the added/removed markers of GNU wdiff output
+WDIFF_ADDED_RE = r'[{][+].*?[+][}]'
+WDIFF_REMOVED_RE = r'[[][-].*?[-][]]'
 
 
 class ReporterBase(object, metaclass=TrackSubClasses):
@@ -98,6 +107,21 @@ class ReporterBase(object, metaclass=TrackSubClasses):
         raise NotImplementedError()
 
     def unified_diff(self, job_state):
+        if job_state.job.diff_tool is not None:
+            with tempfile.NamedTemporaryFile() as old_file, tempfile.NamedTemporaryFile() as new_file:
+                old_file.write(job_state.old_data.encode('utf-8'))
+                old_file.flush()
+                new_file.write(job_state.new_data.encode('utf-8'))
+                new_file.flush()
+                cmdline = shlex.split(job_state.job.diff_tool) + [old_file.name, new_file.name]
+                proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE)
+                stdout, _ = proc.communicate()
+                # Diff tools return 0 for "nothing changed" or 1 for "files differ", anything else is an error
+                if proc.returncode in (0, 1):
+                    return stdout.decode('utf-8')
+                else:
+                    raise subprocess.CalledProcessError(result, cmdline)
+
         timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
         timestamp_new = email.utils.formatdate(time.time(), localtime=1)
         return ''.join(difflib.unified_diff([l + '\n' for l in job_state.old_data.splitlines()],
@@ -306,6 +330,10 @@ class StdoutReporter(TextReporter):
         body = '\n'.join(super().submit())
 
         for line in body.splitlines():
+            # Basic colorization for wdiff-style differences
+            line = re.sub(WDIFF_ADDED_RE, lambda x: self._green(x.group(0)), line)
+            line = re.sub(WDIFF_REMOVED_RE, lambda x: self._red(x.group(0)), line)
+
             # FIXME: This isn't ideal, but works for now...
             if line in separators:
                 print(line)

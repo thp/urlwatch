@@ -119,6 +119,21 @@ url: https://thp.io/2008/urlwatch/
 filter: element-by-tag:body
 ```
 
+You can also specify an external `diff`-style tool (a tool that takes
+two filenames (old, new) as parameter and returns on its standard output
+the difference of the files), for example to use GNU `wdiff` to get
+word-based differences instead of line-based difference:
+
+```
+url: https://example.com/
+diff_tool: wdiff
+```
+
+Note that `diff_tool` specifies an external command-line tool, so that
+tool must be installed separately (e.g. `apt install wdiff` on Debian or
+`brew install wdiff` on macOS). Coloring is supported for `wdiff`-style
+output, but potentially not for other diff tools.
+
 PUSHOVER
 --------
 

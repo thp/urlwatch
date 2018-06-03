@@ -6,6 +6,9 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+### Added
+- Support for specifying a `diff_tool` (e.g. `wdiff`) for each job (Fixes #243)
+
 ### Changed
 - Moved ChangeLog file to CHANGELOG.md and using Keep a Changelog format.
 - Force version check in `setup.py`, to exclude Python 2 (Fixes #244)
