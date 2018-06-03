@@ -36,14 +36,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def html2text(data, method='lynx', options=None):
-
+def html2text(data, method, options):
     """
     Convert a string consisting of HTML to plain text
     for easy difference checking.
 
     Method may be one of:
-     'lynx' (default) - Use "lynx -dump" for conversion
+     'lynx'           - Use "lynx -dump" for conversion
                         options: see "lynx -help" output for options that work with "-dump"
      'html2text'      - Use "html2text -nobs" for conversion
                         options: https://linux.die.net/man/1/html2text
@@ -54,9 +53,6 @@ def html2text(data, method='lynx', options=None):
      'pyhtml2text'    - Use Python module "html2text"
                         options: https://github.com/Alir3z4/html2text/blob/master/docs/usage.md#available-options
     """
-    if options is None:
-        options = {}
-
     if method == 're':
         stripped_tags = re.sub(r'<[^>]*>', '', data)
         d = '\n'.join((l.rstrip() for l in stripped_tags.splitlines() if l.strip() != ''))

@@ -12,6 +12,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Changed
 - Moved ChangeLog file to CHANGELOG.md and using Keep a Changelog format.
 - Force version check in `setup.py`, to exclude Python 2 (Fixes #244)
+- Remove default parameter from internal `html2text` module (Fixes #239)
 
 ### Removed
 - Old ChangeLog entries
