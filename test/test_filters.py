@@ -1,5 +1,6 @@
 from urlwatch.filters import GetElementById
 from urlwatch.filters import GetElementByTag
+from urlwatch.filters import JsonFormatFilter
 
 from nose.tools import eq_
 
@@ -35,3 +36,22 @@ def test_get_element_by_tag_nested():
     """, 'div')
     print(result)
     eq_(result, """<div>foo</div><div>bar</div>""")
+
+
+def test_json_format_filter():
+    json_format_filter = JsonFormatFilter(None, None)
+    result = json_format_filter.filter(
+        """{"field1": {"f1.1": "value"},"field2": "value"}""")
+    print(result)
+    eq_(
+        result,
+        """{\n    "field1": {\n        "f1.1": "value"\n    },\n    "field2": "value"\n}"""
+    )
+
+
+def test_json_format_filter_subfilter():
+    json_format_filter = JsonFormatFilter(None, None)
+    result = json_format_filter.filter(
+        """{"field1": {"f1.1": "value"},"field2": "value"}""", "field1")
+    print(result)
+    eq_(result, """{\n    "f1.1": "value"\n}""")
