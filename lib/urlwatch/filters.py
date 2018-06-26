@@ -186,7 +186,7 @@ class Ical2TextFilter(FilterBase):
 class JsonFormatFilter(FilterBase):
     """Convert to formatted json"""
 
-    __kind__ = 'formatted-json'
+    __kind__ = 'format-json'
 
     def filter(self, data, subfilter=None):
         from json import dumps
