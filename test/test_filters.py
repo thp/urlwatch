@@ -43,15 +43,22 @@ def test_json_format_filter():
     result = json_format_filter.filter(
         """{"field1": {"f1.1": "value"},"field2": "value"}""")
     print(result)
-    eq_(
-        result,
-        """{\n    "field1": {\n        "f1.1": "value"\n    },\n    "field2": "value"\n}"""
-    )
+    eq_(result, """{
+    "field1": {
+        "f1.1": "value"
+    },
+    "field2": "value"
+}""")
 
 
 def test_json_format_filter_subfilter():
     json_format_filter = JsonFormatFilter(None, None)
     result = json_format_filter.filter(
-        """{"field1": {"f1.1": "value"},"field2": "value"}""", "field1")
+        """{"field1": {"f1.1": "value"},"field2": "value"}""", "2")
     print(result)
-    eq_(result, """{\n    "f1.1": "value"\n}""")
+    eq_(result, """{
+  "field1": {
+    "f1.1": "value"
+  },
+  "field2": "value"
+}""")

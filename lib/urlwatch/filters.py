@@ -190,10 +190,11 @@ class JsonFormatFilter(FilterBase):
     __kind__ = 'format-json'
 
     def filter(self, data, subfilter=None):
-        parsed_json = json.loads(data)
+        indentation = 4
         if subfilter is not None:
-            parsed_json = parsed_json[subfilter]
-        return json.dumps(parsed_json, sort_keys=True, indent=4)
+            indentation = int(subfilter)
+        parsed_json = json.loads(data)
+        return json.dumps(parsed_json, sort_keys=True, indent=indentation)
 
 
 class GrepFilter(FilterBase):
