@@ -35,6 +35,7 @@ import os
 import imp
 import html.parser
 import hashlib
+import json
 
 from enum import Enum
 
@@ -189,12 +190,10 @@ class JsonFormatFilter(FilterBase):
     __kind__ = 'format-json'
 
     def filter(self, data, subfilter=None):
-        from json import dumps
-        from json import loads
-        parsed_json = loads(data)
+        parsed_json = json.loads(data)
         if subfilter is not None:
             parsed_json = parsed_json[subfilter]
-        return dumps(parsed_json, sort_keys=True, indent=4)
+        return json.dumps(parsed_json, sort_keys=True, indent=4)
 
 
 class GrepFilter(FilterBase):
