@@ -35,6 +35,7 @@ import os
 import imp
 import html.parser
 import hashlib
+import json
 
 from enum import Enum
 
@@ -181,6 +182,19 @@ class Ical2TextFilter(FilterBase):
         self._no_subfilters(subfilter)
         from .ical2txt import ical2text
         return ical2text(data)
+
+
+class JsonFormatFilter(FilterBase):
+    """Convert to formatted json"""
+
+    __kind__ = 'format-json'
+
+    def filter(self, data, subfilter=None):
+        indentation = 4
+        if subfilter is not None:
+            indentation = int(subfilter)
+        parsed_json = json.loads(data)
+        return json.dumps(parsed_json, sort_keys=True, indent=indentation)
 
 
 class GrepFilter(FilterBase):
