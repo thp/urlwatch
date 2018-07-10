@@ -61,6 +61,11 @@ class NotModifiedError(Exception):
     ...
 
 
+class EmptyJobOutputError(Exception):
+    """Exception raised when job output was empty"""
+    ...
+
+
 class JobBase(object, metaclass=TrackSubClasses):
     __subclasses__ = {}
 
