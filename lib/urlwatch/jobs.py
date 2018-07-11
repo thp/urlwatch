@@ -131,7 +131,7 @@ class JobBase(object, metaclass=TrackSubClasses):
         return cls.__subclasses__[kind].from_dict(data)
 
     def to_dict(self):
-        return {k: getattr(self, k) for keys in (self.__required__, self.__optional__) for k in keys
+        return {k: getattr(self, k) for keys in (self.__required__, self.__optional__, ('ignore_empty',)) for k in keys
                 if getattr(self, k) is not None}
 
     @classmethod
