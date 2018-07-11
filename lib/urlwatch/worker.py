@@ -34,7 +34,7 @@ import logging
 import requests
 
 from .handler import JobState
-from .jobs import NotModifiedError
+from .jobs import NotModifiedError, EmptyJobOutputError
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +70,9 @@ def run_jobs(urlwatcher):
             if isinstance(job_state.exception, NotModifiedError):
                 logger.info('Job %s has not changed (HTTP 304)', job_state.job)
                 report.unchanged(job_state)
+            elif isinstance(job_state.exception, EmptyJobOutputError):
+                logger.info('Job %s has produced no output', job_state.job)
+                report.error(job_state)
             elif job_state.tries < max_tries:
                 logger.debug('This was try %i of %i for job %s', job_state.tries,
                              max_tries, job_state.job)

@@ -61,11 +61,18 @@ class NotModifiedError(Exception):
     ...
 
 
+class EmptyJobOutputError(Exception):
+    """Exception raised when job output was empty"""
+    ...
+
+
 class JobBase(object, metaclass=TrackSubClasses):
     __subclasses__ = {}
 
     __required__ = ()
     __optional__ = ()
+
+    ignore_empty = False
 
     def __init__(self, **kwargs):
         # Set optional keys to None
@@ -129,7 +136,7 @@ class JobBase(object, metaclass=TrackSubClasses):
 
     @classmethod
     def from_dict(cls, data):
-        return cls(**{k: v for k, v in list(data.items()) if k in cls.__required__ or k in cls.__optional__})
+        return cls(**{k: v for k, v in list(data.items()) if k in cls.__required__ or k in cls.__optional__ or k in ['ignore_empty']})
 
     def __repr__(self):
         return '<%s %s>' % (self.__kind__, ' '.join('%s=%r' % (k, v) for k, v in list(self.to_dict().items())))

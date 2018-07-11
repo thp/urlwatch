@@ -34,7 +34,7 @@ import time
 import traceback
 
 from .filters import FilterBase
-from .jobs import NotModifiedError
+from .jobs import NotModifiedError, EmptyJobOutputError
 from .reporters import ReporterBase
 
 logger = logging.getLogger(__name__)
@@ -89,6 +89,9 @@ class JobState(object):
                         else:
                             subfilter = None
                         data = FilterBase.process(filter_kind, subfilter, self, data)
+
+            if not data and not self.job.ignore_empty:
+                raise EmptyJobOutputError()
             self.new_data = data
             self.tries = 0
 
