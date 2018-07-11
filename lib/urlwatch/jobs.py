@@ -197,13 +197,14 @@ class UrlJob(Job):
             'https': os.getenv('HTTPS_PROXY'),
         }
 
-        if job_state.etag is not None and not self.ignore_cached:
+        if job_state.etag is not None:
             headers['If-None-Match'] = job_state.etag
 
         if job_state.timestamp is not None:
             headers['If-Modified-Since'] = email.utils.formatdate(job_state.timestamp)
 
         if self.ignore_cached:
+            headers['If-None-Match'] = None
             headers['If-Modified-Since'] = email.utils.formatdate(0)
             headers['Cache-Control'] = 'max-age=172800'
             headers['Expires'] = email.utils.formatdate()
