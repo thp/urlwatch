@@ -466,8 +466,8 @@ class CacheMiniDBStorage(CacheStorage):
 
     def load(self, job, guid):
         for data, timestamp, tries, etag in CacheEntry.query(self.db, CacheEntry.c.data // CacheEntry.c.timestamp // CacheEntry.c.tries // CacheEntry.c.etag,
-                                                       order_by=minidb.columns(CacheEntry.c.timestamp.desc, CacheEntry.c.tries.desc),
-                                                       where=CacheEntry.c.guid == guid, limit=1):
+                                                             order_by=minidb.columns(CacheEntry.c.timestamp.desc, CacheEntry.c.tries.desc),
+                                                             where=CacheEntry.c.guid == guid, limit=1):
             return data, timestamp, tries, etag
 
         return None, None, 0, None
