@@ -51,9 +51,10 @@ class JobState(object):
         self.exception = None
         self.traceback = None
         self.tries = 0
+        self.etag = None
 
     def load(self):
-        self.old_data, self.timestamp, self.tries = self.cache_storage.load(self.job, self.job.get_guid())
+        self.old_data, self.timestamp, self.tries, self.etag = self.cache_storage.load(self.job, self.job.get_guid())
         if self.tries is None:
             self.tries = 0
 
@@ -62,7 +63,7 @@ class JobState(object):
             # If no new data has been retrieved due to an exception, use the old job data
             self.new_data = self.old_data
 
-        self.cache_storage.save(self.job, self.job.get_guid(), self.new_data, time.time(), self.tries)
+        self.cache_storage.save(self.job, self.job.get_guid(), self.new_data, time.time(), self.tries, self.etag)
 
     def process(self):
         logger.info('Processing: %s', self.job)
