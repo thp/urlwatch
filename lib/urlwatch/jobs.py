@@ -234,7 +234,7 @@ class UrlJob(Job):
                                     proxies=proxies)
 
         response.raise_for_status()
-        if response.status_code == 304:
+        if response.status_code == requests.codes.not_modified:
             raise NotModifiedError()
 
         # If we can't find the encoding in the headers, requests gets all
