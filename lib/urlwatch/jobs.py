@@ -197,7 +197,7 @@ class UrlJob(Job):
             'https': os.getenv('HTTPS_PROXY'),
         }
 
-        if job_state.etag is not None:
+        if job_state.etag is not None and not self.ignore_cached:
             headers['If-None-Match'] = job_state.etag
 
         if job_state.timestamp is not None:
