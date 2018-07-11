@@ -359,7 +359,7 @@ class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def save(self, job, guid, data, timestamp, tries):
+    def save(self, job, guid, data, timestamp, tries, etag=None):
         ...
 
     @abstractmethod
@@ -372,12 +372,12 @@ class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
 
     def backup(self):
         for guid in self.get_guids():
-            data, timestamp, tries = self.load(None, guid)
-            yield guid, data, timestamp, tries
+            data, timestamp, tries, etag = self.load(None, guid)
+            yield guid, data, timestamp, tries, etag
 
     def restore(self, entries):
-        for guid, data, timestamp, tries in entries:
-            self.save(None, guid, data, timestamp, tries)
+        for guid, data, timestamp, tries, etag in entries:
+            self.save(None, guid, data, timestamp, tries, etag)
 
     def gc(self, known_guids):
         for guid in set(self.get_guids()) - set(known_guids):
@@ -420,10 +420,10 @@ class CacheDirStorage(CacheStorage):
 
         timestamp = os.stat(filename)[stat.ST_MTIME]
 
-        return data, timestamp
+        return data, timestamp, None
 
-    def save(self, job, guid, data, timestamp):
-        # Timestamp is always ignored
+    def save(self, job, guid, data, timestamp, etag=None):
+        # Timestamp and ETag are always ignored
         filename = self._get_filename(guid)
         with open(filename, 'w+') as fp:
             fp.write(data)
@@ -443,6 +443,7 @@ class CacheEntry(minidb.Model):
     timestamp = int
     data = str
     tries = int
+    etag = str
 
 
 class CacheMiniDBStorage(CacheStorage):
@@ -464,15 +465,15 @@ class CacheMiniDBStorage(CacheStorage):
         return (guid for guid, in CacheEntry.query(self.db, minidb.Function('distinct', CacheEntry.c.guid)))
 
     def load(self, job, guid):
-        for data, timestamp, tries in CacheEntry.query(self.db, CacheEntry.c.data // CacheEntry.c.timestamp // CacheEntry.c.tries,
+        for data, timestamp, tries, etag in CacheEntry.query(self.db, CacheEntry.c.data // CacheEntry.c.timestamp // CacheEntry.c.tries // CacheEntry.c.etag,
                                                        order_by=minidb.columns(CacheEntry.c.timestamp.desc, CacheEntry.c.tries.desc),
                                                        where=CacheEntry.c.guid == guid, limit=1):
-            return data, timestamp, tries
+            return data, timestamp, tries, etag
 
-        return None, None, 0
+        return None, None, 0, None
 
-    def save(self, job, guid, data, timestamp, tries):
-        self.db.save(CacheEntry(guid=guid, timestamp=timestamp, data=data, tries=tries))
+    def save(self, job, guid, data, timestamp, tries, etag=None):
+        self.db.save(CacheEntry(guid=guid, timestamp=timestamp, data=data, tries=tries, etag=etag))
         self.db.commit()
 
     def delete(self, guid):

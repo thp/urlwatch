@@ -53,7 +53,7 @@ class JobState(object):
         self.tries = 0
 
     def load(self):
-        self.old_data, self.timestamp, self.tries = self.cache_storage.load(self.job, self.job.get_guid())
+        self.old_data, self.timestamp, self.tries, self.etag = self.cache_storage.load(self.job, self.job.get_guid())
         if self.tries is None:
             self.tries = 0
 
