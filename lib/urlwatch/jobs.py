@@ -197,6 +197,9 @@ class UrlJob(Job):
             'https': os.getenv('HTTPS_PROXY'),
         }
 
+        if job_state.etag is not None:
+            headers['If-None-Match'] = job_state.etag
+
         if job_state.timestamp is not None:
             headers['If-Modified-Since'] = email.utils.formatdate(job_state.timestamp)
 
