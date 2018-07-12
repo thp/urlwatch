@@ -180,7 +180,7 @@ class UrlJob(Job):
 
     __required__ = ('url',)
     __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
-                    'headers')
+                    'headers', 'ignore_network')
 
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
