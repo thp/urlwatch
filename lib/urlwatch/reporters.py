@@ -485,7 +485,7 @@ class MailGunReporter(TextReporter):
         try:
             json_res = result.json()
 
-            if (result.status_code == 200):
+            if (result.status_code == requests.codes.ok):
                 logger.info("Mailgun response: id '{0}'. {1}".format(json_res['id'], json_res['message']))
             else:
                 logger.error("Mailgun error: {0}".format(json_res['message']))
@@ -529,7 +529,7 @@ class TelegramReporter(TextReporter):
         try:
             json_res = result.json()
 
-            if (result.status_code == 200):
+            if (result.status_code == requests.codes.ok):
                 logger.info("Telegram response: ok '{0}'. {1}".format(json_res['ok'], json_res['result']))
             else:
                 logger.error("Telegram error: {0}".format(json_res['description']))
