@@ -97,6 +97,11 @@ DEFAULT_CONFIG = {
             'enabled': False,
             'api_key': '',
         },
+        'telegram': {
+            'enabled': False,
+            'bot_token': '',
+            'chat-id': '',
+        },
         'mailgun': {
             'enabled': False,
             'api_key': '',

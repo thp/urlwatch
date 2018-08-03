@@ -33,6 +33,7 @@ import logging
 import os
 import shutil
 import sys
+import requests
 
 from .filters import FilterBase
 from .handler import JobState
@@ -175,6 +176,41 @@ class UrlwatchCommand:
         if self.urlwatch_config.edit_config:
             sys.exit(self.urlwatcher.config_storage.edit())
 
+    def check_telegram_chats(self):
+        if self.urlwatch_config.telegram_chats:
+            config = self.urlwatcher.config_storage.config['report'].get('telegram', None)
+            if not config:
+                print('You need to configure telegram in your config first (see README.md)')
+                sys.exit(1)
+
+            bot_token = config.get('bot_token', None)
+            if not bot_token:
+                print('You need to set up your bot token first (see README.md)')
+                sys.exit(1)
+
+            info = requests.get('https://api.telegram.org/bot{}/getMe'.format(bot_token)).json()
+
+            chats = {}
+            for chat_info in requests.get('https://api.telegram.org/bot{}/getUpdates'.format(bot_token)).json()['result']:
+                chat = chat_info['message']['chat']
+                if chat['type'] == 'private':
+                    chats[str(chat['id'])] = ' '.join((chat['first_name'], chat['last_name']))
+
+            if not chats:
+                print('No chats found. Say hello to your bot at https://t.me/{}'.format(info['result']['username']))
+                sys.exit(1)
+
+            headers = ('Chat ID', 'Name')
+            maxchat = max(len(headers[0]), max((len(k) for k, v in chats.items()), default=0))
+            maxname = max(len(headers[1]), max((len(v) for k, v in chats.items()), default=0))
+            fmt = '%-' + str(maxchat) + 's  %s'
+            print(fmt % headers)
+            print(fmt % ('-'*maxchat, '-'*maxname))
+            for k, v in sorted(chats.items(), key=lambda kv: kv[1]):
+                print(fmt % (k, v))
+            print('\nChat up your bot here: https://t.me/{}'.format(info['result']['username']))
+            sys.exit(0)
+
     def check_smtp_login(self):
         if self.urlwatch_config.smtp_login:
             config = self.urlwatcher.config_storage.config['report']['email']
@@ -222,6 +258,7 @@ class UrlwatchCommand:
     def run(self):
         self.check_edit_config()
         self.check_smtp_login()
+        self.check_telegram_chats()
         self.handle_actions()
         self.urlwatcher.run_jobs()
         self.urlwatcher.close()

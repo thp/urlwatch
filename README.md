@@ -168,12 +168,23 @@ TELEGRAM
 Telegram notifications are configured using the Telegram Bot API.
 For this, you'll need a Bot API token and a chat id (see https://core.telegram.org/bots).
 Sample configuration:
+
 ```yaml
 telegram:
   bot_token: '999999999:3tOhy2CuZE0pTaCtszRfKpnagOG8IQbP5gf' # your bot api token
   chat_id: '88888888' # the chat id where the messages should be sent
   enabled: true
 ```
+
+To set up Telegram, from your Telegram app, chat up BotFather (New Message,
+Search, "BotFather"), then say `/newbot` and follow the instructions.
+Eventually it will tell you the bot token (in the form seen above,
+`<number>:<random string>`) - add this to your config file.
+
+You can then click on the link of your bot, which will send the message `/start`.
+At this point, you can use the command `urlwatch --telegram-chats` to list the
+private chats the bot is involved with. This is the chat ID that you need to put
+into the config file as `chat_id`, and don't forget to also enable the reporter.
 
 BROWSER
 -------

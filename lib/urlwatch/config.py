@@ -89,6 +89,7 @@ class CommandConfig(BaseConfig):
 
         group = parser.add_argument_group('Authentication')
         group.add_argument('--smtp-login', action='store_true', help='Enter password for SMTP (store in keyring)')
+        group.add_argument('--telegram-chats', action='store_true', help='List telegram chats the bot is joined to')
 
         group = parser.add_argument_group('job list management')
         group.add_argument('--list', action='store_true', help='list jobs')
