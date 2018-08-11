@@ -194,7 +194,7 @@ class UrlwatchCommand:
             for chat_info in requests.get('https://api.telegram.org/bot{}/getUpdates'.format(bot_token)).json()['result']:
                 chat = chat_info['message']['chat']
                 if chat['type'] == 'private':
-                    chats[str(chat['id'])] = ' '.join((chat['first_name'], chat['last_name']))
+                    chats[str(chat['id'])] = ' '.join((chat['first_name'], chat['last_name'])) if 'last_name' in chat else chat['first_name']
 
             if not chats:
                 print('No chats found. Say hello to your bot at https://t.me/{}'.format(info['result']['username']))
