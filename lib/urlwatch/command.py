@@ -205,7 +205,7 @@ class UrlwatchCommand:
             maxname = max(len(headers[1]), max((len(v) for k, v in chats.items()), default=0))
             fmt = '%-' + str(maxchat) + 's  %s'
             print(fmt % headers)
-            print(fmt % ('-'*maxchat, '-'*maxname))
+            print(fmt % ('-' * maxchat, '-' * maxname))
             for k, v in sorted(chats.items(), key=lambda kv: kv[1]):
                 print(fmt % (k, v))
             print('\nChat up your bot here: https://t.me/{}'.format(info['result']['username']))
