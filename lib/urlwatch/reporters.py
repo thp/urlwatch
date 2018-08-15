@@ -506,7 +506,8 @@ class TelegramReporter(TextReporter):
     def submit(self):
 
         bot_token = self.config['bot_token']
-        chat_id = self.config['chat_id']
+        chat_ids = self.config['chat_id']
+        chat_ids = [chat_ids] if isinstance(chat_ids, str) else chat_ids
 
         text = '\n'.join(super().submit())
 
@@ -515,9 +516,11 @@ class TelegramReporter(TextReporter):
             return
 
         result = None
-
         for chunk in self.chunkstring(text, self.MAX_LENGTH):
-            result = self.submitToTelegram(bot_token, chat_id, chunk)
+            for chat_id in chat_ids:
+                res = self.submitToTelegram(bot_token, chat_id, chunk)
+                if res.status_code != requests.codes.ok or res is None:
+                    result = res
 
         return result
 
