@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from setuptools import setup
+from distutils import cmd
 
 import os
 import re
@@ -28,6 +29,25 @@ m['data_files'] = [
         'share/urlwatch/examples/urls.yaml.example',
     ]),
 ]
+
+class InstallDependencies(cmd.Command):
+    """Install dependencies only"""
+
+    description = 'Only install required packages using pip'
+    user_options = []
+
+    def initialize_options(self):
+        ...
+
+    def finalize_options(self):
+        ...
+
+    def run(self):
+        global m
+        from pip._internal import main
+        main(['install', '--upgrade'] + m['install_requires'])
+
+m['cmdclass'] = {'install_dependencies': InstallDependencies}
 
 del m['copyright']
 setup(**m)
