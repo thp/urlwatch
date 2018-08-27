@@ -197,10 +197,14 @@ class UrlJob(Job):
             'https': os.getenv('HTTPS_PROXY'),
         }
 
+        if job_state.etag is not None:
+            headers['If-None-Match'] = job_state.etag
+
         if job_state.timestamp is not None:
             headers['If-Modified-Since'] = email.utils.formatdate(job_state.timestamp)
 
         if self.ignore_cached:
+            headers['If-None-Match'] = None
             headers['If-Modified-Since'] = email.utils.formatdate(0)
             headers['Cache-Control'] = 'max-age=172800'
             headers['Expires'] = email.utils.formatdate()
@@ -236,6 +240,9 @@ class UrlJob(Job):
         response.raise_for_status()
         if response.status_code == requests.codes.not_modified:
             raise NotModifiedError()
+
+        # Save ETag from response into job_state, which will be saved in cache
+        job_state.etag = response.headers.get('ETag')
 
         # If we can't find the encoding in the headers, requests gets all
         # old-RFC-y and assumes ISO-8859-1 instead of UTF-8. Use the old
