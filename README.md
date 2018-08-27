@@ -26,28 +26,19 @@ urlwatch 2 requires:
   * [requests](http://python-requests.org/)
   * [keyring](https://github.com/jaraco/keyring/)
   * [appdirs](https://github.com/ActiveState/appdirs)
-  * [chump](https://github.com/karanlyons/chump/) (for Pushover support)
-  * [pushbullet.py](https://github.com/randomchars/pushbullet.py) (for Pushbullet support)
+  * [lxml](https://lxml.de)
 
 The dependencies can be installed with (add `--user` to install to `$HOME`):
 
-`python3 -m pip install pyyaml minidb requests keyring appdirs`
+`python3 -m pip install pyyaml minidb requests keyring appdirs lxml`
 
-For optional pushover support the chump package is required:
 
-`python3 -m pip install chump`
+Optional dependencies (install via `python3 -m pip install <packagename>`):
 
-For optional pushbullet support the pushbullet.py package is required:
-
-`python3 -m pip install pushbullet.py`
-
-For optional support for the "browser" job kind, Requests-HTML is needed:
-
-`python3 -m pip install requests-html`
-
-For unit tests, you also need to install pycodestyle:
-
-`python3 -m pip install pycodestyle`
+  * Pushover reporter: [chump](https://github.com/karanlyons/chump/)
+  * Pushbullet reporter: [pushbullet.py](https://github.com/randomchars/pushbullet.py)
+  * "browser" job kind: [requests-html](https://html.python-requests.org)
+  * Unit testing: [pycodestyle](http://pycodestyle.pycqa.org/en/latest/)
 
 
 MIGRATION FROM URLWATCH 1.x
@@ -143,6 +134,19 @@ Note that `diff_tool` specifies an external command-line tool, so that
 tool must be installed separately (e.g. `apt install wdiff` on Debian or
 `brew install wdiff` on macOS). Coloring is supported for `wdiff`-style
 output, but potentially not for other diff tools.
+
+To filter based on an [XPath](https://www.w3.org/TR/1999/REC-xpath-19991116/)
+expression, you can use the `xpath` filter like so (see Microsoft's
+[XPath Examples](https://msdn.microsoft.com/en-us/library/ms256086(v=vs.110).aspx)
+page for some other examples):
+
+```yaml
+url: https://example.net/
+filter: xpath:/body
+```
+
+This filters only the `<body>` element of the HTML document, stripping
+out everything else.
 
 PUSHOVER
 --------

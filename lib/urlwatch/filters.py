@@ -32,12 +32,14 @@ import re
 import logging
 import itertools
 import os
+import io
 import imp
 import html.parser
 import hashlib
 import json
 
 from enum import Enum
+from lxml import etree
 
 from .util import TrackSubClasses
 
@@ -363,3 +365,18 @@ class HexdumpFilter(FilterBase):
         return '\n'.join('%s  %s' % (' '.join('%02x' % c for c in block),
                                      ''.join((chr(c) if (c > 31 and c < 127) else '.')
                                              for c in block)) for block in blocks)
+
+
+class XPathFilter(FilterBase):
+    """Filter XML/HTML using XPath expressions"""
+
+    __kind__ = 'xpath'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            raise ValueError('Need an XPath expression for filtering')
+
+        parser = etree.HTMLParser()
+        tree = etree.parse(io.StringIO(data), parser)
+        return '\n'.join(etree.tostring(element, pretty_print=True, method='html', encoding='unicode')
+                         for element in tree.xpath(subfilter))
