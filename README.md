@@ -184,7 +184,19 @@ Eventually it will tell you the bot token (in the form seen above,
 You can then click on the link of your bot, which will send the message `/start`.
 At this point, you can use the command `urlwatch --telegram-chats` to list the
 private chats the bot is involved with. This is the chat ID that you need to put
-into the config file as `chat_id`, and don't forget to also enable the reporter.
+into the config file as `chat_id`. You may add multiple chat IDs as a YAML list:
+```yaml
+telegram:
+  bot_token: '999999999:3tOhy2CuZE0pTaCtszRfKpnagOG8IQbP5gf' # your bot api token
+  chat_id:
+    - '11111111'
+    - '22222222'
+  enabled: true
+```
+
+Don't forget to also enable the reporter.
+
+
 
 BROWSER
 -------
