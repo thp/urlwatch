@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from setuptools import setup
+from distutils import cmd
 
 import os
 import re
@@ -16,7 +17,7 @@ if sys.version_info < (3, 3):
 m['name'] = 'urlwatch'
 m['author'], m['author_email'] = re.match(r'(.*) <(.*)>', m['author']).groups()
 m['description'], m['long_description'] = docs[0].strip().split('\n\n', 1)
-m['install_requires'] = ['minidb', 'PyYAML', 'requests', 'keyring', 'pycodestyle', 'appdirs']
+m['install_requires'] = ['minidb', 'PyYAML', 'requests', 'keyring', 'pycodestyle', 'appdirs', 'lxml']
 m['scripts'] = ['urlwatch']
 m['package_dir'] = {'': 'lib'}
 m['packages'] = ['urlwatch']
@@ -28,6 +29,30 @@ m['data_files'] = [
         'share/urlwatch/examples/urls.yaml.example',
     ]),
 ]
+
+
+class InstallDependencies(cmd.Command):
+    """Install dependencies only"""
+
+    description = 'Only install required packages using pip'
+    user_options = []
+
+    def initialize_options(self):
+        ...
+
+    def finalize_options(self):
+        ...
+
+    def run(self):
+        global m
+        try:
+            from pip._internal import main
+        except ImportError:
+            from pip import main
+        main(['install', '--upgrade'] + m['install_requires'])
+
+
+m['cmdclass'] = {'install_dependencies': InstallDependencies}
 
 del m['copyright']
 setup(**m)

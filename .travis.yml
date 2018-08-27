@@ -4,5 +4,5 @@ python:
   - "3.5"
   - "3.6"
 install:
-  - pip install pyyaml minidb requests keyring pycodestyle appdirs
+  - python setup.py install_dependencies
 script: nosetests -v
