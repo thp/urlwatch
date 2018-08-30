@@ -4,7 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [2.14] -- 2018-08-30
+
+### Added
+- Filter to pretty-print JSON data: `format-json` (by Niko Böckerman, PR#250)
+- List active Telegram chats using `--telegram-chats` (with fixes by Georg Pichler, PR#270)
+- Support for HTTP `ETag` header in URL jobs and `If-None-Match` (by Karol Babioch, PR#256)
+- Support for filtering HTML using XPath expressions, with `lxml` (PR#274, Fixes #226)
+- Added `install_dependencies` to `setup.py` commands for easy installing of dependencies
+- Added `ignore_connection_errors` per-job configuration option (by Karol Babioch, PR#261)
+
+### Changed
+- Improved code (HTTP status codes, by Karol Babioch PR#258)
+- Improved documentation for setting up Telegram chat bots
+- Allow multiple chats for Telegram reporting (by Georg Pichler, PR#271)
+
 
 ## [2.13] -- 2018-06-03
 
