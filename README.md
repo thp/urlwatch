@@ -148,6 +148,17 @@ filter: xpath:/body
 This filters only the `<body>` element of the HTML document, stripping
 out everything else.
 
+In some cases, it might be useful to ignore (temporary) network errors to
+avoid notifications being sent. While there is a `display.error` config
+option (defaulting to `True`) to control reporting of errors globally, to
+ignore network errors for specific jobs only, you can use the
+`ignore_connection_errors` key in the job list configuration file:
+
+```yaml
+url: https://example.com/
+ignore_connection_errors: true
+```
+
 PUSHOVER
 --------
 
