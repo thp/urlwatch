@@ -100,7 +100,7 @@ DEFAULT_CONFIG = {
         'telegram': {
             'enabled': False,
             'bot_token': '',
-            'chat-id': '',
+            'chat_id': '',
         },
         'mailgun': {
             'enabled': False,
