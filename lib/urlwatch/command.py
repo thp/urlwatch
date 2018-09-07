@@ -145,7 +145,13 @@ class UrlwatchCommand:
                 save = False
 
         if self.urlwatch_config.add is not None:
-            d = {k: v for k, v in (item.split('=', 1) for item in self.urlwatch_config.add.split(','))}
+            # Allow multiple specifications of filter=, so that multiple filters can be specified on the CLI
+            items = [item.split('=', 1) for item in self.urlwatch_config.add.split(',')]
+            filters = [v for k, v in items if k == 'filter']
+            items = [(k, v) for k, v in items if k != 'filter']
+            d = {k: v for k, v in items}
+            d['filter'] = ','.join(filters)
+
             job = JobBase.unserialize(d)
             print('Adding %r' % (job,))
             self.urlwatcher.jobs.append(job)
