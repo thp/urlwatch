@@ -104,6 +104,7 @@ DEFAULT_CONFIG = {
         },
         'mailgun': {
             'enabled': False,
+            'region': 'us',
             'api_key': '',
             'domain': '',
             'from_mail': '',
