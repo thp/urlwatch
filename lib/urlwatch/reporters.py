@@ -447,16 +447,23 @@ class PushbulletReport(WebServiceReporter):
 
 
 class MailGunReporter(TextReporter):
-    """Custom email reporter that use mailgun service"""
+    """Custom email reporter that uses Mailgun"""
 
     __kind__ = 'mailgun'
 
     def submit(self):
+        region = self.config.get('region', '')
         domain = self.config['domain']
         api_key = self.config['api_key']
         from_name = self.config['from_name']
         from_mail = self.config['from_mail']
         to = self.config['to']
+
+        if region == 'us':
+            region = ''
+
+        if region != '':
+            region = ".{0}".format(region)
 
         filtered_job_states = list(self.report.get_filtered_job_states(self.job_states))
         subject_args = {
@@ -469,12 +476,12 @@ class MailGunReporter(TextReporter):
         body_html = '\n'.join(self.convert(HtmlReporter).submit())
 
         if not body_text:
-            logger.debug('Not calling mailgun API (no changes)')
+            logger.debug('Not calling Mailgun API (no changes)')
             return
 
-        logger.debug("Sending mailgun request for domain:'{0}'".format(domain))
+        logger.debug("Sending Mailgun request for domain:'{0}'".format(domain))
         result = requests.post(
-            "https://api.mailgun.net/v3/{0}/messages".format(domain),
+            "https://api{0}.mailgun.net/v3/{1}/messages".format(region, domain),
             auth=("api", api_key),
             data={"from": "{0} <{1}>".format(from_name, from_mail),
                   "to": to,
