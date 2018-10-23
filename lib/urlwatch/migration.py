@@ -71,7 +71,9 @@ def migrate_cache(urlwatcher):
     cache = urlwatch_config.cache
     cache_dir = os.path.join(urlwatch_config.urlwatch_dir, 'cache')
 
-    if os.path.isdir(cache_dir):
+    # On Windows and macOS with case-insensitive filesystems, we have to check if
+    # "cache.db" exists in the folder, and in this case, avoid migration (Issue #223)
+    if os.path.isdir(cache_dir) and not os.path.isfile(os.path.join(cache_dir, 'cache.db')):
         print("""
     Migrating cache: {cache_dir} -> {cache_db}
     """.format(cache_dir=cache_dir, cache_db=cache))
