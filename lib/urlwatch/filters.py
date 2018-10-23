@@ -372,11 +372,17 @@ class XPathFilter(FilterBase):
 
     __kind__ = 'xpath'
 
+    def _to_string(self, element):
+        # Handle "/text()" selector, which returns lxml.etree._ElementUnicodeResult (Issue #282)
+        if isinstance(element, str):
+            return element
+
+        return etree.tostring(element, pretty_print=True, method='html', encoding='unicode')
+
     def filter(self, data, subfilter=None):
         if subfilter is None:
             raise ValueError('Need an XPath expression for filtering')
 
         parser = etree.HTMLParser()
         tree = etree.parse(io.StringIO(data), parser)
-        return '\n'.join(etree.tostring(element, pretty_print=True, method='html', encoding='unicode')
-                         for element in tree.xpath(subfilter))
+        return '\n'.join(self._to_string(element) for element in tree.xpath(subfilter))
