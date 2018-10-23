@@ -277,6 +277,20 @@ The output of this command will be the filtered plaintext of the job, this is th
 output that will (in a real urlwatch run) be the input to the diff algorithm.
 
 
+SENDING COOKIES
+---------------
+
+It is possible to add cookies to HTTP requests for pages that need it, the YAML
+syntax for this is:
+
+```yaml
+url: http://example.com/
+cookies:
+    Key: ValueForKey
+    OtherKey: OtherValue
+```
+
+
 CONTACT
 -------
 
