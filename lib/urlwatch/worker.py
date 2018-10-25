@@ -92,9 +92,13 @@ def run_jobs(urlwatcher):
         elif job_state.old_data is not None:
             if job_state.old_data.splitlines() != job_state.new_data.splitlines():
                 report.changed(job_state)
+                job_state.tries = 0
                 job_state.save()
             else:
                 report.unchanged(job_state)
+                if job_state.tries > 0:
+                    job_state.tries = 0
+                    job_state.save()
         else:
             report.new(job_state)
             job_state.save()
