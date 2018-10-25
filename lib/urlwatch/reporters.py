@@ -323,6 +323,10 @@ class StdoutReporter(TextReporter):
         return self._incolor(4, s)
 
     def submit(self):
+        if sys.platform == 'win32':
+            import colorama
+            colorama.init()
+
         cfg = self.report.config['report']['text']
         line_length = cfg['line_length']
 
