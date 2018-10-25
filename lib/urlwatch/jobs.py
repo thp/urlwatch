@@ -286,7 +286,6 @@ class BrowserJob(Job):
         return self.navigate
 
     def retrieve(self, job_state):
-        from requests_html import HTMLSession
-        session = HTMLSession()
-        response = session.get(self.navigate)
+        response = self.session.get(self.navigate)
+        response.html.render()
         return response.html.html

@@ -87,6 +87,16 @@ class Urlwatch(object):
             logger.warn('No jobs file found')
             jobs = []
 
+        # dirty fix needed due to kennethreitz/requests-html#155
+        session = None
+        for job in jobs:
+            if job.__kind__ == 'browser':
+                if not session:
+                    from requests_html import HTMLSession
+                    session = HTMLSession()
+                    session.browser
+                job.session = session
+
         self.jobs = jobs
 
     def run_jobs(self):
