@@ -41,64 +41,75 @@ logger = logging.getLogger(__name__)
 MAX_WORKERS = 10
 
 
-def run_parallel(func, items):
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
-    for future in concurrent.futures.as_completed(executor.submit(func, item) for item in items):
-        exception = future.exception()
-        if exception is not None:
-            raise exception
-        yield future.result()
-
-
 def run_jobs(urlwatcher):
     cache_storage = urlwatcher.cache_storage
     jobs = urlwatcher.jobs
     report = urlwatcher.report
 
     logger.debug('Processing %d jobs', len(jobs))
-    for job_state in run_parallel(lambda job_state: job_state.process(),
-                                  (JobState(cache_storage, job) for job in jobs)):
-        logger.debug('Job finished: %s', job_state.job)
+    browser_jobs = [job for job in jobs if getattr(job, 'main_thread', False)]
+    other_jobs = [job for job in jobs if not getattr(job, 'main_thread', False)]
 
-        if not job_state.job.max_tries:
-            max_tries = 0
-        else:
-            max_tries = job_state.job.max_tries
-        logger.debug('Using max_tries of %i for %s', max_tries, job_state.job)
+    # start executing non-browser jobs asynchronously
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
+    futures = [executor.submit(lambda job: JobState(cache_storage, job).process(), job)
+               for job in other_jobs]
 
-        if job_state.exception is not None:
-            if isinstance(job_state.exception, NotModifiedError):
-                logger.info('Job %s has not changed (HTTP 304)', job_state.job)
-                report.unchanged(job_state)
-                if job_state.tries > 0:
-                    job_state.tries = 0
-                    job_state.save()
-            elif isinstance(job_state.exception, requests.exceptions.ConnectionError) and job_state.job.ignore_connection_errors:
-                logger.info('Connection error while executing job %s, ignored due to ignore_connection_errors', job_state.job)
-            elif job_state.tries < max_tries:
-                logger.debug('This was try %i of %i for job %s', job_state.tries,
-                             max_tries, job_state.job)
-                job_state.save()
-            elif job_state.tries >= max_tries:
-                logger.debug('We are now at %i tries ', job_state.tries)
-                job_state.save()
-                if isinstance(job_state.exception, requests.exceptions.RequestException):
-                    # Instead of a full traceback, just show the HTTP error
-                    job_state.traceback = str(job_state.exception)
-                    report.error(job_state)
-                else:
-                    report.error(job_state)
+    # execute browser jobs sequentially in the main thread
+    for job in browser_jobs:
+        process_job_result(JobState(cache_storage, job).process(), report)
 
-        elif job_state.old_data is not None:
-            if job_state.old_data.splitlines() != job_state.new_data.splitlines():
-                report.changed(job_state)
+    # handle results of non-browser jobs
+    for future in concurrent.futures.as_completed(futures):
+        exception = future.exception()
+        if exception is not None:
+            raise exception
+        process_job_result(future.result(), report)
+    executor.shutdown(wait=False)
+
+
+def process_job_result(job_state, report):
+    logger.debug('Job finished: %s', job_state.job)
+
+    if not job_state.job.max_tries:
+        max_tries = 0
+    else:
+        max_tries = job_state.job.max_tries
+    logger.debug('Using max_tries of %i for %s', max_tries, job_state.job)
+
+    if job_state.exception is not None:
+        if isinstance(job_state.exception, NotModifiedError):
+            logger.info('Job %s has not changed (HTTP 304)', job_state.job)
+            report.unchanged(job_state)
+            if job_state.tries > 0:
                 job_state.tries = 0
                 job_state.save()
-            else:
-                report.unchanged(job_state)
-                if job_state.tries > 0:
-                    job_state.tries = 0
-                    job_state.save()
-        else:
-            report.new(job_state)
+        elif isinstance(job_state.exception, requests.exceptions.ConnectionError) and job_state.job.ignore_connection_errors:
+            logger.info('Connection error while executing job %s, ignored due to ignore_connection_errors', job_state.job)
+        elif job_state.tries < max_tries:
+            logger.debug('This was try %i of %i for job %s', job_state.tries,
+                         max_tries, job_state.job)
             job_state.save()
+        elif job_state.tries >= max_tries:
+            logger.debug('We are now at %i tries ', job_state.tries)
+            job_state.save()
+            if isinstance(job_state.exception, requests.exceptions.RequestException):
+                # Instead of a full traceback, just show the HTTP error
+                job_state.traceback = str(job_state.exception)
+                report.error(job_state)
+            else:
+                report.error(job_state)
+
+    elif job_state.old_data is not None:
+        if job_state.old_data.splitlines() != job_state.new_data.splitlines():
+            report.changed(job_state)
+            job_state.tries = 0
+            job_state.save()
+        else:
+            report.unchanged(job_state)
+            if job_state.tries > 0:
+                job_state.tries = 0
+                job_state.save()
+    else:
+        report.new(job_state)
+        job_state.save()

@@ -282,15 +282,21 @@ class BrowserJob(Job):
 
     __required__ = ('navigate',)
 
+    main_thread = True
     _session = None
 
     def get_location(self):
         return self.navigate
 
     def retrieve(self, job_state):
+        """
+        Retrieve web pages rendered in Chromium with JavaScript.
+        Must be called sequentially from the main thread
+        """
         # all instances of BrowserJob share the same session
         if not BrowserJob._session:
             from requests_html import HTMLSession
             BrowserJob._session = HTMLSession()
         response = BrowserJob._session.get(self.navigate)
+        response.html.render()
         return response.html.html
