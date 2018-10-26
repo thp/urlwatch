@@ -282,11 +282,15 @@ class BrowserJob(Job):
 
     __required__ = ('navigate',)
 
+    _session = None
+
     def get_location(self):
         return self.navigate
 
     def retrieve(self, job_state):
-        from requests_html import HTMLSession
-        session = HTMLSession()
-        response = session.get(self.navigate)
+        # all instances of BrowserJob share the same session
+        if not BrowserJob._session:
+            from requests_html import HTMLSession
+            BrowserJob._session = HTMLSession()
+        response = BrowserJob._session.get(self.navigate)
         return response.html.html
