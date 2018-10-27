@@ -305,8 +305,15 @@ class StdoutReporter(TextReporter):
 
     __kind__ = 'stdout'
 
+    def __init__(self, report, config, job_states, duration):
+        super().__init__(report, config, job_states, duration)
+        self._has_color = sys.stdout.isatty() and self.config.get('color', False)
+        if sys.platform == 'win32' and self._has_color:
+            import colorama
+            colorama.init()
+
     def _incolor(self, color_id, s):
-        if sys.stdout.isatty() and self.config.get('color', False):
+        if self._has_color:
             return '\033[9%dm%s\033[0m' % (color_id, s)
         return s
 
@@ -323,10 +330,6 @@ class StdoutReporter(TextReporter):
         return self._incolor(4, s)
 
     def submit(self):
-        if sys.platform == 'win32':
-            import colorama
-            colorama.init()
-
         cfg = self.report.config['report']['text']
         line_length = cfg['line_length']
 
