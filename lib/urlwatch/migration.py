@@ -47,6 +47,7 @@ def migrate_urls(urlwatcher):
     urls_txt = os.path.join(urlwatch_config.urlwatch_dir, 'urls.txt')
     edit = urlwatch_config.edit
     add = urlwatch_config.add
+    features = urlwatch_config.features
 
     if os.path.isfile(urls_txt) and not os.path.isfile(urls):
         print("""
@@ -56,7 +57,7 @@ def migrate_urls(urlwatcher):
         UrlsYaml(urls).save(UrlsTxt(urls_txt).load_secure())
         atomic_rename(urls_txt, urls_txt + '.migrated')
 
-    if not os.path.isfile(urls) and not edit and not add:
+    if not os.path.isfile(urls) and not edit and not add and not features:
         print("""
     You need to create {urls_yaml} in order to use {pkgname}.
     Use "{pkgname} --edit" to open the file with your editor.
