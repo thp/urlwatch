@@ -182,6 +182,7 @@ class UrlJob(Job):
     __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
                     'headers', 'ignore_connection_errors')
 
+    location_is_url = True
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
     def get_location(self):
@@ -281,6 +282,8 @@ class BrowserJob(Job):
     __kind__ = 'browser'
 
     __required__ = ('navigate',)
+
+    location_is_url = True
 
     def get_location(self):
         return self.navigate

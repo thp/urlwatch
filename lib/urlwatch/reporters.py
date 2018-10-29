@@ -169,7 +169,7 @@ class HtmlReporter(ReporterBase):
         for job_state in self.report.get_filtered_job_states(self.job_states):
             job = job_state.job
 
-            if job.__kind__ == 'url':
+            if getattr(job, 'location_is_url', False):
                 title = '<a href="{location}">{pretty_name}</a>'
             elif job.pretty_name() != job.get_location():
                 title = '<span title="{location}">{pretty_name}</span>'
