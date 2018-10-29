@@ -37,7 +37,7 @@ Optional dependencies (install via `python3 -m pip install <packagename>`):
 
   * Pushover reporter: [chump](https://github.com/karanlyons/chump/)
   * Pushbullet reporter: [pushbullet.py](https://github.com/randomchars/pushbullet.py)
-  * "browser" job kind: [requests-html](https://html.python-requests.org)
+  * "browser" job kind: [requests-html](https://html.python-requests.org) and Python 3.6 or newer
   * Unit testing: [pycodestyle](http://pycodestyle.pycqa.org/en/latest/)
 
 
