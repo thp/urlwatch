@@ -57,7 +57,7 @@ DEFAULT_CONFIG = {
             'line_length': 75,
             'details': True,
             'footer': True,
-            'minimal': False
+            'minimal': False,
         },
 
         'html': {
