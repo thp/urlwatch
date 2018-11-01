@@ -434,6 +434,13 @@ class PushoverReport(WebServiceReporter):
     def web_service_submit(self, service, title, body):
         sound = self.config['sound']
         device = self.config['device']
+        delay = self.config.get('delay', 1)
+        separate = self.config.get('separate', False)
+
+        # rate limit if sending messages separately
+        if delay > 0 and separate:
+            time.sleep(delay)
+
         service.send_message(body, title=title, html=True, sound=sound, device=device)
 
 
