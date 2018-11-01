@@ -291,6 +291,20 @@ cookies:
 ```
 
 
+WATCHING GITHUB RELEASES
+------------------------
+
+This is an example how to watch the GitHub "releases" page for a given
+project for the latest release version, to be notified of new releases:
+
+```yaml
+url: "https://github.com/thp/urlwatch/releases/latest"
+filter:
+  - xpath: '(//div[contains(@class,"release-timeline-tags")]//h4)[1]/a'
+  - html2text: re
+```
+
+
 CONTACT
 -------
 
