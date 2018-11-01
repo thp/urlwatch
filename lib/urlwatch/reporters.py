@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 
 # Regular expressions that match the added/removed markers of GNU wdiff output
 WDIFF_ADDED_RE = r'[{][+].*?[+][}]'
-WDIFF_REMOVED_RE = r'[[][-].*?[-][]]'
+WDIFF_REMOVED_RE = r'[\[][-].*?[-][]]'
 
 
 class ReporterBase(object, metaclass=TrackSubClasses):
