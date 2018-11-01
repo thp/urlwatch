@@ -240,6 +240,15 @@ class TextReporter(ReporterBase):
         show_details = cfg['details']
         show_footer = cfg['footer']
 
+        if cfg['minimal']:
+            for job_state in self.report.get_filtered_job_states(self.job_states):
+                pretty_name = job_state.job.pretty_name()
+                location = job_state.job.get_location()
+                if pretty_name != location:
+                    location = '%s (%s)' % (pretty_name, location)
+                yield ': '.join((job_state.verb.upper(), location))
+            return
+
         summary = []
         details = []
         for job_state in self.report.get_filtered_job_states(self.job_states):
