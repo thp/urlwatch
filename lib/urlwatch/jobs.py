@@ -148,6 +148,9 @@ class Job(JobBase):
     __required__ = ()
     __optional__ = ('name', 'filter', 'max_tries', 'diff_tool')
 
+    # job will run sequentially in the main thread if set to true
+    MAIN_THREAD = False
+
     def pretty_name(self):
         return self.name if self.name else self.get_location()
 
@@ -282,7 +285,7 @@ class BrowserJob(Job):
 
     __required__ = ('navigate',)
 
-    main_thread = True
+    MAIN_THREAD = True
     _session = None
 
     def get_location(self):

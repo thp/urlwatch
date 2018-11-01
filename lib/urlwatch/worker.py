@@ -47,19 +47,19 @@ def run_jobs(urlwatcher):
     report = urlwatcher.report
 
     logger.debug('Processing %d jobs', len(jobs))
-    browser_jobs = [job for job in jobs if getattr(job, 'main_thread', False)]
-    other_jobs = [job for job in jobs if not getattr(job, 'main_thread', False)]
+    main_thread_jobs = [job for job in jobs if job.MAIN_THREAD]
+    other_jobs = [job for job in jobs if not job.MAIN_THREAD]
 
-    # start executing non-browser jobs asynchronously
+    # start executing non-main-thread jobs asynchronously
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
     futures = [executor.submit(lambda job: JobState(cache_storage, job).process(), job)
                for job in other_jobs]
 
-    # execute browser jobs sequentially in the main thread
-    for job in browser_jobs:
+    # execute main thread jobs sequentially in the main thread
+    for job in main_thread_jobs:
         process_job_result(JobState(cache_storage, job).process(), report)
 
-    # handle results of non-browser jobs
+    # process results of non-main-thread jobs
     for future in concurrent.futures.as_completed(futures):
         exception = future.exception()
         if exception is not None:
