@@ -47,9 +47,9 @@ from .mailer import SendmailMailer
 from .util import TrackSubClasses
 
 try:
-    import chump
+    from pushover import Client as PushoverClient
 except ImportError:
-    chump = None
+    PushoverClient = None
 
 try:
     from pushbullet import Pushbullet
@@ -424,14 +424,12 @@ class PushoverReport(WebServiceReporter):
     __kind__ = 'pushover'
 
     def web_service_get(self):
-        app = chump.Application(self.config['app'])
-        return app.get_user(self.config['user'])
+        return PushoverClient(self.config['user'], api_token=self.config['app'])
 
     def web_service_submit(self, service, title, body):
         sound = self.config['sound']
         device = self.config['device']
-        msg = service.create_message(title=title, message=body, html=True, sound=sound, device=device)
-        msg.send()
+        service.send_message(body, title=title, html=True, sound=sound, device=device)
 
 
 class PushbulletReport(WebServiceReporter):
