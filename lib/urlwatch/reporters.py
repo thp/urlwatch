@@ -441,7 +441,10 @@ class PushoverReport(WebServiceReporter):
         if delay > 0 and separate:
             time.sleep(delay)
 
-        service.send_message(body, title=title, html=True, sound=sound, device=device)
+        if separate:
+            service.send_message(body, title=title, html=True, sound=sound, device=device, url=self.job_states[0].location)
+        else:
+            service.send_message(body, title=title, html=True, sound=sound, device=device)
 
 
 class PushbulletReport(WebServiceReporter):
