@@ -97,8 +97,13 @@ class ReporterBase(object, metaclass=TrackSubClasses):
             cfg = report.config['report'].get(name, {'enabled': False})
             if cfg['enabled']:
                 any_enabled = True
-                logger.info('Submitting with %s (%r)', name, subclass)
-                subclass(report, cfg, job_states, duration).submit()
+                if cfg.get('separate', False):
+                    logger.info('Submitting separately with %s (%r)', name, subclass)
+                    for job_state in job_states:
+                        subclass(report, cfg, [job_state], duration).submit()
+                else:
+                    logger.info('Submitting with %s (%r)', name, subclass)
+                    subclass(report, cfg, job_states, duration).submit()
 
         if not any_enabled:
             logger.warn('No reporters enabled.')
