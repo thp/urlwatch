@@ -91,7 +91,6 @@ class JobState(object):
                             subfilter = None
                         data = FilterBase.process(filter_kind, subfilter, self, data)
             self.new_data = data
-            self.tries = 0
 
         except Exception as e:
             self.exception = e

@@ -70,6 +70,9 @@ def run_jobs(urlwatcher):
             if isinstance(job_state.exception, NotModifiedError):
                 logger.info('Job %s has not changed (HTTP 304)', job_state.job)
                 report.unchanged(job_state)
+                if job_state.tries > 0:
+                    job_state.tries = 0
+                    job_state.save()
             elif isinstance(job_state.exception, requests.exceptions.ConnectionError) and job_state.job.ignore_connection_errors:
                 logger.info('Connection error while executing job %s, ignored due to ignore_connection_errors', job_state.job)
             elif job_state.tries < max_tries:
@@ -89,9 +92,13 @@ def run_jobs(urlwatcher):
         elif job_state.old_data is not None:
             if job_state.old_data.splitlines() != job_state.new_data.splitlines():
                 report.changed(job_state)
+                job_state.tries = 0
                 job_state.save()
             else:
                 report.unchanged(job_state)
+                if job_state.tries > 0:
+                    job_state.tries = 0
+                    job_state.save()
         else:
             report.new(job_state)
             job_state.save()
