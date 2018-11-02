@@ -150,7 +150,8 @@ class UrlwatchCommand:
             filters = [v for k, v in items if k == 'filter']
             items = [(k, v) for k, v in items if k != 'filter']
             d = {k: v for k, v in items}
-            d['filter'] = ','.join(filters)
+            if filters:
+                d['filter'] = ','.join(filters)
 
             job = JobBase.unserialize(d)
             print('Adding %r' % (job,))
