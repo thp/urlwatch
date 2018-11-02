@@ -372,17 +372,39 @@ class XPathFilter(FilterBase):
 
     __kind__ = 'xpath'
 
-    def _to_string(self, element):
+    def _to_string(self, element, method):
         # Handle "/text()" selector, which returns lxml.etree._ElementUnicodeResult (Issue #282)
         if isinstance(element, str):
             return element
 
-        return etree.tostring(element, pretty_print=True, method='html', encoding='unicode')
+        return etree.tostring(element, pretty_print=True, method=method, encoding='unicode')
 
     def filter(self, data, subfilter=None):
         if subfilter is None:
             raise ValueError('Need an XPath expression for filtering')
 
-        parser = etree.HTMLParser()
-        tree = etree.parse(io.StringIO(data), parser)
-        return '\n'.join(self._to_string(element) for element in tree.xpath(subfilter))
+        if isinstance(subfilter, str):
+            xpath = subfilter
+            method = 'html'
+        elif isinstance(subfilter, dict):
+            if 'path' not in subfilter:
+                raise ValueError('Need an XPath expression for filtering')
+            xpath = subfilter['path']
+            method = subfilter.get('method', 'html')
+            if method not in ('html', 'xml'):
+                raise ValueError('XPath method must be "html" or "xml", got %r' % (method,))
+        else:
+            raise ValueError('XPath subfilter must be a string or dict')
+
+        parser = (etree.HTMLParser if method == 'html' else etree.XMLParser)()
+        try:
+            tree = etree.parse(io.StringIO(data), parser)
+        except ValueError:
+            # Strip XML declaration, for example: '<?xml version="1.0" encoding="utf-8"?>'
+            # for https://heronebag.com/blog/index.xml, an error happens, as we get a
+            # a (Unicode) string, but the XML contains its own "encoding" declaration
+            data = re.sub(r'^<[?]xml[^>]*[?]>', '', data)
+            # Retry parsing with XML declaration removed (Fixes #281)
+            tree = etree.parse(io.StringIO(data), parser)
+
+        return '\n'.join(self._to_string(element, method) for element in tree.xpath(xpath))

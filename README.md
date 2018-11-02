@@ -305,6 +305,22 @@ filter:
 ```
 
 
+USING XPATH EXPRESSIONS WITH XML
+--------------------------------
+
+By default, XPath filters are set up for HTML documents. However, it
+is possible to use XPath for XML documents as well (this example parses
+an RSS feed and filters only the titles and publication dates):
+
+```yaml
+url: 'https://heronebag.com/blog/index.xml'
+filter:
+  - xpath:
+      path: '//item/title/text()|//item/pubDate/text()'
+      method: xml
+```
+
+
 CONTACT
 -------
 
