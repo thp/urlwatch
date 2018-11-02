@@ -77,7 +77,7 @@ class JobState(object):
             # Apply any specified filters
             filter_list = self.job.filter
 
-            if filter_list is not None:
+            if filter_list:
                 if isinstance(filter_list, list):
                     for item in filter_list:
                         key = next(iter(item))
