@@ -305,12 +305,16 @@ class StdoutReporter(TextReporter):
 
     __kind__ = 'stdout'
 
+    # make sure colorama.init() is only called once by this class
+    _colorama_inited = False
+
     def __init__(self, report, config, job_states, duration):
         super().__init__(report, config, job_states, duration)
         self._has_color = sys.stdout.isatty() and self.config.get('color', False)
-        if sys.platform == 'win32' and self._has_color:
+        if sys.platform == 'win32' and self._has_color and not StdoutReporter._colorama_inited:
             import colorama
             colorama.init()
+            StdoutReporter._colorama_inited = True
 
     def _incolor(self, color_id, s):
         if self._has_color:
