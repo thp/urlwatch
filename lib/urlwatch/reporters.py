@@ -560,3 +560,45 @@ class TelegramReporter(TextReporter):
 
     def chunkstring(self, string, length):
         return (string[0 + i:length + i] for i in range(0, len(string), length))
+
+
+class SlackReporter(TextReporter):
+    """Custom Slack reporter"""
+    MAX_LENGTH = 4096
+
+    __kind__ = 'slack'
+
+    def submit(self):
+
+        webhook = self.config['webhook']
+        text = '\n'.join(super().submit())
+
+        if not text:
+            logger.debug('Not calling slack API (no changes)')
+            return
+
+        result = None
+        for chunk in self.chunkstring(text, self.MAX_LENGTH):
+            res = self.submitToSlack(webhook, chunk)
+            if res.status_code != requests.codes.ok or res is None:
+                result = res
+
+        return result
+
+    def submitToSlack(self, webhook, text):
+        logger.debug("Sending slack request with text:{0}".format(text))
+        post_data = {"text": text}
+        result = requests.post(webhook, json=post_data)
+        try:
+            if result.status_code == requests.codes.ok:
+                logger.info("Slack response: ok")
+            else:
+                logger.error("Slack error: {0}".format(result.text))
+        except ValueError:
+            logger.error(
+                "Failed to parse slack response. HTTP status code: {0}, content: {1}".format(result.status_code,
+                                                                                                result.content))
+        return result
+
+    def chunkstring(self, string, length):
+        return (string[0 + i:length + i] for i in range(0, len(string), length))

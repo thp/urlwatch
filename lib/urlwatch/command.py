@@ -220,6 +220,26 @@ class UrlwatchCommand:
             print('\nChat up your bot here: https://t.me/{}'.format(info['result']['username']))
             sys.exit(0)
 
+    def check_slack(self):
+        if self.urlwatch_config.slack:
+            config = self.urlwatcher.config_storage.config['report'].get('slack', None)
+            if not config:
+                print('You need to configure slack in your config first (see README.md)')
+                sys.exit(1)
+
+            webhook = config.get('webhook', None)
+            if not webhook:
+                print('You need to set up your slack webhook first (see README.md)')
+                sys.exit(1)
+
+            info = requests.post(webhook, json={"text": "a test message to slack"})
+            if info.status_code == requests.codes.ok:
+                print('slack configure success')
+                sys.exit(0)
+            else:
+                print('slack configure error with message {0}'.format(info.text))
+                sys.exit(1)
+
     def check_smtp_login(self):
         if self.urlwatch_config.smtp_login:
             config = self.urlwatcher.config_storage.config['report']['email']
@@ -268,6 +288,7 @@ class UrlwatchCommand:
         self.check_edit_config()
         self.check_smtp_login()
         self.check_telegram_chats()
+        self.check_slack()
         self.handle_actions()
         self.urlwatcher.run_jobs()
         self.urlwatcher.close()
