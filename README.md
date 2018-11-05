@@ -37,7 +37,7 @@ Optional dependencies (install via `python3 -m pip install <packagename>`):
 
   * Pushover reporter: [chump](https://github.com/karanlyons/chump/)
   * Pushbullet reporter: [pushbullet.py](https://github.com/randomchars/pushbullet.py)
-  * "browser" job kind: [requests-html](https://html.python-requests.org)
+  * "browser" job kind: [pyppeteer](https://github.com/miyakogi/pyppeteer), Python 3.6 or newer
   * Unit testing: [pycodestyle](http://pycodestyle.pycqa.org/en/latest/)
 
 
@@ -217,7 +217,7 @@ BROWSER
 -------
 
 If the webpage you are trying to watch runs client-side JavaScript to
-render the page, [Requests-HTML](http://html.python-requests.org) can
+render the page, [Pyppeteer](https://github.com/miyakogi/pyppeteer) can
 now be used to render the page in a headless Chromium instance first
 and then use the HTML of the resulting page.
 
