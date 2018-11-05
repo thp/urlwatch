@@ -30,11 +30,13 @@
 
 import concurrent.futures
 import logging
+import asyncio
+from threading import Thread
 
 import requests
 
 from .handler import JobState
-from .jobs import NotModifiedError
+from .jobs import AsyncJob, NotModifiedError
 
 logger = logging.getLogger(__name__)
 
@@ -48,12 +50,24 @@ def run_parallel(func, items):
         if exception is not None:
             raise exception
         yield future.result()
+    executor.shutdown(wait=False)
 
 
 def run_jobs(urlwatcher):
     cache_storage = urlwatcher.cache_storage
     jobs = urlwatcher.jobs
     report = urlwatcher.report
+
+    async_jobs = [job for job in jobs if isinstance(job, AsyncJob)]
+    loop = asyncio.get_event_loop() if async_jobs else None
+
+    # set up async jobs before the event loop starts running
+    for job in async_jobs:
+        job.setup(loop)
+    # start running the event loop which drives all async jobs
+    if loop:
+        loop_thread = Thread(target=loop.run_forever)
+        loop_thread.start()
 
     logger.debug('Processing %d jobs', len(jobs))
     for job_state in run_parallel(lambda job_state: job_state.process(),
@@ -102,3 +116,12 @@ def run_jobs(urlwatcher):
         else:
             report.new(job_state)
             job_state.save()
+
+    # stop the event loop after all jobs are done
+    if loop:
+        loop.call_soon_threadsafe(loop.stop)
+        loop_thread.join()
+
+    # clean up async jobs after the event loop has stopped
+    for job in async_jobs:
+        job.cleanup()

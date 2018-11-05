@@ -34,6 +34,7 @@ import logging
 import os
 import re
 import subprocess
+import asyncio
 import requests
 import urlwatch
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -153,6 +154,45 @@ class Job(JobBase):
 
     def pretty_name(self):
         return self.name if self.name else self.get_location()
+
+
+class AsyncJob(Job):
+    """Async job that uses asyncio and requires an event loop"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.loop = None
+
+    def setup(self, loop):
+        """Set the event loop and run other stuff on the main thread before multithreaded job processing"""
+        self.loop = loop
+
+    def retrieve(self, job_state):
+        """
+        Check that the event loop is set and running, then schedule `aretrieve` to run on the event loop.
+        Return `aretrieve`'s result.
+        Subclasses should normally overwrite `aretrieve` instead of this method.
+        """
+        if not self.loop:
+            raise RuntimeError('Event loop not set up')
+        if not self.loop.is_running():
+            raise RuntimeError("The event loop must be running when `retrieve` is called on an AsyncJob")
+        future = asyncio.run_coroutine_threadsafe(self.aretrieve(job_state), self.loop)
+        exception = future.exception()
+        if exception is not None:
+            raise exception
+        return future.result()
+
+    @asyncio.coroutine
+    def aretrieve(self, job_state):
+        ...
+
+    def cleanup(self):
+        """Called after multithreaded job processing. The event loop should have stopped by this point."""
+        if not self.loop:
+            raise RuntimeError('`setup` must be called before `cleanup`')
+        if self.loop.is_running():
+            raise RuntimeError('The event loop should have stopped before `cleanup` is called')
 
 
 class ShellJob(Job):
