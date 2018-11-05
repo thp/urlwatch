@@ -597,7 +597,7 @@ class SlackReporter(TextReporter):
         except ValueError:
             logger.error(
                 "Failed to parse slack response. HTTP status code: {0}, content: {1}".format(result.status_code,
-                                                                                                result.content))
+                                                                                             result.content))
         return result
 
     def chunkstring(self, string, length):
