@@ -27,6 +27,7 @@ urlwatch 2 requires:
   * [keyring](https://github.com/jaraco/keyring/)
   * [appdirs](https://github.com/ActiveState/appdirs)
   * [lxml](https://lxml.de)
+  * [enum34](https://pypi.org/project/enum34/) (Python 3.3 only)
 
 The dependencies can be installed with (add `--user` to install to `$HOME`):
 
