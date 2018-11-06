@@ -105,7 +105,7 @@ DEFAULT_CONFIG = {
         },
         'slack': {
             'enabled': False,
-            'webhook': '',
+            'webhook_url': '',
         },
         'mailgun': {
             'enabled': False,

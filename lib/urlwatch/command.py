@@ -220,24 +220,24 @@ class UrlwatchCommand:
             print('\nChat up your bot here: https://t.me/{}'.format(info['result']['username']))
             sys.exit(0)
 
-    def check_slack(self):
-        if self.urlwatch_config.slack:
+    def check_test_slack(self):
+        if self.urlwatch_config.test_slack:
             config = self.urlwatcher.config_storage.config['report'].get('slack', None)
             if not config:
                 print('You need to configure slack in your config first (see README.md)')
                 sys.exit(1)
 
-            webhook = config.get('webhook', None)
-            if not webhook:
-                print('You need to set up your slack webhook first (see README.md)')
+            webhook_url = config.get('webhook_url', None)
+            if not webhook_url:
+                print('You need to set up your slack webhook_url first (see README.md)')
                 sys.exit(1)
 
-            info = requests.post(webhook, json={"text": "a test message to slack"})
+            info = requests.post(webhook_url, json={"text": "Test message from urlwatch, your configuration is working"})
             if info.status_code == requests.codes.ok:
-                print('slack configure success')
+                print('Successfully sent message to Slack')
                 sys.exit(0)
             else:
-                print('slack configure error with message {0}'.format(info.text))
+                print('Error while submitting message to Slack:{0}'.format(info.text))
                 sys.exit(1)
 
     def check_smtp_login(self):
@@ -288,7 +288,7 @@ class UrlwatchCommand:
         self.check_edit_config()
         self.check_smtp_login()
         self.check_telegram_chats()
-        self.check_slack()
+        self.check_test_slack()
         self.handle_actions()
         self.urlwatcher.run_jobs()
         self.urlwatcher.close()

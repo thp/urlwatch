@@ -569,8 +569,7 @@ class SlackReporter(TextReporter):
     __kind__ = 'slack'
 
     def submit(self):
-
-        webhook = self.config['webhook']
+        webhook_url = self.config['webhook_url']
         text = '\n'.join(super().submit())
 
         if not text:
@@ -579,16 +578,16 @@ class SlackReporter(TextReporter):
 
         result = None
         for chunk in self.chunkstring(text, self.MAX_LENGTH):
-            res = self.submitToSlack(webhook, chunk)
+            res = self.submit_to_slack(webhook_url, chunk)
             if res.status_code != requests.codes.ok or res is None:
                 result = res
 
         return result
 
-    def submitToSlack(self, webhook, text):
+    def submit_to_slack(self, webhook_url, text):
         logger.debug("Sending slack request with text:{0}".format(text))
         post_data = {"text": text}
-        result = requests.post(webhook, json=post_data)
+        result = requests.post(webhook_url, json=post_data)
         try:
             if result.status_code == requests.codes.ok:
                 logger.info("Slack response: ok")
