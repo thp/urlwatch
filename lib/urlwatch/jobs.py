@@ -207,7 +207,7 @@ class UrlJob(Job):
         if job_state.timestamp is not None:
             headers['If-Modified-Since'] = email.utils.formatdate(job_state.timestamp)
 
-        if self.ignore_cached:
+        if self.ignore_cached or job_state.tries > 0:
             headers['If-None-Match'] = None
             headers['If-Modified-Since'] = email.utils.formatdate(0)
             headers['Cache-Control'] = 'max-age=172800'
