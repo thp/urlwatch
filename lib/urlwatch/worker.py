@@ -101,4 +101,5 @@ def run_jobs(urlwatcher):
                     job_state.save()
         else:
             report.new(job_state)
+            job_state.tries = 0
             job_state.save()
