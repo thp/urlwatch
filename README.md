@@ -159,6 +159,15 @@ url: https://example.com/
 ignore_connection_errors: true
 ```
 
+For web pages with misconfigured HTTP headers or rare encodings, it may
+be useful to explicitly specify an encoding from Python's
+[Standard Encodings](https://docs.python.org/3/library/codecs.html#standard-encodings).
+
+```yaml
+url: https://example.com/
+encoding: utf-8
+```
+
 PUSHOVER
 --------
 
