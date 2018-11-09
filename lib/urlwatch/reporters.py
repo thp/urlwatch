@@ -38,6 +38,7 @@ import logging
 import sys
 import time
 import cgi
+import functools
 
 import requests
 
@@ -305,16 +306,9 @@ class StdoutReporter(TextReporter):
 
     __kind__ = 'stdout'
 
-    # make sure colorama.init() is only called once by this class
-    _colorama_inited = False
-
-    def __init__(self, report, config, job_states, duration):
-        super().__init__(report, config, job_states, duration)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._has_color = sys.stdout.isatty() and self.config.get('color', False)
-        if sys.platform == 'win32' and self._has_color and not StdoutReporter._colorama_inited:
-            import colorama
-            colorama.init()
-            StdoutReporter._colorama_inited = True
 
     def _incolor(self, color_id, s):
         if self._has_color:
@@ -333,7 +327,15 @@ class StdoutReporter(TextReporter):
     def _blue(self, s):
         return self._incolor(4, s)
 
+    def _get_print(self):
+        if sys.platform == 'win32' and self._has_color:
+            from colorama import AnsiToWin32
+            return functools.partial(print, file=AnsiToWin32(sys.stdout).stream)
+        return print
+
     def submit(self):
+        print = self._get_print()
+
         cfg = self.report.config['report']['text']
         line_length = cfg['line_length']
 
