@@ -315,7 +315,7 @@ class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
         filename = args[0]
         if filename is not None and os.path.exists(filename):
             with open(filename) as fp:
-                return yaml.load_all(fp)
+                return [JobBase.unserialize(job) for job in yaml.load_all(fp) if job is not None]
 
     def save(self, *args):
         jobs = args[0]
