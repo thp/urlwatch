@@ -225,20 +225,19 @@ Don't forget to also enable the reporter.
 SLACK
 -----
 
-Slack nofifications are configured using the Slack Incoming Webhooks.
-Sample configurations:
+Slack nofifications are configured using "Slack Incoming Webhooks". Here is a
+sample configuration:
 
 ```yaml
 slack:
   webhook_url: 'https://hooks.slack.com/services/T50TXXXXXU/BDVYYYYYYY/PWTqwyFM7CcCfGnNzdyDYZ'
-  enabled: true 
+  enabled: true
 ```
 
-To set up Slack, from you Slack Team, create new app, and Activate Incoming Webhooks to a channel,
-copy the webhook url.
+To set up Slack, from you Slack Team, create a new app and activate "Incoming Webhooks" on
+a channel, you'll get a webhook URL, copy it into the configuration as seen above.
 
-You can use the command `urlwatch --edit-config` to paste the webhook url to slack section, 
-and use the command `urlwatch --test-slack` to test slack configuration
+You can use the command `urlwatch --test-slack` to test if the Slack integration works.
 
 
 BROWSER
