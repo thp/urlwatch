@@ -27,11 +27,12 @@ urlwatch 2 requires:
   * [keyring](https://github.com/jaraco/keyring/)
   * [appdirs](https://github.com/ActiveState/appdirs)
   * [lxml](https://lxml.de)
+  * [cssselect](https://cssselect.readthedocs.io)
   * [enum34](https://pypi.org/project/enum34/) (Python 3.3 only)
 
 The dependencies can be installed with (add `--user` to install to `$HOME`):
 
-`python3 -m pip install pyyaml minidb requests keyring appdirs lxml`
+`python3 -m pip install pyyaml minidb requests keyring appdirs lxml cssselect`
 
 
 Optional dependencies (install via `python3 -m pip install <packagename>`):
@@ -149,6 +150,17 @@ filter: xpath:/body
 
 This filters only the `<body>` element of the HTML document, stripping
 out everything else.
+
+To filter based on a [CSS selector](https://www.w3.org/TR/2011/REC-css3-selectors-20110929/),
+you can use the `css` filter like so:
+
+```yaml
+url: https://example.net/
+filter: css:body
+```
+
+Some limitatons and extensions exist as explained in
+[cssselect's documentatons](https://cssselect.readthedocs.io/en/latest/#supported-selectors).
 
 In some cases, it might be useful to ignore (temporary) network errors to
 avoid notifications being sent. While there is a `display.error` config
@@ -333,12 +345,12 @@ filter:
 ```
 
 
-USING XPATH EXPRESSIONS WITH XML
+USING XPATH AND CSS FILTERS WITH XML
 --------------------------------
 
-By default, XPath filters are set up for HTML documents. However, it
-is possible to use XPath for XML documents as well (this example parses
-an RSS feed and filters only the titles and publication dates):
+By default, XPath and CSS filters are set up for HTML documents. However,
+it is possible to use them for XML documents as well (these examples parse
+an RSS feed and filter only the titles and publication dates):
 
 ```yaml
 url: 'https://heronebag.com/blog/index.xml'
@@ -346,6 +358,14 @@ filter:
   - xpath:
       path: '//item/title/text()|//item/pubDate/text()'
       method: xml
+```
+```yaml
+url: 'https://heronebag.com/blog/index.xml'
+filter:
+  - css:
+      selector: 'item > title, item > pubDate'
+      method: xml
+  - html2text: re
 ```
 
 
