@@ -103,6 +103,10 @@ DEFAULT_CONFIG = {
             'bot_token': '',
             'chat_id': '',
         },
+        'slack': {
+            'enabled': False,
+            'webhook_url': '',
+        },
         'mailgun': {
             'enabled': False,
             'region': 'us',

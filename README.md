@@ -222,6 +222,24 @@ telegram:
 Don't forget to also enable the reporter.
 
 
+SLACK
+-----
+
+Slack nofifications are configured using the Slack Incoming Webhooks.
+Sample configurations:
+
+```yaml
+slack:
+  webhook_url: 'https://hooks.slack.com/services/T50TXXXXXU/BDVYYYYYYY/PWTqwyFM7CcCfGnNzdyDYZ'
+  enabled: true 
+```
+
+To set up Slack, from you Slack Team, create new app, and Activate Incoming Webhooks to a channel,
+copy the webhook url.
+
+You can use the command `urlwatch --edit-config` to paste the webhook url to slack section, 
+and use the command `urlwatch --test-slack` to test slack configuration
+
 
 BROWSER
 -------
