@@ -98,6 +98,8 @@ class TestConfig(BaseConfig):
     def __init__(self, config, urls, cache, hooks, verbose):
         (prefix, bindir) = os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))
         super().__init__('urlwatch', os.path.dirname(__file__), config, urls, cache, hooks, verbose)
+        self.edit = False
+        self.edit_hooks = False
 
 
 def teardown_func():
