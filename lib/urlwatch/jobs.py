@@ -183,7 +183,7 @@ class UrlJob(Job):
 
     __required__ = ('url',)
     __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
-                    'headers', 'ignore_connection_errors')
+                    'headers', 'ignore_connection_errors', 'encoding')
 
     LOCATION_IS_URL = True
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
@@ -253,7 +253,7 @@ class UrlJob(Job):
         # urlwatch behavior and try UTF-8 decoding first.
         content_type = response.headers.get('Content-type', '')
         content_type_match = self.CHARSET_RE.match(content_type)
-        if not content_type_match:
+        if not content_type_match and not self.encoding:
             try:
                 try:
                     try:
@@ -265,6 +265,8 @@ class UrlJob(Job):
             except LookupError:
                 # If this is an invalid encoding, decode as ascii (Debian bug 731931)
                 return response.content.decode('ascii', 'ignore')
+        if self.encoding:
+            response.encoding = self.encoding
 
         return response.text
 
