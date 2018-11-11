@@ -38,6 +38,7 @@ Optional dependencies (install via `python3 -m pip install <packagename>`):
 
   * Pushover reporter: [chump](https://github.com/karanlyons/chump/)
   * Pushbullet reporter: [pushbullet.py](https://github.com/randomchars/pushbullet.py)
+  * Stdout reporter with color on Windows: [colorama](https://github.com/tartley/colorama)
   * "browser" job kind: [requests-html](https://html.python-requests.org)
   * Unit testing: [pycodestyle](http://pycodestyle.pycqa.org/en/latest/)
 
