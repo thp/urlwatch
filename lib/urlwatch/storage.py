@@ -57,6 +57,7 @@ DEFAULT_CONFIG = {
             'line_length': 75,
             'details': True,
             'footer': True,
+            'minimal': False,
         },
 
         'html': {
@@ -101,6 +102,10 @@ DEFAULT_CONFIG = {
             'enabled': False,
             'bot_token': '',
             'chat_id': '',
+        },
+        'slack': {
+            'enabled': False,
+            'webhook_url': '',
         },
         'mailgun': {
             'enabled': False,
@@ -314,7 +319,7 @@ class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
         filename = args[0]
         if filename is not None and os.path.exists(filename):
             with open(filename) as fp:
-                return yaml.load_all(fp)
+                return [JobBase.unserialize(job) for job in yaml.load_all(fp) if job is not None]
 
     def save(self, *args):
         jobs = args[0]

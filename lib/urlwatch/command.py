@@ -128,6 +128,8 @@ class UrlwatchCommand:
 
         job_state = JobState(self.urlwatcher.cache_storage, job)
         job_state.process()
+        if job_state.exception is not None:
+            raise job_state.exception
         print(job_state.new_data)
         # We do not save the job state or job on purpose here, since we are possibly modifying the job
         # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
@@ -150,7 +152,8 @@ class UrlwatchCommand:
             filters = [v for k, v in items if k == 'filter']
             items = [(k, v) for k, v in items if k != 'filter']
             d = {k: v for k, v in items}
-            d['filter'] = ','.join(filters)
+            if filters:
+                d['filter'] = ','.join(filters)
 
             job = JobBase.unserialize(d)
             print('Adding %r' % (job,))
@@ -217,6 +220,26 @@ class UrlwatchCommand:
             print('\nChat up your bot here: https://t.me/{}'.format(info['result']['username']))
             sys.exit(0)
 
+    def check_test_slack(self):
+        if self.urlwatch_config.test_slack:
+            config = self.urlwatcher.config_storage.config['report'].get('slack', None)
+            if not config:
+                print('You need to configure slack in your config first (see README.md)')
+                sys.exit(1)
+
+            webhook_url = config.get('webhook_url', None)
+            if not webhook_url:
+                print('You need to set up your slack webhook_url first (see README.md)')
+                sys.exit(1)
+
+            info = requests.post(webhook_url, json={"text": "Test message from urlwatch, your configuration is working"})
+            if info.status_code == requests.codes.ok:
+                print('Successfully sent message to Slack')
+                sys.exit(0)
+            else:
+                print('Error while submitting message to Slack:{0}'.format(info.text))
+                sys.exit(1)
+
     def check_smtp_login(self):
         if self.urlwatch_config.smtp_login:
             config = self.urlwatcher.config_storage.config['report']['email']
@@ -265,6 +288,7 @@ class UrlwatchCommand:
         self.check_edit_config()
         self.check_smtp_login()
         self.check_telegram_chats()
+        self.check_test_slack()
         self.handle_actions()
         self.urlwatcher.run_jobs()
         self.urlwatcher.close()

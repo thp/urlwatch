@@ -148,6 +148,9 @@ class Job(JobBase):
     __required__ = ()
     __optional__ = ('name', 'filter', 'max_tries', 'diff_tool')
 
+    # determine if hyperlink "a" tag is used in HtmlReporter
+    LOCATION_IS_URL = False
+
     def pretty_name(self):
         return self.name if self.name else self.get_location()
 
@@ -180,8 +183,9 @@ class UrlJob(Job):
 
     __required__ = ('url',)
     __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
-                    'headers', 'ignore_connection_errors')
+                    'headers', 'ignore_connection_errors', 'encoding')
 
+    LOCATION_IS_URL = True
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
     def get_location(self):
@@ -203,7 +207,7 @@ class UrlJob(Job):
         if job_state.timestamp is not None:
             headers['If-Modified-Since'] = email.utils.formatdate(job_state.timestamp)
 
-        if self.ignore_cached:
+        if self.ignore_cached or job_state.tries > 0:
             headers['If-None-Match'] = None
             headers['If-Modified-Since'] = email.utils.formatdate(0)
             headers['Cache-Control'] = 'max-age=172800'
@@ -249,7 +253,7 @@ class UrlJob(Job):
         # urlwatch behavior and try UTF-8 decoding first.
         content_type = response.headers.get('Content-type', '')
         content_type_match = self.CHARSET_RE.match(content_type)
-        if not content_type_match:
+        if not content_type_match and not self.encoding:
             try:
                 try:
                     try:
@@ -261,6 +265,8 @@ class UrlJob(Job):
             except LookupError:
                 # If this is an invalid encoding, decode as ascii (Debian bug 731931)
                 return response.content.decode('ascii', 'ignore')
+        if self.encoding:
+            response.encoding = self.encoding
 
         return response.text
 
@@ -281,6 +287,8 @@ class BrowserJob(Job):
     __kind__ = 'browser'
 
     __required__ = ('navigate',)
+
+    LOCATION_IS_URL = True
 
     def get_location(self):
         return self.navigate

@@ -59,8 +59,11 @@ class Urlwatch(object):
         if hasattr(self.urlwatch_config, 'migrate_urls'):
             self.urlwatch_config.migrate_urls(self)
 
-        self.load_hooks()
-        self.load_jobs()
+        if not self.urlwatch_config.edit_hooks:
+            self.load_hooks()
+
+        if not self.urlwatch_config.edit:
+            self.load_jobs()
 
         if hasattr(self.urlwatch_config, 'migrate_urls'):
             self.urlwatch_config.migrate_cache(self)

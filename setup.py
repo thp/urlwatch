@@ -18,6 +18,8 @@ m['name'] = 'urlwatch'
 m['author'], m['author_email'] = re.match(r'(.*) <(.*)>', m['author']).groups()
 m['description'], m['long_description'] = docs[0].strip().split('\n\n', 1)
 m['install_requires'] = ['minidb', 'PyYAML', 'requests', 'keyring', 'pycodestyle', 'appdirs', 'lxml']
+if sys.version_info < (3, 4):
+    m['install_requires'].extend(['enum34'])
 if sys.platform == 'win32':
     m['install_requires'].extend(['colorama'])
 m['scripts'] = ['urlwatch']

@@ -27,6 +27,7 @@ urlwatch 2 requires:
   * [keyring](https://github.com/jaraco/keyring/)
   * [appdirs](https://github.com/ActiveState/appdirs)
   * [lxml](https://lxml.de)
+  * [enum34](https://pypi.org/project/enum34/) (Python 3.3 only)
 
 The dependencies can be installed with (add `--user` to install to `$HOME`):
 
@@ -160,6 +161,15 @@ url: https://example.com/
 ignore_connection_errors: true
 ```
 
+For web pages with misconfigured HTTP headers or rare encodings, it may
+be useful to explicitly specify an encoding from Python's
+[Standard Encodings](https://docs.python.org/3/library/codecs.html#standard-encodings).
+
+```yaml
+url: https://example.com/
+encoding: utf-8
+```
+
 PUSHOVER
 --------
 
@@ -212,6 +222,23 @@ telegram:
 
 Don't forget to also enable the reporter.
 
+
+SLACK
+-----
+
+Slack nofifications are configured using "Slack Incoming Webhooks". Here is a
+sample configuration:
+
+```yaml
+slack:
+  webhook_url: 'https://hooks.slack.com/services/T50TXXXXXU/BDVYYYYYYY/PWTqwyFM7CcCfGnNzdyDYZ'
+  enabled: true
+```
+
+To set up Slack, from you Slack Team, create a new app and activate "Incoming Webhooks" on
+a channel, you'll get a webhook URL, copy it into the configuration as seen above.
+
+You can use the command `urlwatch --test-slack` to test if the Slack integration works.
 
 
 BROWSER
@@ -289,6 +316,36 @@ url: http://example.com/
 cookies:
     Key: ValueForKey
     OtherKey: OtherValue
+```
+
+
+WATCHING GITHUB RELEASES
+------------------------
+
+This is an example how to watch the GitHub "releases" page for a given
+project for the latest release version, to be notified of new releases:
+
+```yaml
+url: "https://github.com/thp/urlwatch/releases/latest"
+filter:
+  - xpath: '(//div[contains(@class,"release-timeline-tags")]//h4)[1]/a'
+  - html2text: re
+```
+
+
+USING XPATH EXPRESSIONS WITH XML
+--------------------------------
+
+By default, XPath filters are set up for HTML documents. However, it
+is possible to use XPath for XML documents as well (this example parses
+an RSS feed and filters only the titles and publication dates):
+
+```yaml
+url: 'https://heronebag.com/blog/index.xml'
+filter:
+  - xpath:
+      path: '//item/title/text()|//item/pubDate/text()'
+      method: xml
 ```
 
 

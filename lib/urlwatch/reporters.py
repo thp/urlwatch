@@ -62,7 +62,7 @@ logger = logging.getLogger(__name__)
 
 # Regular expressions that match the added/removed markers of GNU wdiff output
 WDIFF_ADDED_RE = r'[{][+].*?[+][}]'
-WDIFF_REMOVED_RE = r'[[][-].*?[-][]]'
+WDIFF_REMOVED_RE = r'[\[][-].*?[-][]]'
 
 
 class ReporterBase(object, metaclass=TrackSubClasses):
@@ -170,7 +170,7 @@ class HtmlReporter(ReporterBase):
         for job_state in self.report.get_filtered_job_states(self.job_states):
             job = job_state.job
 
-            if job.__kind__ == 'url':
+            if job.LOCATION_IS_URL:
                 title = '<a href="{location}">{pretty_name}</a>'
             elif job.pretty_name() != job.get_location():
                 title = '<span title="{location}">{pretty_name}</span>'
@@ -240,6 +240,15 @@ class TextReporter(ReporterBase):
         line_length = cfg['line_length']
         show_details = cfg['details']
         show_footer = cfg['footer']
+
+        if cfg['minimal']:
+            for job_state in self.report.get_filtered_job_states(self.job_states):
+                pretty_name = job_state.job.pretty_name()
+                location = job_state.job.get_location()
+                if pretty_name != location:
+                    location = '%s (%s)' % (pretty_name, location)
+                yield ': '.join((job_state.verb.upper(), location))
+            return
 
         summary = []
         details = []
@@ -560,6 +569,47 @@ class TelegramReporter(TextReporter):
             logger.error(
                 "Failed to parse telegram response. HTTP status code: {0}, content: {1}".format(result.status_code,
                                                                                                 result.content))
+        return result
+
+    def chunkstring(self, string, length):
+        return (string[0 + i:length + i] for i in range(0, len(string), length))
+
+
+class SlackReporter(TextReporter):
+    """Custom Slack reporter"""
+    MAX_LENGTH = 4096
+
+    __kind__ = 'slack'
+
+    def submit(self):
+        webhook_url = self.config['webhook_url']
+        text = '\n'.join(super().submit())
+
+        if not text:
+            logger.debug('Not calling slack API (no changes)')
+            return
+
+        result = None
+        for chunk in self.chunkstring(text, self.MAX_LENGTH):
+            res = self.submit_to_slack(webhook_url, chunk)
+            if res.status_code != requests.codes.ok or res is None:
+                result = res
+
+        return result
+
+    def submit_to_slack(self, webhook_url, text):
+        logger.debug("Sending slack request with text:{0}".format(text))
+        post_data = {"text": text}
+        result = requests.post(webhook_url, json=post_data)
+        try:
+            if result.status_code == requests.codes.ok:
+                logger.info("Slack response: ok")
+            else:
+                logger.error("Slack error: {0}".format(result.text))
+        except ValueError:
+            logger.error(
+                "Failed to parse slack response. HTTP status code: {0}, content: {1}".format(result.status_code,
+                                                                                             result.content))
         return result
 
     def chunkstring(self, string, length):
