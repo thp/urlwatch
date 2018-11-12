@@ -159,8 +159,8 @@ url: https://example.net/
 filter: css:body
 ```
 
-Some limitatons and extensions exist as explained in
-[cssselect's documentatons](https://cssselect.readthedocs.io/en/latest/#supported-selectors).
+Some limitations and extensions exist as explained in
+[cssselect's documentation](https://cssselect.readthedocs.io/en/latest/#supported-selectors).
 
 In some cases, it might be useful to ignore (temporary) network errors to
 avoid notifications being sent. While there is a `display.error` config
