@@ -52,6 +52,7 @@ class JobState(object):
         self.traceback = None
         self.tries = 0
         self.etag = None
+        self.error_ignored = False
 
     def load(self):
         self.old_data, self.timestamp, self.tries, self.etag = self.cache_storage.load(self.job, self.job.get_guid())
@@ -68,33 +69,44 @@ class JobState(object):
     def process(self):
         logger.info('Processing: %s', self.job)
         try:
-            self.load()
-            data = self.job.retrieve(self)
+            try:
+                self.load()
+                data = self.job.retrieve(self)
 
-            # Apply automatic filters first
-            data = FilterBase.auto_process(self, data)
+                # Apply automatic filters first
+                data = FilterBase.auto_process(self, data)
 
-            # Apply any specified filters
-            filter_list = self.job.filter
+                # Apply any specified filters
+                filter_list = self.job.filter
 
-            if filter_list:
-                if isinstance(filter_list, list):
-                    for item in filter_list:
-                        key = next(iter(item))
-                        filter_kind, subfilter = key, item[key]
-                        data = FilterBase.process(filter_kind, subfilter, self, data)
-                elif isinstance(filter_list, str):
-                    for filter_kind in filter_list.split(','):
-                        if ':' in filter_kind:
-                            filter_kind, subfilter = filter_kind.split(':', 1)
-                        else:
-                            subfilter = None
-                        data = FilterBase.process(filter_kind, subfilter, self, data)
-            self.new_data = data
+                if filter_list:
+                    if isinstance(filter_list, list):
+                        for item in filter_list:
+                            key = next(iter(item))
+                            filter_kind, subfilter = key, item[key]
+                            data = FilterBase.process(filter_kind, subfilter, self, data)
+                    elif isinstance(filter_list, str):
+                        for filter_kind in filter_list.split(','):
+                            if ':' in filter_kind:
+                                filter_kind, subfilter = filter_kind.split(':', 1)
+                            else:
+                                subfilter = None
+                            data = FilterBase.process(filter_kind, subfilter, self, data)
+                self.new_data = data
 
+            except Exception as e:
+                # job has a chance to format and ignore its error
+                self.exception = e
+                self.traceback = self.job.format_error(e, traceback.format_exc())
+                self.error_ignored = self.job.ignore_error(e)
+                if not (self.error_ignored or isinstance(e, NotModifiedError)):
+                    self.tries += 1
+                    logger.debug('Increasing number of tries to %i for %s', self.tries, self.job)
         except Exception as e:
+            # job failed its chance to handle error
             self.exception = e
             self.traceback = traceback.format_exc()
+            self.error_ignored = False
             if not isinstance(e, NotModifiedError):
                 self.tries += 1
                 logger.debug('Increasing number of tries to %i for %s', self.tries, self.job)

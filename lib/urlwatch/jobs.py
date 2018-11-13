@@ -143,6 +143,12 @@ class JobBase(object, metaclass=TrackSubClasses):
     def retrieve(self, job_state):
         raise NotImplementedError()
 
+    def format_error(self, exception, tb):
+        return tb
+
+    def ignore_error(self, exception):
+        return False
+
 
 class Job(JobBase):
     __required__ = ()
@@ -279,6 +285,15 @@ class UrlJob(Job):
         for header in headers_to_remove:
             headers.pop(header, None)
         headers.update(self.headers)
+
+    def format_error(self, exception, tb):
+        if isinstance(exception, requests.exceptions.RequestException):
+            # Instead of a full traceback, just show the HTTP error
+            return str(exception)
+        return tb
+
+    def ignore_error(self, exception):
+        return isinstance(exception, requests.exceptions.ConnectionError) and self.ignore_connection_errors
 
 
 class BrowserJob(Job):
