@@ -189,7 +189,7 @@ class UrlJob(Job):
 
     __required__ = ('url',)
     __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
-                    'headers', 'ignore_connection_errors', 'encoding')
+                    'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding')
 
     LOCATION_IS_URL = True
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
@@ -293,7 +293,17 @@ class UrlJob(Job):
         return tb
 
     def ignore_error(self, exception):
-        return isinstance(exception, requests.exceptions.ConnectionError) and self.ignore_connection_errors
+        if isinstance(exception, requests.exceptions.ConnectionError) and self.ignore_connection_errors:
+            return True
+        elif isinstance(exception, requests.exceptions.HTTPError):
+            status_code = exception.response.status_code
+            if isinstance(self.ignore_http_error_codes, int) and self.ignore_http_error_codes == status_code:
+                return True
+            elif isinstance(self.ignore_http_error_codes, str):
+                ignored_codes = [s.strip().lower() for s in self.ignore_http_error_codes.split(',')]
+                if str(status_code) in ignored_codes or '%sxx' % (status_code // 100) in ignored_codes:
+                    return True
+        return False
 
 
 class BrowserJob(Job):

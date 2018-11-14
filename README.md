@@ -161,6 +161,21 @@ url: https://example.com/
 ignore_connection_errors: true
 ```
 
+Similarly, you might want to ignore some (temporary) HTTP errors on the
+server side:
+
+```yaml
+url: https://example.com/
+ignore_http_error_codes: 503
+```
+
+or ignore all HTTP errors if you like:
+
+```yaml
+url: https://example.com/
+ignore_http_error_codes: 4xx, 5xx
+```
+
 For web pages with misconfigured HTTP headers or rare encodings, it may
 be useful to explicitly specify an encoding from Python's
 [Standard Encodings](https://docs.python.org/3/library/codecs.html#standard-encodings).
