@@ -366,23 +366,19 @@ class HexdumpFilter(FilterBase):
                                              for c in block)) for block in blocks)
 
 
-class LxmlFilterType(Enum):
-    CSS = 1
-    XPATH = 2
-
-
 class LxmlParser:
-    EXPR_NAMES = {LxmlFilterType.CSS: 'a CSS selector',
-                  LxmlFilterType.XPATH: 'an XPath expression'}
+    EXPR_NAMES = {'css': 'a CSS selector',
+                  'xpath': 'an XPath expression'}
 
-    def __init__(self, filter_type, subfilter, expr_key):
-        self.filter_type = filter_type
-        self.expression, self.method = self.parse_subfilter(subfilter, expr_key, self.EXPR_NAMES[filter_type])
+    def __init__(self, filter_kind, subfilter, expr_key):
+        self.filter_kind = filter_kind
+        self.expression, self.method = self.parse_subfilter(
+            filter_kind, subfilter, expr_key, self.EXPR_NAMES[filter_kind])
         self.parser = (etree.HTMLParser if self.method == 'html' else etree.XMLParser)()
         self.data = ''
 
     @staticmethod
-    def parse_subfilter(subfilter, expr_key, expr_name):
+    def parse_subfilter(filter_kind, subfilter, expr_key, expr_name):
         if subfilter is None:
             raise ValueError('Need %s for filtering' % (expr_name,))
         if isinstance(subfilter, str):
@@ -394,9 +390,9 @@ class LxmlParser:
             expression = subfilter[expr_key]
             method = subfilter.get('method', 'html')
             if method not in ('html', 'xml'):
-                raise ValueError('%s method must be "html" or "xml", got %r' % (filter_name, method))
+                raise ValueError('%s method must be "html" or "xml", got %r' % (filter_kind, method))
         else:
-            raise ValueError('%s subfilter must be a string or dict' % (filter_name,))
+            raise ValueError('%s subfilter must be a string or dict' % (filter_kind,))
 
         return expression, method
 
@@ -421,9 +417,9 @@ class LxmlParser:
             # Retry parsing with XML declaration removed (Fixes #281)
             root = etree.fromstring(self.data, self.parser)
 
-        if self.filter_type == LxmlFilterType.CSS:
+        if self.filter_kind == 'css':
             return root.cssselect(self.expression)
-        elif self.filter_type == LxmlFilterType.XPATH:
+        elif self.filter_kind == 'xpath':
             return root.xpath(self.expression)
 
     def get_filtered_data(self):
@@ -436,7 +432,7 @@ class CssFilter(FilterBase):
     __kind__ = 'css'
 
     def filter(self, data, subfilter=None):
-        lxml_parser = LxmlParser(LxmlFilterType.CSS, subfilter, 'selector')
+        lxml_parser = LxmlParser('css', subfilter, 'selector')
         lxml_parser.feed(data)
         return lxml_parser.get_filtered_data()
 
@@ -447,6 +443,6 @@ class XPathFilter(FilterBase):
     __kind__ = 'xpath'
 
     def filter(self, data, subfilter=None):
-        lxml_parser = LxmlParser(LxmlFilterType.XPATH, subfilter, 'path')
+        lxml_parser = LxmlParser('xpath', subfilter, 'path')
         lxml_parser.feed(data)
         return lxml_parser.get_filtered_data()
