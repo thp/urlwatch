@@ -420,7 +420,7 @@ class CacheDirStorage(CacheStorage):
     def load(self, job, guid):
         filename = self._get_filename(guid)
         if not os.path.exists(filename):
-            return None, None
+            return None, None, None, None
 
         try:
             with open(filename) as fp:
@@ -431,7 +431,7 @@ class CacheDirStorage(CacheStorage):
 
         timestamp = os.stat(filename)[stat.ST_MTIME]
 
-        return data, timestamp, None
+        return data, timestamp, None, None
 
     def save(self, job, guid, data, timestamp, etag=None):
         # Timestamp and ETag are always ignored
