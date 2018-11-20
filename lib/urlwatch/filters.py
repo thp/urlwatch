@@ -32,7 +32,6 @@ import re
 import logging
 import itertools
 import os
-import io
 import imp
 import html.parser
 import hashlib
@@ -367,44 +366,83 @@ class HexdumpFilter(FilterBase):
                                              for c in block)) for block in blocks)
 
 
+class LxmlParser:
+    EXPR_NAMES = {'css': 'a CSS selector',
+                  'xpath': 'an XPath expression'}
+
+    def __init__(self, filter_kind, subfilter, expr_key):
+        self.filter_kind = filter_kind
+        self.expression, self.method = self.parse_subfilter(
+            filter_kind, subfilter, expr_key, self.EXPR_NAMES[filter_kind])
+        self.parser = (etree.HTMLParser if self.method == 'html' else etree.XMLParser)()
+        self.data = ''
+
+    @staticmethod
+    def parse_subfilter(filter_kind, subfilter, expr_key, expr_name):
+        if subfilter is None:
+            raise ValueError('Need %s for filtering' % (expr_name,))
+        if isinstance(subfilter, str):
+            expression = subfilter
+            method = 'html'
+        elif isinstance(subfilter, dict):
+            if expr_key not in subfilter:
+                raise ValueError('Need %s for filtering' % (expr_name,))
+            expression = subfilter[expr_key]
+            method = subfilter.get('method', 'html')
+            if method not in ('html', 'xml'):
+                raise ValueError('%s method must be "html" or "xml", got %r' % (filter_kind, method))
+        else:
+            raise ValueError('%s subfilter must be a string or dict' % (filter_kind,))
+
+        return expression, method
+
+    def feed(self, data):
+        self.data += data
+
+    def _to_string(self, element):
+        # Handle "/text()" selector, which returns lxml.etree._ElementUnicodeResult (Issue #282)
+        if isinstance(element, str):
+            return element
+
+        return etree.tostring(element, pretty_print=True, method=self.method, encoding='unicode')
+
+    def _get_filtered_elements(self):
+        try:
+            root = etree.fromstring(self.data, self.parser)
+        except ValueError:
+            # Strip XML declaration, for example: '<?xml version="1.0" encoding="utf-8"?>'
+            # for https://heronebag.com/blog/index.xml, an error happens, as we get a
+            # a (Unicode) string, but the XML contains its own "encoding" declaration
+            self.data = re.sub(r'^<[?]xml[^>]*[?]>', '', self.data)
+            # Retry parsing with XML declaration removed (Fixes #281)
+            root = etree.fromstring(self.data, self.parser)
+
+        if self.filter_kind == 'css':
+            return root.cssselect(self.expression)
+        elif self.filter_kind == 'xpath':
+            return root.xpath(self.expression)
+
+    def get_filtered_data(self):
+        return '\n'.join(self._to_string(element) for element in self._get_filtered_elements())
+
+
+class CssFilter(FilterBase):
+    """Filter XML/HTML using CSS selectors"""
+
+    __kind__ = 'css'
+
+    def filter(self, data, subfilter=None):
+        lxml_parser = LxmlParser('css', subfilter, 'selector')
+        lxml_parser.feed(data)
+        return lxml_parser.get_filtered_data()
+
+
 class XPathFilter(FilterBase):
     """Filter XML/HTML using XPath expressions"""
 
     __kind__ = 'xpath'
 
-    def _to_string(self, element, method):
-        # Handle "/text()" selector, which returns lxml.etree._ElementUnicodeResult (Issue #282)
-        if isinstance(element, str):
-            return element
-
-        return etree.tostring(element, pretty_print=True, method=method, encoding='unicode')
-
     def filter(self, data, subfilter=None):
-        if subfilter is None:
-            raise ValueError('Need an XPath expression for filtering')
-
-        if isinstance(subfilter, str):
-            xpath = subfilter
-            method = 'html'
-        elif isinstance(subfilter, dict):
-            if 'path' not in subfilter:
-                raise ValueError('Need an XPath expression for filtering')
-            xpath = subfilter['path']
-            method = subfilter.get('method', 'html')
-            if method not in ('html', 'xml'):
-                raise ValueError('XPath method must be "html" or "xml", got %r' % (method,))
-        else:
-            raise ValueError('XPath subfilter must be a string or dict')
-
-        parser = (etree.HTMLParser if method == 'html' else etree.XMLParser)()
-        try:
-            tree = etree.parse(io.StringIO(data), parser)
-        except ValueError:
-            # Strip XML declaration, for example: '<?xml version="1.0" encoding="utf-8"?>'
-            # for https://heronebag.com/blog/index.xml, an error happens, as we get a
-            # a (Unicode) string, but the XML contains its own "encoding" declaration
-            data = re.sub(r'^<[?]xml[^>]*[?]>', '', data)
-            # Retry parsing with XML declaration removed (Fixes #281)
-            tree = etree.parse(io.StringIO(data), parser)
-
-        return '\n'.join(self._to_string(element, method) for element in tree.xpath(xpath))
+        lxml_parser = LxmlParser('xpath', subfilter, 'path')
+        lxml_parser.feed(data)
+        return lxml_parser.get_filtered_data()
