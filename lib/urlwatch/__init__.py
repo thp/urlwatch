@@ -1,7 +1,7 @@
-"""A tool for monitoring webpages for updates
+"""urlwatch monitors webpages for you
 
 urlwatch is intended to help you watch changes in webpages and get notified
-(via email, in your terminal or with a custom-written reporter class) of any
+(via e-mail, in your terminal or through various third party services) of any
 changes. The change notification will include the URL that has changed and
 a unified diff of what has changed.
 """

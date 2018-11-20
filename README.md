@@ -7,10 +7,10 @@
              | |_| | |  | |\ V  V / (_| | || (__| | | |  / __/
               \__,_|_|  |_| \_/\_/ \__,_|\__\___|_| |_| |_____|
 
-                 A tool for monitoring webpages for updates
+                                  ... monitors webpages for you
 ```
 urlwatch is intended to help you watch changes in webpages and get notified
-(via email, in your terminal or with a custom-written reporter class) of any
+(via e-mail, in your terminal or through various third party services) of any
 changes. The change notification will include the URL that has changed and
 a unified diff of what has changed.
 
