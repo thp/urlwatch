@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/thp/urlwatch.svg)](https://travis-ci.org/thp/urlwatch)
 [![Packaging status](https://repology.org/badge/tiny-repos/urlwatch.svg)](https://repology.org/metapackage/urlwatch/versions)
+[![PyPI version](https://badge.fury.io/py/urlwatch.svg)](https://badge.fury.io/py/urlwatch)
 
 
 ```
