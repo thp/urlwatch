@@ -297,12 +297,14 @@ class UrlJob(Job):
             return True
         elif isinstance(exception, requests.exceptions.HTTPError):
             status_code = exception.response.status_code
+            ignored_codes = []
             if isinstance(self.ignore_http_error_codes, int) and self.ignore_http_error_codes == status_code:
                 return True
             elif isinstance(self.ignore_http_error_codes, str):
                 ignored_codes = [s.strip().lower() for s in self.ignore_http_error_codes.split(',')]
-                if str(status_code) in ignored_codes or '%sxx' % (status_code // 100) in ignored_codes:
-                    return True
+            elif isinstance(self.ignore_http_error_codes, list):
+                ignored_codes = [str(s).strip().lower() for s in self.ignore_http_error_codes]
+            return str(status_code) in ignored_codes or '%sxx' % (status_code // 100) in ignored_codes
         return False
 
 
