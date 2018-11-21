@@ -166,7 +166,7 @@ server side:
 
 ```yaml
 url: https://example.com/
-ignore_http_error_codes: 503
+ignore_http_error_codes: 408, 429, 500, 502, 503, 504
 ```
 
 or ignore all HTTP errors if you like:
