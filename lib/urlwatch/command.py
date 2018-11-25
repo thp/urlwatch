@@ -33,11 +33,13 @@ import logging
 import os
 import shutil
 import sys
+import threading
+import asyncio
 import requests
 
 from .filters import FilterBase
 from .handler import JobState
-from .jobs import JobBase, UrlJob
+from .jobs import JobBase, AsyncJob, UrlJob
 from .reporters import ReporterBase
 from .util import atomic_rename, edit_file
 from .mailer import set_password, have_password
@@ -125,6 +127,11 @@ class UrlwatchCommand:
         if isinstance(job, UrlJob):
             # Force re-retrieval of job, as we're testing filters
             job.ignore_cached = True
+        if isinstance(job, AsyncJob):
+            loop = asyncio.get_event_loop()
+            job.setup(loop)
+            loop_thread = threading.Thread(target=loop.run_forever)
+            loop_thread.start()
 
         job_state = JobState(self.urlwatcher.cache_storage, job)
         job_state.process()
@@ -133,6 +140,12 @@ class UrlwatchCommand:
         print(job_state.new_data)
         # We do not save the job state or job on purpose here, since we are possibly modifying the job
         # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
+
+        if isinstance(job, AsyncJob):
+            loop.call_soon_threadsafe(loop.stop)
+            loop_thread.join()
+            job.cleanup()
+
         return 0
 
     def modify_urls(self):
