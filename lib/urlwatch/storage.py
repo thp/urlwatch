@@ -381,6 +381,10 @@ class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
     def clean(self, guid):
         ...
 
+    @abstractmethod
+    def dedupe(self, guid):
+        ...
+
     def backup(self):
         for guid in self.get_guids():
             data, timestamp, tries, etag = self.load(None, guid)
@@ -390,15 +394,22 @@ class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
         for guid, data, timestamp, tries, etag in entries:
             self.save(None, guid, data, timestamp, tries, etag)
 
-    def gc(self, known_guids):
-        for guid in set(self.get_guids()) - set(known_guids):
-            print('Removing: {guid}'.format(guid=guid))
-            self.delete(guid)
-
-        for guid in known_guids:
-            count = self.clean(guid)
-            if count > 0:
-                print('Removed {count} old versions of {guid}'.format(count=count, guid=guid))
+    def gc(self, known_guids=None, mode='purge'):
+        if mode == 'purge':
+            for guid in set(self.get_guids()) - set(known_guids):
+                print('Removing: {guid}'.format(guid=guid))
+                self.delete(guid)
+            for guid in known_guids:
+                count = self.clean(guid)
+                if count > 0:
+                    print('Removed {count} old versions of {guid}'.format(count=count, guid=guid))
+        elif mode == 'dedupe':
+            for guid in self.get_guids():
+                count = self.dedupe(guid)
+                if count > 0:
+                    print('Removed {count} duplicate versions of {guid}'.format(count=count, guid=guid))
+        else:
+            raise ValueError('mode must be "purge" or "dedupe"')
 
 
 class CacheDirStorage(CacheStorage):
@@ -446,6 +457,9 @@ class CacheDirStorage(CacheStorage):
 
     def clean(self, guid):
         # We only store the latest version, no need to clean
+        return 0
+
+    def dedupe(self, guid):
         return 0
 
 
@@ -501,3 +515,18 @@ class CacheMiniDBStorage(CacheStorage):
             return result
 
         return 0
+
+    def dedupe(self, guid):
+        entries = sorted(CacheEntry.load(self.db, CacheEntry.c.guid == guid),
+                         key=lambda o: o.timestamp)
+        if len(entries) < 3:
+            return 0
+        # don't touch the latest entry to preserve cache and error state
+        del entries[-1]
+        count = 0
+        for new_entry, old_entry in zip(entries[1:], entries[:-1]):
+            if new_entry.data == old_entry.data:
+                new_entry.delete()
+                count += 1
+        self.db.commit()
+        return count

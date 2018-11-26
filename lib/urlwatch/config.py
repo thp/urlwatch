@@ -103,7 +103,8 @@ class CommandConfig(BaseConfig):
         group.add_argument('--edit-hooks', action='store_true', help='edit hooks script')
         group = parser.add_argument_group('miscellaneous')
         group.add_argument('--features', action='store_true', help='list supported jobs/filters/reporters')
-        group.add_argument('--gc-cache', action='store_true', help='remove old cache entries')
+        group.add_argument('--gc-cache', nargs='?', const='purge', choices=['purge', 'dedupe'],
+                           help='remove old cache entries. Set "dedupe" to only remove duplicate entries.')
 
         args = parser.parse_args()
 
