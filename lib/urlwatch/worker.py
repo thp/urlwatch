@@ -30,6 +30,7 @@
 
 import concurrent.futures
 import logging
+import difflib
 
 import requests
 
@@ -90,15 +91,22 @@ def run_jobs(urlwatcher):
                     report.error(job_state)
 
         elif job_state.old_data is not None:
-            if job_state.old_data.splitlines() != job_state.new_data.splitlines():
-                report.changed(job_state)
-                job_state.tries = 0
-                job_state.save()
-            else:
+            matched_history_time = job_state.history_data.get(job_state.new_data)
+            if matched_history_time:
+                job_state.timestamp = matched_history_time
+            if matched_history_time or job_state.new_data == job_state.old_data:
                 report.unchanged(job_state)
                 if job_state.tries > 0:
                     job_state.tries = 0
                     job_state.save()
+            else:
+                close_matches = difflib.get_close_matches(job_state.new_data, job_state.history_data, n=1)
+                if close_matches:
+                    job_state.old_data = close_matches[0]
+                    job_state.timestamp = job_state.history_data[close_matches[0]]
+                report.changed(job_state)
+                job_state.tries = 0
+                job_state.save()
         else:
             report.new(job_state)
             job_state.tries = 0
