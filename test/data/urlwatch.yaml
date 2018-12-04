@@ -32,3 +32,8 @@ report:
     details: true
     footer: true
     line_length: 75
+job_defaults:
+  all: {}
+  shell: {}
+  url: {}
+  browser: {}

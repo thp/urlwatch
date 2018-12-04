@@ -117,6 +117,13 @@ DEFAULT_CONFIG = {
             'subject': '{count} changes: {jobs}'
         },
     },
+
+    'job_defaults': {
+        'all': {},
+        'shell': {},
+        'url': {},
+        'browser': {}
+    }
 }
 
 
