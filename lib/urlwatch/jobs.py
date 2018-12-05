@@ -34,6 +34,7 @@ import logging
 import os
 import re
 import subprocess
+import threading
 import requests
 import urlwatch
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -153,6 +154,26 @@ class JobBase(object, metaclass=TrackSubClasses):
         sha_hash = hashlib.new('sha1')
         sha_hash.update(location.encode('utf-8'))
         return sha_hash.hexdigest()
+
+    def request_resources(self, resources):
+        """Request external resources.
+
+        Check if required resources is available in `resources` (a dict).
+        If not, request resources and save them in `resources`. Keys for
+        resources should typically be `self` or class, depending on the
+        shared or exclusive nature of the resource.
+
+        This method should be called sequentially on the main thread to
+        ensure success.
+
+        Args:
+            resources: A dict storing external resources.
+        """
+        ...
+
+    def release_resources(self, resources):
+        """Release external resources requested in `request_resources`."""
+        ...
 
     def retrieve(self, job_state):
         raise NotImplementedError()
@@ -344,8 +365,52 @@ class BrowserJob(Job):
     def get_location(self):
         return self.navigate
 
+    def request_resources(self, resources):
+        import asyncio
+        import pyppeteer
+
+        @asyncio.coroutine
+        def _launch_browser():
+            browser = yield from pyppeteer.launch()
+            for p in (yield from browser.pages()):
+                yield from p.close()
+            return browser
+
+        if BrowserJob not in resources:
+            event_loop = asyncio.new_event_loop()
+            browser = event_loop.run_until_complete(_launch_browser())
+            loop_thread = threading.Thread(target=event_loop.run_forever)
+            loop_thread.start()
+            resources[BrowserJob] = {
+                'event_loop': event_loop,
+                'browser': browser,
+                'loop_thread': loop_thread
+            }
+
+    def release_resources(self, resources):
+        import asyncio
+        res = resources.get(BrowserJob)
+        if res is not None:
+            event_loop = res['event_loop']
+            browser = res['browser']
+            loop_thread = res['loop_thread']
+            event_loop.call_soon_threadsafe(event_loop.stop)
+            loop_thread.join()
+            event_loop.run_until_complete(browser.close())
+            del resources[BrowserJob]
+
     def retrieve(self, job_state):
-        from requests_html import HTMLSession
-        session = HTMLSession()
-        response = session.get(self.navigate)
-        return response.html.html
+        import asyncio
+
+        @asyncio.coroutine
+        def _get_content(browser):
+            context = yield from browser.createIncognitoBrowserContext()
+            page = yield from context.newPage()
+            yield from page.goto(self.navigate)
+            content = yield from page.content()
+            yield from context.close()
+            return content
+
+        event_loop = job_state.resources[BrowserJob]['event_loop']
+        browser = job_state.resources[BrowserJob]['browser']
+        return asyncio.run_coroutine_threadsafe(_get_content(browser), event_loop).result()

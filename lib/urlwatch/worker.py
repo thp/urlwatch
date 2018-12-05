@@ -56,9 +56,13 @@ def run_jobs(urlwatcher):
             for job in urlwatcher.jobs]
     report = urlwatcher.report
 
+    resources = {}
+    for job in jobs:
+        job.request_resources(resources)
+
     logger.debug('Processing %d jobs', len(jobs))
     for job_state in run_parallel(lambda job_state: job_state.process(),
-                                  (JobState(cache_storage, job) for job in jobs)):
+                                  (JobState(cache_storage, resources, job) for job in jobs)):
         logger.debug('Job finished: %s', job_state.job)
 
         if not job_state.job.max_tries:
@@ -99,3 +103,6 @@ def run_jobs(urlwatcher):
             report.new(job_state)
             job_state.tries = 0
             job_state.save()
+
+    for job in jobs:
+        job.release_resources(resources)
