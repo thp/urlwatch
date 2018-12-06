@@ -362,8 +362,9 @@ url: https://example.com/
 compared_versions: 3
 ```
 
-In ths example, changes are only reported if the webpage becomes different from
-the latest three distinct states. Diff is done relative to the closest match.
+In this example, changes are only reported if the webpage becomes different from
+the latest three distinct states. The differences are shown relative to the
+closest match.
 
 
 MIGRATION FROM URLWATCH 1.x
