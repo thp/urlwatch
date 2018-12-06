@@ -67,14 +67,14 @@ def run_jobs(urlwatcher):
         logger.debug('Using max_tries of %i for %s', max_tries, job_state.job)
 
         if job_state.exception is not None:
-            if isinstance(job_state.exception, NotModifiedError):
+            if job_state.error_ignored:
+                logger.info('Error while executing job %s ignored due to job config', job_state.job)
+            elif isinstance(job_state.exception, NotModifiedError):
                 logger.info('Job %s has not changed (HTTP 304)', job_state.job)
                 report.unchanged(job_state)
                 if job_state.tries > 0:
                     job_state.tries = 0
                     job_state.save()
-            elif isinstance(job_state.exception, requests.exceptions.ConnectionError) and job_state.job.ignore_connection_errors:
-                logger.info('Connection error while executing job %s, ignored due to ignore_connection_errors', job_state.job)
             elif job_state.tries < max_tries:
                 logger.debug('This was try %i of %i for job %s', job_state.tries,
                              max_tries, job_state.job)
@@ -82,12 +82,7 @@ def run_jobs(urlwatcher):
             elif job_state.tries >= max_tries:
                 logger.debug('We are now at %i tries ', job_state.tries)
                 job_state.save()
-                if isinstance(job_state.exception, requests.exceptions.RequestException):
-                    # Instead of a full traceback, just show the HTTP error
-                    job_state.traceback = str(job_state.exception)
-                    report.error(job_state)
-                else:
-                    report.error(job_state)
+                report.error(job_state)
 
         elif job_state.old_data is not None:
             if job_state.old_data.splitlines() != job_state.new_data.splitlines():

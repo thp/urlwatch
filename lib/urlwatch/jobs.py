@@ -143,6 +143,12 @@ class JobBase(object, metaclass=TrackSubClasses):
     def retrieve(self, job_state):
         raise NotImplementedError()
 
+    def format_error(self, exception, tb):
+        return tb
+
+    def ignore_error(self, exception):
+        return False
+
 
 class Job(JobBase):
     __required__ = ()
@@ -183,7 +189,7 @@ class UrlJob(Job):
 
     __required__ = ('url',)
     __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
-                    'headers', 'ignore_connection_errors', 'encoding')
+                    'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding')
 
     LOCATION_IS_URL = True
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
@@ -279,6 +285,27 @@ class UrlJob(Job):
         for header in headers_to_remove:
             headers.pop(header, None)
         headers.update(self.headers)
+
+    def format_error(self, exception, tb):
+        if isinstance(exception, requests.exceptions.RequestException):
+            # Instead of a full traceback, just show the HTTP error
+            return str(exception)
+        return tb
+
+    def ignore_error(self, exception):
+        if isinstance(exception, requests.exceptions.ConnectionError) and self.ignore_connection_errors:
+            return True
+        elif isinstance(exception, requests.exceptions.HTTPError):
+            status_code = exception.response.status_code
+            ignored_codes = []
+            if isinstance(self.ignore_http_error_codes, int) and self.ignore_http_error_codes == status_code:
+                return True
+            elif isinstance(self.ignore_http_error_codes, str):
+                ignored_codes = [s.strip().lower() for s in self.ignore_http_error_codes.split(',')]
+            elif isinstance(self.ignore_http_error_codes, list):
+                ignored_codes = [str(s).strip().lower() for s in self.ignore_http_error_codes]
+            return str(status_code) in ignored_codes or '%sxx' % (status_code // 100) in ignored_codes
+        return False
 
 
 class BrowserJob(Job):
