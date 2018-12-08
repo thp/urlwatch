@@ -377,8 +377,8 @@ filter:
 ```
 
 
-USING XPATH AND CSS FILTERS WITH XML
---------------------------------
+USING XPATH AND CSS FILTERS WITH XML AND EXCLUSIONS
+---------------------------------------------------
 
 By default, XPath and CSS filters are set up for HTML documents. However,
 it is possible to use them for XML documents as well (these examples parse
@@ -398,6 +398,18 @@ filter:
       selector: 'item > title, item > pubDate'
       method: xml
   - html2text: re
+```
+
+Another useful option with XPath and CSS filters is `exclude`. Elements selected
+by this `exclude` expression are removed from the final result. For example, the
+following job will not have any `<a>` tag in its results:
+
+```yaml
+url: https://example.org/
+filter:
+  - css:
+      selector: 'body'
+      exclude: 'a'
 ```
 
 

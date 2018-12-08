@@ -372,7 +372,7 @@ class LxmlParser:
 
     def __init__(self, filter_kind, subfilter, expr_key):
         self.filter_kind = filter_kind
-        self.expression, self.method = self.parse_subfilter(
+        self.expression, self.method, self.exclude = self.parse_subfilter(
             filter_kind, subfilter, expr_key, self.EXPR_NAMES[filter_kind])
         self.parser = (etree.HTMLParser if self.method == 'html' else etree.XMLParser)()
         self.data = ''
@@ -384,17 +384,19 @@ class LxmlParser:
         if isinstance(subfilter, str):
             expression = subfilter
             method = 'html'
+            exclude = None
         elif isinstance(subfilter, dict):
             if expr_key not in subfilter:
                 raise ValueError('Need %s for filtering' % (expr_name,))
             expression = subfilter[expr_key]
             method = subfilter.get('method', 'html')
+            exclude = subfilter.get('exclude')
             if method not in ('html', 'xml'):
                 raise ValueError('%s method must be "html" or "xml", got %r' % (filter_kind, method))
         else:
             raise ValueError('%s subfilter must be a string or dict' % (filter_kind,))
 
-        return expression, method
+        return expression, method, exclude
 
     def feed(self, data):
         self.data += data
@@ -405,6 +407,28 @@ class LxmlParser:
             return element
 
         return etree.tostring(element, pretty_print=True, method=self.method, encoding='unicode', with_tail=False)
+
+    @staticmethod
+    def _remove_element(element):
+        parent = element.getparent()
+        if parent is None:
+            # Do not exclude root element
+            return
+        if isinstance(element, str):
+            if element.is_tail:
+                parent.tail = None
+            elif element.is_text:
+                parent.text = None
+            elif element.is_attribute:
+                del parent.attrib[element.attrname]
+        else:
+            previous = element.getprevious()
+            if element.tail is not None:
+                if previous is not None:
+                    previous.tail = previous.tail + element.tail if previous.tail else element.tail
+                else:
+                    parent.text = parent.text + element.tail if parent.text else element.tail
+            parent.remove(element)
 
     def _get_filtered_elements(self):
         try:
@@ -419,9 +443,15 @@ class LxmlParser:
         if root is None:
             return []
         if self.filter_kind == 'css':
-            return root.cssselect(self.expression)
+            selected_elems = root.cssselect(self.expression)
+            excluded_elems = root.cssselect(self.exclude) if self.exclude else None
         elif self.filter_kind == 'xpath':
-            return root.xpath(self.expression)
+            selected_elems = root.xpath(self.expression)
+            excluded_elems = root.xpath(self.exclude) if self.exclude else None
+        if excluded_elems is not None:
+            for el in excluded_elems:
+                self._remove_element(el)
+        return selected_elems
 
     def get_filtered_data(self):
         return '\n'.join(self._to_string(element) for element in self._get_filtered_elements())
