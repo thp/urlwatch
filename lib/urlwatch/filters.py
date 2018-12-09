@@ -414,7 +414,7 @@ class LxmlParser:
         if parent is None:
             # Do not exclude root element
             return
-        if isinstance(element, str):
+        if isinstance(element, etree._ElementUnicodeResult):
             if element.is_tail:
                 parent.tail = None
             elif element.is_text:
@@ -429,6 +429,40 @@ class LxmlParser:
                 else:
                     parent.text = parent.text + element.tail if parent.text else element.tail
             parent.remove(element)
+
+    @staticmethod
+    def _reevaluate(element):
+        if LxmlParser._orphaned(element):
+            return None
+        if isinstance(element, etree._ElementUnicodeResult):
+            parent = element.getparent()
+            if parent is None:
+                return element
+            if element.is_tail:
+                return parent.tail
+            elif element.is_text:
+                return parent.text
+            elif element.is_attribute:
+                return parent.attrib.get(element.attrname)
+        else:
+            return element
+
+    @staticmethod
+    def _orphaned(element):
+        if isinstance(element, etree._ElementUnicodeResult):
+            parent = element.getparent()
+            if ((element.is_tail and parent.tail is None)
+                    or (element.is_text and parent.text is None)
+                    or (element.is_attribute and parent.attrib.get(element.attrname) is None)):
+                return True
+            else:
+                element = parent
+        try:
+            tree = element.getroottree()
+            path = tree.getpath(element)
+            return element is not tree.xpath(path)[0]
+        except (ValueError, IndexError):
+            return True
 
     def _get_filtered_elements(self):
         try:
@@ -451,7 +485,7 @@ class LxmlParser:
         if excluded_elems is not None:
             for el in excluded_elems:
                 self._remove_element(el)
-        return selected_elems
+        return [el for el in map(LxmlParser._reevaluate, selected_elems) if el is not None]
 
     def get_filtered_data(self):
         return '\n'.join(self._to_string(element) for element in self._get_filtered_elements())
