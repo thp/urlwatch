@@ -416,7 +416,8 @@ class LxmlParser:
             self.data = re.sub(r'^<[?]xml[^>]*[?]>', '', self.data)
             # Retry parsing with XML declaration removed (Fixes #281)
             root = etree.fromstring(self.data, self.parser)
-
+        if root is None:
+            return []
         if self.filter_kind == 'css':
             return root.cssselect(self.expression)
         elif self.filter_kind == 'xpath':
