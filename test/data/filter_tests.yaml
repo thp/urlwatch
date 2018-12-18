@@ -78,6 +78,39 @@ xpath_exclude:
         <div>foo</div>
         
         <div id="bar">bar</div>
+xpath_xml_namespaces:
+    filter:
+        xpath:
+            path: //item | //f:item
+            method: xml
+            exclude: //f:year | //author
+            namespaces:
+                f: foo
+    data: |
+        <feed xmlns:f="foo">
+        <item>
+        <f:year>2017</f:year>
+        <author>Tom</author>
+        <data>abc</data>
+        </item>
+        <f:item>
+        <year>2018</year>
+        <f:author>Jerry</f:author>
+        <data>xyz</data>
+        </f:item>
+        </feed>
+    expected_result: |
+        <item xmlns:f="foo">
+        
+        
+        <data>abc</data>
+        </item>
+        
+        <f:item xmlns:f="foo">
+        <year>2018</year>
+        <f:author>Jerry</f:author>
+        <data>xyz</data>
+        </f:item>
 css:
     filter: css:div
     data: |
@@ -102,6 +135,39 @@ css_exclude:
         </body></html>
     expected_result: |
         <div class="foo">foo</div>
+css_xml_namespaces:
+    filter:
+        css:
+            selector: item, f|item
+            method: xml
+            exclude: f|year, author
+            namespaces:
+                f: foo
+    data: |
+        <feed xmlns:f="foo">
+        <item>
+        <f:year>2017</f:year>
+        <author>Tom</author>
+        <data>abc</data>
+        </item>
+        <f:item>
+        <year>2018</year>
+        <f:author>Jerry</f:author>
+        <data>xyz</data>
+        </f:item>
+        </feed>
+    expected_result: |
+        <item xmlns:f="foo">
+        
+        
+        <data>abc</data>
+        </item>
+        
+        <f:item xmlns:f="foo">
+        <year>2018</year>
+        <f:author>Jerry</f:author>
+        <data>xyz</data>
+        </f:item>
 grep:
     filter: grep:blue
     data: |
