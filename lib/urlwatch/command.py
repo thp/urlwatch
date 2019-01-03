@@ -266,7 +266,7 @@ class UrlwatchCommand:
 
             smtp_username = smtp_config.get('user', config['from'])
             if not smtp_username:
-                print('Please configure the SMTP username in the config first.')
+                print('Please configure the SMTP user in the config first.')
                 success = False
 
             if not success:
