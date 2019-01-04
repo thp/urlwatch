@@ -36,7 +36,6 @@ from abc import ABCMeta, abstractmethod
 
 import shutil
 import yaml
-import json
 import minidb
 import logging
 
@@ -285,15 +284,6 @@ class BaseYamlFileStorage(BaseTextualFileStorage, metaclass=ABCMeta):
                 return yaml.load(fp)
 
 
-class BaseJsonFileStorage(BaseTextualFileStorage, metaclass=ABCMeta):
-    @classmethod
-    def parse(cls, *args):
-        filename = args[0]
-        if filename is not None and os.path.exists(filename):
-            with open(filename) as fp:
-                return json.load(fp)
-
-
 class YamlConfigStorage(BaseYamlFileStorage):
     def load(self, *args):
         self.config = merge(self.parse(self.filename) or {}, copy.deepcopy(DEFAULT_CONFIG))
@@ -301,15 +291,6 @@ class YamlConfigStorage(BaseYamlFileStorage):
     def save(self, *args):
         with open(self.filename, 'w') as fp:
             yaml.dump(self.config, fp, default_flow_style=False)
-
-
-class JsonConfigStorage(BaseJsonFileStorage):
-    def load(self, *args):
-        self.config = merge(self.parse(self.filename) or {}, copy.deepcopy(DEFAULT_CONFIG))
-
-    def save(self, *args):
-        with open(self.filename, 'w') as fp:
-            json.dump(self.config, fp, default_flow_style=False)
 
 
 class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
@@ -331,20 +312,6 @@ class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
     def load(self, *args):
         with open(self.filename) as fp:
             return [JobBase.unserialize(job) for job in yaml.load_all(fp) if job is not None]
-
-
-class UrlsJson(BaseJsonFileStorage, UrlsBaseFileStorage):
-    def save(self, *args):
-        jobs = args[0]
-        print('Saving updated list to %r' % self.filename)
-
-        with open(self.filename, 'w') as fp:
-            yaml.dump_all([job.serialize() for job in jobs], fp, default_flow_style=False)
-
-    def load(self, *args):
-        with open(self.filename) as fp:
-            json_data = fp.read()
-            return [JobBase.unserialize(job) for job in json.loads(json_data)['urls'] if job is not None]
 
 
 class UrlsTxt(BaseTxtFileStorage, UrlsBaseFileStorage):

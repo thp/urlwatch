@@ -13,7 +13,7 @@ import imp
 
 from urlwatch import storage
 from urlwatch.config import BaseConfig
-from urlwatch.storage import JsonConfigStorage, YamlConfigStorage, UrlsJson, CacheMiniDBStorage
+from urlwatch.storage import YamlConfigStorage, CacheMiniDBStorage
 from urlwatch.main import Urlwatch
 
 
@@ -48,18 +48,9 @@ def test_save_load_jobs():
 
 
 def test_load_config_yaml():
-    config_json = os.path.join(os.path.dirname(__file__), 'data', 'urlwatch.yaml')
-    if os.path.exists(config_json):
-        config = YamlConfigStorage(config_json)
-        assert config is not None
-        assert config.config is not None
-        assert config.config == storage.DEFAULT_CONFIG
-
-
-def test_load_config_json():
-    config_json = os.path.join(os.path.dirname(__file__), 'data', 'urlwatch.json')
-    if os.path.exists(config_json):
-        config = JsonConfigStorage(config_json)
+    config_file = os.path.join(os.path.dirname(__file__), 'data', 'urlwatch.yaml')
+    if os.path.exists(config_file):
+        config = YamlConfigStorage(config_file)
         assert config is not None
         assert config.config is not None
         assert config.config == storage.DEFAULT_CONFIG
@@ -69,12 +60,6 @@ def test_load_urls_txt():
     urls_txt = os.path.join(os.path.dirname(__file__), 'data', 'urls.txt')
     if os.path.exists(urls_txt):
         assert len(UrlsTxt(urls_txt).load_secure()) > 0
-
-
-def test_load_urls_json():
-    urls_txt = os.path.join(os.path.dirname(__file__), 'data', 'urls.json')
-    if os.path.exists(urls_txt):
-        assert len(UrlsJson(urls_txt).load_secure()) > 0
 
 
 def test_load_urls_yaml():
