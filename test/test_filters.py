@@ -1,6 +1,8 @@
 from urlwatch.filters import GetElementById
 from urlwatch.filters import GetElementByTag
 from urlwatch.filters import JsonFormatFilter
+from urlwatch.filters import XPathFilter
+from urlwatch.filters import CssFilter
 
 from nose.tools import eq_
 
@@ -62,3 +64,55 @@ def test_json_format_filter_subfilter():
   },
   "field2": "value"
 }""")
+
+
+def test_xpath_elements():
+    xpath_filter = XPathFilter(None, None)
+    result = xpath_filter.filter("""
+    <html><head></head><body>
+    abc
+    <div>foo</div>
+    lmn
+    <span id="bar">bar</span>
+    xyz
+    </body></html>
+    """, "//div | //*[@id='bar']")
+    print(result)
+    eq_(result, """<div>foo</div>
+
+<span id="bar">bar</span>
+""")
+
+
+def test_xpath_text():
+    xpath_filter = XPathFilter(None, None)
+    result = xpath_filter.filter("""
+    <html><head></head><body>
+    abc
+    <div>foo</div>
+    lmn
+    <span id="bar">bar</span>
+    xyz
+    </body></html>
+    """, '//div/text() | //span/@id')
+    print(result)
+    eq_(result, """foo
+bar""")
+
+
+def test_css():
+    css_filter = CssFilter(None, None)
+    result = css_filter.filter("""
+    <html><head></head><body>
+    abc
+    <div>foo</div>
+    lmn
+    <span id="bar">bar</span>
+    xyz
+    </body></html>
+    """, 'div, span')
+    print(result)
+    eq_(result, """<div>foo</div>
+
+<span id="bar">bar</span>
+""")

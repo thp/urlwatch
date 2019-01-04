@@ -404,7 +404,7 @@ class LxmlParser:
         if isinstance(element, str):
             return element
 
-        return etree.tostring(element, pretty_print=True, method=self.method, encoding='unicode')
+        return etree.tostring(element, pretty_print=True, method=self.method, encoding='unicode', with_tail=False)
 
     def _get_filtered_elements(self):
         try:
