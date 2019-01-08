@@ -250,6 +250,43 @@ a channel, you'll get a webhook URL, copy it into the configuration as seen abov
 You can use the command `urlwatch --test-slack` to test if the Slack integration works.
 
 
+MATRIX
+------
+
+You can have notifications sent to you through the Matrix protocol.
+
+To achieve this, you first need to register a Matrix account for the bot on any homeserver.
+
+You then need to acquire an access token and room ID, using the following instructions adapted from [this guide](https://t2bot.io/docs/access_tokens/):
+
+1. Open [Riot.im](https://riot.im/app/) in a private browsing window
+2. Register/Log in as your bot, using its user ID and password.
+3. Set the display name and avatar, if desired.
+4. In the settings page, scroll down to the bottom and click Access Token: \<click to reveal\>.
+5. Copy the highlighted text to your configuration.
+6. Join the room that you wish to send notifications to.
+7. Go to the Room Settings (gear icon) and copy the *Internal Room ID* from the bottom.
+8. Close the private browsing window **but do not log out, as this invalidates the Access Token**. 
+
+Here is a sample configuration:
+
+```yaml
+matrix:
+  homeserver: https://matrix.org
+  access_token: "YOUR_TOKEN_HERE"
+  room_id: "!roomroomroom:matrix.org"
+```
+
+You will probably want to use the following configuration for the `markdown` reporter, if you intend to post change
+notifications to a public Matrix room, as the messages quickly become noisy:
+
+```yaml
+markdown:
+  details: false
+  footer: false
+  minimal: true
+```
+
 BROWSER
 -------
 

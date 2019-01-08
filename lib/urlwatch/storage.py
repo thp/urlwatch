@@ -59,6 +59,12 @@ DEFAULT_CONFIG = {
             'minimal': False,
         },
 
+        'markdown': {
+            'details': True,
+            'footer': True,
+            'minimal': False,
+        },
+        
         'html': {
             'diff': 'unified',  # "unified" or "table"
         },
@@ -105,6 +111,12 @@ DEFAULT_CONFIG = {
         'slack': {
             'enabled': False,
             'webhook_url': '',
+        },
+        'matrix': {
+            'enabled': False,
+            'homeserver': '',
+            'access_token': '',
+            'room_id': '',
         },
         'mailgun': {
             'enabled': False,
