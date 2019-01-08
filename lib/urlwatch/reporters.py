@@ -58,8 +58,18 @@ try:
 except ImportError:
     Pushbullet = None
 
-logger = logging.getLogger(__name__)
+try:
+    import matrix_client.api
+except ImportError:
+    matrix_client = None
 
+try:
+    # markdown2 is an optional dependency which provides better formatting for Matrix.
+    from markdown2 import Markdown
+except ImportError:
+    Markdown = None
+
+logger = logging.getLogger(__name__)
 
 # Regular expressions that match the added/removed markers of GNU wdiff output
 WDIFF_ADDED_RE = r'[{][+].*?[+][}]'
@@ -625,3 +635,110 @@ class SlackReporter(TextReporter):
 
     def chunkstring(self, string, length):
         return (string[0 + i:length + i] for i in range(0, len(string), length))
+
+
+class MarkdownReporter(ReporterBase):
+    def submit(self):
+        cfg = self.report.config['report']['markdown']
+        show_details = cfg['details']
+        show_footer = cfg['footer']
+
+        if cfg['minimal']:
+            for job_state in self.report.get_filtered_job_states(self.job_states):
+                pretty_name = job_state.job.pretty_name()
+                location = job_state.job.get_location()
+                if pretty_name != location:
+                    location = '%s (%s)' % (pretty_name, location)
+                yield '* ' + ': '.join((job_state.verb.upper(), location))
+            return
+
+        summary = []
+        details = []
+        for job_state in self.report.get_filtered_job_states(self.job_states):
+            summary_part, details_part = self._format_output(job_state)
+            summary.extend(summary_part)
+            details.extend(details_part)
+
+        if summary:
+            yield from ('%d. %s' % (idx + 1, line) for idx, line in enumerate(summary))
+            yield ''
+
+        if show_details:
+            yield from details
+
+        if summary and show_footer:
+            yield from ('--- ',
+                        '%s %s, %s  ' % (urlwatch.pkgname, urlwatch.__version__, urlwatch.__copyright__),
+                        'Website: %s  ' % (urlwatch.__url__,),
+                        'watched %d URLs in %d seconds' % (len(self.job_states), self.duration.seconds))
+
+    def _format_content(self, job_state):
+        if job_state.verb == 'error':
+            return job_state.traceback.strip()
+
+        if job_state.verb == 'unchanged':
+            return job_state.old_data
+
+        if job_state.old_data in (None, job_state.new_data):
+            return None
+
+        return self.unified_diff(job_state)
+
+    def _format_output(self, job_state):
+        summary_part = []
+        details_part = []
+
+        pretty_name = job_state.job.pretty_name()
+        location = job_state.job.get_location()
+        if pretty_name != location:
+            location = '%s (%s)' % (pretty_name, location)
+
+        pretty_summary = ': '.join((job_state.verb.upper(), pretty_name))
+        summary = ': '.join((job_state.verb.upper(), location))
+        content = self._format_content(job_state)
+
+        summary_part.append(pretty_summary)
+
+        details_part.append('### ' + summary)
+        if content is not None:
+            details_part.extend(('', '```', content, '```', ''))
+        details_part.extend(('', ''))
+
+        return summary_part, details_part
+
+
+class MatrixReporter(MarkdownReporter):
+    """Custom Matrix reporter"""
+    MAX_LENGTH = 4096
+
+    __kind__ = 'matrix'
+
+    def submit(self):
+        homeserver_url = self.config['homeserver']
+        access_token = self.config['access_token']
+        room_id = self.config['room_id']
+
+        body_markdown = '\n'.join(super().submit())
+
+        if not body_markdown:
+            logger.debug('Not calling Matrix API (no changes)')
+            return
+
+        client_api = matrix_client.api.MatrixHttpApi(homeserver_url, access_token)
+
+        if Markdown is not None:
+            body_html = Markdown().convert(body_markdown)
+
+            client_api.send_message_event(
+                room_id,
+                "m.room.message",
+                content={
+                    "msgtype": "m.text",
+                    "format": "org.matrix.custom.html",
+                    "body": body_markdown,
+                    "formatted_body": body_html
+                }
+            )
+        else:
+            logger.debug('Not formatting as Markdown; dependency on markdown2 not met?')
+            client_api.send_message(room_id, body_markdown)
