@@ -118,6 +118,7 @@ class UrlwatchCommand:
 
     def test_filter(self):
         job = self._find_job(self.urlwatch_config.test_filter)
+        job = job.with_defaults(self.urlwatcher.config_storage.config)
         if job is None:
             print('Not found: %r' % (self.urlwatch_config.test_filter,))
             return 1

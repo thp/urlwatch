@@ -134,6 +134,20 @@ class JobBase(object, metaclass=TrackSubClasses):
     def __repr__(self):
         return '<%s %s>' % (self.__kind__, ' '.join('%s=%r' % (k, v) for k, v in list(self.to_dict().items())))
 
+    def _set_defaults(self, defaults):
+        if isinstance(defaults, dict):
+            for key, value in defaults.items():
+                if key in self.__optional__ and getattr(self, key) is None:
+                    setattr(self, key, value)
+
+    def with_defaults(self, config):
+        new_job = JobBase.unserialize(self.serialize())
+        cfg = config.get('job_defaults')
+        if isinstance(cfg, dict):
+            new_job._set_defaults(cfg.get(self.__kind__))
+            new_job._set_defaults(cfg.get('all'))
+        return new_job
+
     def get_guid(self):
         location = self.get_location()
         sha_hash = hashlib.new('sha1')
