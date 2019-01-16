@@ -33,6 +33,8 @@ import logging
 import os
 import shutil
 import sys
+from contextlib import ExitStack
+
 import requests
 
 from .filters import FilterBase
@@ -127,16 +129,17 @@ class UrlwatchCommand:
             # Force re-retrieval of job, as we're testing filters
             job.ignore_cached = True
 
-        resources = {}
-        job.request_resources(resources)
-        job_state = JobState(self.urlwatcher.cache_storage, resources, job)
-        job_state.process()
-        if job_state.exception is not None:
-            raise job_state.exception
-        print(job_state.new_data)
-        # We do not save the job state or job on purpose here, since we are possibly modifying the job
-        # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
-        job.release_resources(resources)
+        with ExitStack() as exit_stack:
+            resources = {}
+            job.request_resources(resources)
+            exit_stack.callback(job.release_resources, resources)
+            job_state = JobState(self.urlwatcher.cache_storage, resources, job)
+            job_state.process()
+            if job_state.exception is not None:
+                raise job_state.exception
+            print(job_state.new_data)
+            # We do not save the job state or job on purpose here, since we are possibly modifying the job
+            # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
         return 0
 
     def modify_urls(self):

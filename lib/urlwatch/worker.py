@@ -30,6 +30,7 @@
 
 import concurrent.futures
 import logging
+from contextlib import ExitStack
 
 import requests
 
@@ -56,53 +57,52 @@ def run_jobs(urlwatcher):
             for job in urlwatcher.jobs]
     report = urlwatcher.report
 
-    resources = {}
-    for job in jobs:
-        job.request_resources(resources)
+    with ExitStack() as exit_stack:
+        resources = {}
+        for job in jobs:
+            job.request_resources(resources)
+            exit_stack.callback(job.release_resources, resources)
 
-    logger.debug('Processing %d jobs', len(jobs))
-    for job_state in run_parallel(lambda job_state: job_state.process(),
-                                  (JobState(cache_storage, resources, job) for job in jobs)):
-        logger.debug('Job finished: %s', job_state.job)
+        logger.debug('Processing %d jobs', len(jobs))
+        for job_state in run_parallel(lambda job_state: job_state.process(),
+                                      (JobState(cache_storage, resources, job) for job in jobs)):
+            logger.debug('Job finished: %s', job_state.job)
 
-        if not job_state.job.max_tries:
-            max_tries = 0
-        else:
-            max_tries = job_state.job.max_tries
-        logger.debug('Using max_tries of %i for %s', max_tries, job_state.job)
+            if not job_state.job.max_tries:
+                max_tries = 0
+            else:
+                max_tries = job_state.job.max_tries
+            logger.debug('Using max_tries of %i for %s', max_tries, job_state.job)
 
-        if job_state.exception is not None:
-            if job_state.error_ignored:
-                logger.info('Error while executing job %s ignored due to job config', job_state.job)
-            elif isinstance(job_state.exception, NotModifiedError):
-                logger.info('Job %s has not changed (HTTP 304)', job_state.job)
-                report.unchanged(job_state)
-                if job_state.tries > 0:
+            if job_state.exception is not None:
+                if job_state.error_ignored:
+                    logger.info('Error while executing job %s ignored due to job config', job_state.job)
+                elif isinstance(job_state.exception, NotModifiedError):
+                    logger.info('Job %s has not changed (HTTP 304)', job_state.job)
+                    report.unchanged(job_state)
+                    if job_state.tries > 0:
+                        job_state.tries = 0
+                        job_state.save()
+                elif job_state.tries < max_tries:
+                    logger.debug('This was try %i of %i for job %s', job_state.tries,
+                                 max_tries, job_state.job)
+                    job_state.save()
+                elif job_state.tries >= max_tries:
+                    logger.debug('We are now at %i tries ', job_state.tries)
+                    job_state.save()
+                    report.error(job_state)
+
+            elif job_state.old_data is not None:
+                if job_state.old_data.splitlines() != job_state.new_data.splitlines():
+                    report.changed(job_state)
                     job_state.tries = 0
                     job_state.save()
-            elif job_state.tries < max_tries:
-                logger.debug('This was try %i of %i for job %s', job_state.tries,
-                             max_tries, job_state.job)
-                job_state.save()
-            elif job_state.tries >= max_tries:
-                logger.debug('We are now at %i tries ', job_state.tries)
-                job_state.save()
-                report.error(job_state)
-
-        elif job_state.old_data is not None:
-            if job_state.old_data.splitlines() != job_state.new_data.splitlines():
-                report.changed(job_state)
+                else:
+                    report.unchanged(job_state)
+                    if job_state.tries > 0:
+                        job_state.tries = 0
+                        job_state.save()
+            else:
+                report.new(job_state)
                 job_state.tries = 0
                 job_state.save()
-            else:
-                report.unchanged(job_state)
-                if job_state.tries > 0:
-                    job_state.tries = 0
-                    job_state.save()
-        else:
-            report.new(job_state)
-            job_state.tries = 0
-            job_state.save()
-
-    for job in jobs:
-        job.release_resources(resources)
