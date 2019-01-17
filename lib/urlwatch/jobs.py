@@ -203,7 +203,7 @@ class UrlJob(Job):
 
     __required__ = ('url',)
     __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
-                    'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding')
+                    'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding', 'timeout')
 
     LOCATION_IS_URL = True
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
@@ -253,13 +253,23 @@ class UrlJob(Job):
         if self.headers:
             self.add_custom_headers(headers)
 
+        if self.timeout is None:
+            # default timeout
+            timeout = 60
+        elif self.timeout == 0:
+            # never timeout
+            timeout = None
+        else:
+            timeout = self.timeout
+
         response = requests.request(url=self.url,
                                     data=self.data,
                                     headers=headers,
                                     method=self.method,
                                     verify=(not self.ssl_no_verify),
                                     cookies=self.cookies,
-                                    proxies=proxies)
+                                    proxies=proxies,
+                                    timeout=timeout)
 
         response.raise_for_status()
         if response.status_code == requests.codes.not_modified:
