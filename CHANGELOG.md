@@ -4,7 +4,41 @@ All notable changes to this project will be documented in this file.
 
 The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [2.16] -- 2019-01-27
+
+### Added
+- XPath: Handle `/text()` selector (#282)
+- Document how to specify cookies to README.md (#264)
+- Text Reporter: `minimal` config option to only print a summary (PR#304, fixes #147)
+- README.md: Document how to watch Github releases via XPath (#266)
+- Support for parsing XML/RSS with XPath (Fixes #281)
+- Allow explicit setting of `encoding` for URL jobs (PR#313, contributes to #306)
+- Slack Channel Reporter (PR#309)
+- ANSI color output on the Windows console via `colorama` (PR#296, closes #295)
+- Support for using CSS selectors via the `cssselect` module (PR#321, closes 273)
+- `ignore_http_error_codes` is now an option for URL jobs (PR#325, fixes #203)
+- `job_defaults` in the config for globally specifying settings (PR#345, closes #253)
+- Optional `timeout` (in seconds) for URL jobs to specify socket timeout (PR#348, closes #340)
+
+### Removed
+- Support for JSON storage (dead code that was never used in production; PR#336)
+
+### Changed
+- `HtmlReporter` now also highlights links for browser jobs (PR#303)
+- Allow `--features` and `--edit-*` to run without `urls.yaml` (PR#301)
+- When a previous run had errors, do not use conditional GETs (PR#313, fixes #292)
+- Explicitly specify JSON pretty print `separators` for consistency (PR#343)
+- Use data-driven unit tests/fixtures for easier unit test maintenance (PR#344)
+
+### Fixed
+- Fix migration issues with case-insensitive filesystems (#223)
+- Correctly reset retry counter when job is added or unchanged (PR#291, PR#314)
+- Fix a `FutureWarning` on Python 3.7 with regard to regular expressions (PR#299)
+- If the filter list is empty, do not process the filter list (PR#308)
+- Fix parsing/sanity-checking of `urls.yaml` after editing (PR#317, fixes #316)
+- Fix Python 3.3 compatibility by depending on `enum34` there (PR#311)
+- Allow running unit tests on Windows (PR#318)
+- Fix migration issues introduced by PR#180 and #256 (PR#323, fixes #267)
 
 
 ## [2.15] -- 2018-10-23
