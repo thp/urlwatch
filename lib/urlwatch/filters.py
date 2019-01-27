@@ -430,9 +430,9 @@ class LxmlParser:
                     parent.text = parent.text + element.tail if parent.text else element.tail
             parent.remove(element)
 
-    @staticmethod
-    def _reevaluate(element):
-        if LxmlParser._orphaned(element):
+    @classmethod
+    def _reevaluate(cls, element):
+        if cls._orphaned(element):
             return None
         if isinstance(element, etree._ElementUnicodeResult):
             parent = element.getparent()
@@ -476,6 +476,7 @@ class LxmlParser:
             root = etree.fromstring(self.data, self.parser)
         if root is None:
             return []
+        excluded_elems = None
         if self.filter_kind == 'css':
             selected_elems = root.cssselect(self.expression)
             excluded_elems = root.cssselect(self.exclude) if self.exclude else None
@@ -485,7 +486,7 @@ class LxmlParser:
         if excluded_elems is not None:
             for el in excluded_elems:
                 self._remove_element(el)
-        return [el for el in map(LxmlParser._reevaluate, selected_elems) if el is not None]
+        return [el for el in map(self._reevaluate, selected_elems) if el is not None]
 
     def get_filtered_data(self):
         return '\n'.join(self._to_string(element) for element in self._get_filtered_elements())
