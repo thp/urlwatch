@@ -179,6 +179,15 @@ url: https://example.com/
 encoding: utf-8
 ```
 
+By default, url jobs timeout after 60 seconds. If you want a different timeout
+period, use the `timeout` key to specify it in number of seconds, or set it to 0
+to never timeout.
+
+```yaml
+url: https://example.com/
+timeout: 300
+```
+
 If you want to change some settings for all your jobs, edit the `job_defaults`
 section in your config file:
 
