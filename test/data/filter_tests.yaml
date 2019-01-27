@@ -1,0 +1,128 @@
+# <test-name>:
+#   filter: <specs-of-a-single-filter-as-string-or-mapping>
+#   data: |
+#       Input data as block scalar (string).
+#       Use the literal style (starts with "|") for better readability.
+#       Use a chomping indicator (-/+) to control trailing newlines.
+#       Ref:
+#         https://yaml.org/spec/1.2/spec.html#id2795688
+#         https://yaml.org/spec/1.2/spec.html#id2794534
+#   expected_result: |
+#       <Expected filtered data>
+element_by_tag:
+    filter: element-by-tag:body
+    data: |
+        <html><head></head><body>foo</body></html>
+    expected_result: |-
+        <body>foo</body>
+element_by_tag_nested:
+    filter: element-by-tag:div
+    data: |
+        <html><head></head><body>
+        <div>foo</div>
+        <div>bar</div>
+        </body></html>
+    expected_result: |-
+        <div>foo</div><div>bar</div>
+element_by_id:
+    filter: element-by-id:bar
+    data: |
+        <html><head></head><body>
+        <div id="foo">asdf <span>bar</span></div>
+        <div id="bar">asdf <span>bar</span> hoho</div>
+        </body></html>
+    expected_result: |-
+        <div id="bar">asdf <span>bar</span> hoho</div>
+element_by_class:
+    filter: element-by-class:foo
+    data: |
+        <html><head></head><body>
+        <div class="foo">foo</div>
+        <div class="bar">bar</div>
+        </body></html>
+    expected_result: |-
+        <div class="foo">foo</div>
+xpath_elements:
+    filter: xpath://div | //*[@id="bar"]
+    data: |
+        <html><head></head><body>
+        <div>foo</div>
+        <div id="bar">bar</div>
+        </body></html>
+    expected_result: |
+        <div>foo</div>
+        
+        <div id="bar">bar</div>
+xpath_text:
+    filter: xpath://div[1]/text() | //div[2]/@id
+    data: |
+        <html><head></head><body>
+        <div>foo</div>
+        <div id="bar">bar</div>
+        </body></html>
+    expected_result: |-
+        foo
+        bar
+css:
+    filter: css:div
+    data: |
+        <html><head></head><body>
+        <div>foo</div>
+        <div>bar</div>
+        </body></html>
+    expected_result: |
+        <div>foo</div>
+        
+        <div>bar</div>
+grep:
+    filter: grep:blue
+    data: |
+        The rose is red;
+        the violet's blue.
+        Sugar is sweet,
+        and so are you.
+    expected_result: |-
+        the violet's blue.
+grep_with_comma:
+    filter: grep:\054
+    data: |
+        The rose is red;
+        the violet's blue.
+        Sugar is sweet,
+        and so are you.
+    expected_result: |-
+        Sugar is sweet,
+json_format:
+    filter: format-json
+    data: |
+        {"field1": {"f1.1": "value"},"field2": "value"}
+    expected_result: |-
+        {
+            "field1": {
+                "f1.1": "value"
+            },
+            "field2": "value"
+        }
+json_format_subfilter:
+    filter: format-json:2
+    data: |
+        {"field1": {"f1.1": "value"},"field2": "value"}
+    expected_result: |-
+        {
+          "field1": {
+            "f1.1": "value"
+          },
+          "field2": "value"
+        }
+sha1:
+    filter: sha1sum
+    data: 1234567890abcdefg
+    expected_result: 8417680c09644df743d7cea1366fbe13a31b2d5e
+hexdump:
+    filter: hexdump
+    data: |
+        Hello world!
+        你好，世界！
+    expected_result: |-
+        48 65 6c 6c 6f 20 77 6f 72 6c 64 21 0a e4 bd a0  Hello world!....
+        e5 a5 bd ef bc 8c e4 b8 96 e7 95 8c ef bc 81 0a  ................
