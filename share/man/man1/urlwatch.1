@@ -1,22 +1,11 @@
-.TH URLWATCH "1" "January 2016" "urlwatch 2.0" "User Commands"
+.TH URLWATCH "1" "January 2019" "urlwatch 2.16" "User Commands"
 .SH NAME
-urlwatch \- a tool for monitoring webpages for updates
-.SH USAGE
-.B urlwatch
-[\-h] [\-\-version] [\-v]
-.IP
-[\-\-urls FILE] [\-\-config FILE] [\-\-hooks FILE] [\-\-cache FILE]
-.IP
-[\-\-list] [\-\-add JOB] [\-\-delete JOB]
-.IP
-[\-\-edit] [\-\-edit\-config] [\-\-edit\-hooks]
-.IP
-[\-\-features] [\-\-gc\-cache]
-.PP
+urlwatch \- monitors webpages for you
+.SH SYNOPSIS
+.B urlwatch [options]
 .SH DESCRIPTION
-.PP
 urlwatch is intended to help you watch changes in webpages and get notified
-(via email, in your terminal or with a custom-written reporter class) of any
+(via e\-mail, in your terminal or through various third party services) of any
 changes. The change notification will include the URL that has changed and
 a unified diff of what has changed.
 .SS "optional arguments:"
@@ -42,6 +31,16 @@ use FILE as hooks.py module
 .TP
 \fB\-\-cache\fR FILE
 use FILE as cache database
+.SS "Authentication:"
+.TP
+\fB\-\-smtp\-login\fR
+Enter password for SMTP (store in keyring)
+.TP
+\fB\-\-telegram\-chats\fR
+List telegram chats the bot is joined to
+.TP
+\fB\-\-test\-slack\fR
+Send a test notification to Slack
 .SS "job list management:"
 .TP
 \fB\-\-list\fR
@@ -52,6 +51,9 @@ add job (key1=value1,key2=value2,...)
 .TP
 \fB\-\-delete\fR JOB
 delete job by location or index
+.TP
+\fB\-\-test\-filter\fR JOB
+test filter output of job by location or index
 .SS "interactive commands ($EDITOR/$VISUAL):"
 .TP
 \fB\-\-edit\fR
