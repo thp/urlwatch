@@ -258,12 +258,12 @@ class TextReporter(ReporterBase):
             details.extend(details_part)
 
         if summary:
-            sep = line_length * '='
-            yield from itertools.chain(
+            sep = (line_length * '=') or None
+            yield from (part for part in itertools.chain(
                 (sep,),
                 ('%02d. %s' % (idx + 1, line) for idx, line in enumerate(summary)),
                 (sep, ''),
-            )
+            ) if part is not None)
 
         if show_details:
             yield from details
@@ -301,11 +301,12 @@ class TextReporter(ReporterBase):
 
         summary_part.append(pretty_summary)
 
-        sep = line_length * '-'
+        sep = (line_length * '-') or None
         details_part.extend((sep, summary, sep))
         if content is not None:
             details_part.extend((content, sep))
-        details_part.extend(('', ''))
+        details_part.extend(('', '') if sep else ('',))
+        details_part = [part for part in details_part if part is not None]
 
         return summary_part, details_part
 
@@ -348,7 +349,7 @@ class StdoutReporter(TextReporter):
         cfg = self.report.config['report']['text']
         line_length = cfg['line_length']
 
-        separators = (line_length * '=', line_length * '-', '-- ')
+        separators = (line_length * '=', line_length * '-', '-- ') if line_length else ()
         body = '\n'.join(super().submit())
 
         for line in body.splitlines():
