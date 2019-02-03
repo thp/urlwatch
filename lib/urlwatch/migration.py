@@ -30,27 +30,19 @@
 
 import logging
 import os.path
-import sys
 
 from .util import atomic_rename
-from .storage import UrlsYaml, UrlsTxt, CacheDirStorage
+from .storage import UrlsYaml, UrlsTxt, CacheDirStorage, CacheMiniDBStorage
 
 logger = logging.getLogger(__name__)
 
 
-def migrate_urls(urlwatcher):
+def migrate_urls(urlwatch_config):
     # Migrate urlwatch 1.x URLs to urlwatch 2.x
 
-    urlwatch_config = urlwatcher.urlwatch_config
     pkgname = urlwatch_config.pkgname
     urls = urlwatch_config.urls
     urls_txt = os.path.join(urlwatch_config.urlwatch_dir, 'urls.txt')
-    edit = urlwatch_config.edit
-    add = urlwatch_config.add
-    features = urlwatch_config.features
-    edit_hooks = urlwatch_config.edit_hooks
-    edit_config = urlwatch_config.edit_config
-    gc_cache = urlwatch_config.gc_cache
 
     if os.path.isfile(urls_txt) and not os.path.isfile(urls):
         print("""
@@ -60,18 +52,10 @@ def migrate_urls(urlwatcher):
         UrlsYaml(urls).save(UrlsTxt(urls_txt).load_secure())
         atomic_rename(urls_txt, urls_txt + '.migrated')
 
-    if not any([os.path.isfile(urls), edit, add, features, edit_hooks, edit_config, gc_cache]):
-        print("""
-    You need to create {urls_yaml} in order to use {pkgname}.
-    Use "{pkgname} --edit" to open the file with your editor.
-    """.format(urls_yaml=urls, pkgname=pkgname))
-        sys.exit(1)
 
-
-def migrate_cache(urlwatcher):
+def migrate_cache(urlwatch_config):
     # Migrate urlwatch 1.x cache to urlwatch 2.x
 
-    urlwatch_config = urlwatcher.urlwatch_config
     cache = urlwatch_config.cache
     cache_dir = os.path.join(urlwatch_config.urlwatch_dir, 'cache')
 
@@ -81,8 +65,8 @@ def migrate_cache(urlwatcher):
         print("""
     Migrating cache: {cache_dir} -> {cache_db}
     """.format(cache_dir=cache_dir, cache_db=cache))
-
         old_cache_storage = CacheDirStorage(cache_dir)
-        urlwatcher.cache_storage.restore(old_cache_storage.backup())
-        urlwatcher.cache_storage.gc([job.get_guid() for job in urlwatcher.jobs])
+        new_cache_storage = CacheMiniDBStorage(cache)
+        new_cache_storage.restore(old_cache_storage.backup())
+        new_cache_storage.close()
         atomic_rename(cache_dir, cache_dir + '.migrated')

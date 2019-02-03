@@ -54,7 +54,7 @@ if bindir != 'bin':
 from urlwatch.command import UrlwatchCommand
 from urlwatch.config import CommandConfig
 from urlwatch.main import Urlwatch
-from urlwatch.storage import YamlConfigStorage, CacheMiniDBStorage, UrlsYaml
+from urlwatch.migration import migrate_cache, migrate_urls
 
 # One minute (=60 seconds) timeout for each request to avoid hanging
 socket.setdefaulttimeout(60)
@@ -98,13 +98,12 @@ if __name__ == '__main__':
                                    config_file, urls_file, hooks_file, cache_file, False)
     setup_logger(command_config.verbose)
 
-    # setup storage API
-    config_storage = YamlConfigStorage(command_config.config)
-    cache_storage = CacheMiniDBStorage(command_config.cache)
-    urls_storage = UrlsYaml(command_config.urls)
+    # migration
+    migrate_urls(command_config)
+    migrate_cache(command_config)
 
     # setup urlwatcher
-    urlwatch = Urlwatch(command_config, config_storage, cache_storage, urls_storage)
+    urlwatch = Urlwatch(command_config)
     urlwatch_command = UrlwatchCommand(urlwatch)
 
     # run urlwatcher

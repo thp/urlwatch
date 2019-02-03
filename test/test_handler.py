@@ -106,16 +106,12 @@ def test_run_watcher():
     cache = os.path.join(os.path.dirname(__file__), 'data', 'cache.db')
     hooks = ''
 
-    config_storage = YamlConfigStorage(config)
-    urls_storage = UrlsYaml(urls)
-    cache_storage = CacheMiniDBStorage(cache)
+    urlwatch_config = TestConfig(config, urls, cache, hooks, True)
+    urlwatcher = Urlwatch(urlwatch_config)
     try:
-        urlwatch_config = TestConfig(config, urls, cache, hooks, True)
-
-        urlwatcher = Urlwatch(urlwatch_config, config_storage, cache_storage, urls_storage)
         urlwatcher.run_jobs()
     finally:
-        cache_storage.close()
+        urlwatcher.cache_storage.close()
 
 
 def test_unserialize_shell_job_without_kind():
@@ -140,42 +136,38 @@ def prepare_retry_test():
     cache = os.path.join(os.path.dirname(__file__), 'data', 'cache.db')
     hooks = ''
 
-    config_storage = YamlConfigStorage(config)
-    cache_storage = CacheMiniDBStorage(cache)
-    urls_storage = UrlsYaml(urls)
-
     urlwatch_config = TestConfig(config, urls, cache, hooks, True)
-    urlwatcher = Urlwatch(urlwatch_config, config_storage, cache_storage, urls_storage)
+    urlwatcher = Urlwatch(urlwatch_config)
 
-    return urlwatcher, cache_storage
+    return urlwatcher
 
 
 @with_setup(teardown=teardown_func)
 def test_number_of_tries_in_cache_is_increased():
-    urlwatcher, cache_storage = prepare_retry_test()
+    urlwatcher = prepare_retry_test()
     try:
         job = urlwatcher.jobs[0]
-        old_data, timestamp, tries, etag = cache_storage.load(job, job.get_guid())
+        old_data, timestamp, tries, etag = urlwatcher.cache_storage.load(job, job.get_guid())
         assert tries == 0
 
         urlwatcher.run_jobs()
         urlwatcher.run_jobs()
 
         job = urlwatcher.jobs[0]
-        old_data, timestamp, tries, etag = cache_storage.load(job, job.get_guid())
+        old_data, timestamp, tries, etag = urlwatcher.cache_storage.load(job, job.get_guid())
 
         assert tries == 2
         assert urlwatcher.report.job_states[-1].verb == 'error'
     finally:
-        cache_storage.close()
+        urlwatcher.cache_storage.close()
 
 
 @with_setup(teardown=teardown_func)
 def test_report_error_when_out_of_tries():
-    urlwatcher, cache_storage = prepare_retry_test()
+    urlwatcher = prepare_retry_test()
     try:
         job = urlwatcher.jobs[0]
-        old_data, timestamp, tries, etag = cache_storage.load(job, job.get_guid())
+        old_data, timestamp, tries, etag = urlwatcher.cache_storage.load(job, job.get_guid())
         assert tries == 0
 
         urlwatcher.run_jobs()
@@ -184,21 +176,21 @@ def test_report_error_when_out_of_tries():
         report = urlwatcher.report
         assert report.job_states[-1].verb == 'error'
     finally:
-        cache_storage.close()
+        urlwatcher.cache_storage.close()
 
 
 @with_setup(teardown=teardown_func)
 def test_reset_tries_to_zero_when_successful():
-    urlwatcher, cache_storage = prepare_retry_test()
+    urlwatcher = prepare_retry_test()
     try:
         job = urlwatcher.jobs[0]
-        old_data, timestamp, tries, etag = cache_storage.load(job, job.get_guid())
+        old_data, timestamp, tries, etag = urlwatcher.cache_storage.load(job, job.get_guid())
         assert tries == 0
 
         urlwatcher.run_jobs()
 
         job = urlwatcher.jobs[0]
-        old_data, timestamp, tries, etag = cache_storage.load(job, job.get_guid())
+        old_data, timestamp, tries, etag = urlwatcher.cache_storage.load(job, job.get_guid())
         assert tries == 1
 
         # use an url that definitely exists
@@ -208,7 +200,7 @@ def test_reset_tries_to_zero_when_successful():
         urlwatcher.run_jobs()
 
         job = urlwatcher.jobs[0]
-        old_data, timestamp, tries, etag = cache_storage.load(job, job.get_guid())
+        old_data, timestamp, tries, etag = urlwatcher.cache_storage.load(job, job.get_guid())
         assert tries == 0
     finally:
-        cache_storage.close()
+        urlwatcher.cache_storage.close()

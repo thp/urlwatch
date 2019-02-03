@@ -31,7 +31,9 @@
 import imp
 import logging
 import os
+import sys
 
+from .storage import YamlConfigStorage, CacheMiniDBStorage, UrlsYaml
 from .handler import Report
 from .worker import run_jobs
 
@@ -39,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 class Urlwatch(object):
-    def __init__(self, urlwatch_config, config_storage, cache_storage, urls_storage):
+    def __init__(self, urlwatch_config):
 
         self.urlwatch_config = urlwatch_config
 
@@ -47,26 +49,22 @@ class Urlwatch(object):
         logger.info('Using %s for hooks', self.urlwatch_config.hooks)
         logger.info('Using %s as cache database', self.urlwatch_config.cache)
 
-        self.config_storage = config_storage
-        self.cache_storage = cache_storage
-        self.urls_storage = urls_storage
+        self.check_url()
+
+        self.config_storage = YamlConfigStorage(self.urlwatch_config.config)
+        self.cache_storage = CacheMiniDBStorage(self.urlwatch_config.cache)
+        self.urls_storage = UrlsYaml(self.urlwatch_config.urls)
 
         self.report = Report(self)
         self.jobs = None
 
         self.check_directories()
 
-        if hasattr(self.urlwatch_config, 'migrate_urls'):
-            self.urlwatch_config.migrate_urls(self)
-
         if not self.urlwatch_config.edit_hooks:
             self.load_hooks()
 
         if not self.urlwatch_config.edit:
             self.load_jobs()
-
-        if hasattr(self.urlwatch_config, 'migrate_urls'):
-            self.urlwatch_config.migrate_cache(self)
 
     def check_directories(self):
         if not os.path.isdir(self.urlwatch_config.urlwatch_dir):
@@ -77,6 +75,18 @@ class Urlwatch(object):
     A default config has been written to {config_yaml}.
     Use "{pkgname} --edit-config" to customize it.
         """.format(config_yaml=self.urlwatch_config.config, pkgname=self.urlwatch_config.pkgname))
+
+    def check_url(self):
+        urls = self.urlwatch_config.urls
+        pkgname = self.urlwatch_config.pkgname
+        if not os.path.isfile(urls) and not any(getattr(self.urlwatch_config, flag) for flag in (
+                'edit', 'add', 'features', 'edit_hooks', 'edit_config', 'gc_cache',
+                'smtp_login', 'telegram_chats', 'test_slack')):
+            print("""
+    You need to create {urls_yaml} in order to use {pkgname}.
+    Use "{pkgname} --edit" to open the file with your editor.
+        """.format(urls_yaml=urls, pkgname=pkgname))
+            sys.exit(1)
 
     def load_hooks(self):
         if os.path.exists(self.urlwatch_config.hooks):
