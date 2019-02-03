@@ -33,7 +33,6 @@
 import logging
 import os.path
 import signal
-import socket
 import sys
 
 from appdirs import AppDirs
@@ -55,9 +54,6 @@ from urlwatch.command import UrlwatchCommand
 from urlwatch.config import CommandConfig
 from urlwatch.main import Urlwatch
 from urlwatch.migration import migrate_cache, migrate_urls
-
-# One minute (=60 seconds) timeout for each request to avoid hanging
-socket.setdefaulttimeout(60)
 
 # Ignore SIGPIPE for stdout (see https://github.com/thp/urlwatch/issues/77)
 try:
