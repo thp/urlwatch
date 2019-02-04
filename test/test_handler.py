@@ -13,7 +13,7 @@ import imp
 
 from urlwatch import storage
 from urlwatch.config import BaseConfig
-from urlwatch.storage import YamlConfigStorage, CacheMiniDBStorage
+from urlwatch.storage import YamlConfigStorage, CacheMiniDBStorage2
 from urlwatch.main import Urlwatch
 
 
@@ -147,17 +147,16 @@ def test_number_of_tries_in_cache_is_increased():
     urlwatcher = prepare_retry_test()
     try:
         job = urlwatcher.jobs[0]
-        old_data, timestamp, tries, etag = urlwatcher.cache_storage.load(job, job.get_guid())
+        tries = urlwatcher.cache_storage.load(job.get_guid()).tries
         assert tries == 0
 
         urlwatcher.run_jobs()
         urlwatcher.run_jobs()
 
         job = urlwatcher.jobs[0]
-        old_data, timestamp, tries, etag = urlwatcher.cache_storage.load(job, job.get_guid())
+        tries = urlwatcher.cache_storage.load(job.get_guid()).tries
 
         assert tries == 2
-        assert urlwatcher.report.job_states[-1].verb == 'error'
     finally:
         urlwatcher.cache_storage.close()
 
@@ -167,14 +166,13 @@ def test_report_error_when_out_of_tries():
     urlwatcher = prepare_retry_test()
     try:
         job = urlwatcher.jobs[0]
-        old_data, timestamp, tries, etag = urlwatcher.cache_storage.load(job, job.get_guid())
+        tries = urlwatcher.cache_storage.load(job.get_guid()).tries
         assert tries == 0
 
         urlwatcher.run_jobs()
         urlwatcher.run_jobs()
 
-        report = urlwatcher.report
-        assert report.job_states[-1].verb == 'error'
+        assert urlwatcher.report.job_states[-1].verb == 'error'
     finally:
         urlwatcher.cache_storage.close()
 
@@ -184,13 +182,13 @@ def test_reset_tries_to_zero_when_successful():
     urlwatcher = prepare_retry_test()
     try:
         job = urlwatcher.jobs[0]
-        old_data, timestamp, tries, etag = urlwatcher.cache_storage.load(job, job.get_guid())
+        tries = urlwatcher.cache_storage.load(job.get_guid()).tries
         assert tries == 0
 
         urlwatcher.run_jobs()
 
         job = urlwatcher.jobs[0]
-        old_data, timestamp, tries, etag = urlwatcher.cache_storage.load(job, job.get_guid())
+        tries = urlwatcher.cache_storage.load(job.get_guid()).tries
         assert tries == 1
 
         # use an url that definitely exists
@@ -200,7 +198,7 @@ def test_reset_tries_to_zero_when_successful():
         urlwatcher.run_jobs()
 
         job = urlwatcher.jobs[0]
-        old_data, timestamp, tries, etag = urlwatcher.cache_storage.load(job, job.get_guid())
+        tries = urlwatcher.cache_storage.load(job.get_guid()).tries
         assert tries == 0
     finally:
         urlwatcher.cache_storage.close()

@@ -39,7 +39,7 @@ import yaml
 import minidb
 import logging
 
-from .util import atomic_rename, edit_file
+from .util import atomic_rename, edit_file, namedtuple_with_defaults
 from .jobs import JobBase, UrlJob, ShellJob
 
 logger = logging.getLogger(__name__)
@@ -150,6 +150,15 @@ def get_current_user():
         # OSError: [Errno 25] Inappropriate ioctl for device
         import pwd
         return pwd.getpwuid(os.getuid()).pw_name
+
+
+def disabled_method(reason=None):
+    def method(*args, **kwargs):
+        if reason is None:
+            raise RuntimeError
+        else:
+            raise RuntimeError(reason)
+    return method
 
 
 class BaseStorage(metaclass=ABCMeta):
@@ -332,6 +341,13 @@ class UrlsTxt(BaseTxtFileStorage, UrlsBaseFileStorage):
 
 
 class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
+    _snapshot = staticmethod(namedtuple_with_defaults(
+        '_Snapshot', ['data', 'timestamp'], defaults=(None, None)))
+
+    _loadedcache = staticmethod(namedtuple_with_defaults(
+        '_LoadedCache', ['name', 'location', 'last_checked', 'tries', 'etag', 'snapshots'],
+        defaults=(None, None, None, 0, None, [])))
+
     @abstractmethod
     def close(self):
         ...
@@ -341,11 +357,29 @@ class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def load(self, job, guid):
+    def load(self, guid, count=1):
+        """Load last run job state and the most recent `count` distinct snapshots
+
+        Return a namedtuple (
+            name, location, last_checked, tries, etag,
+            snapshots = [(data, timestamp), ...]
+        ), where `snapshots` is a list of namedtuples in reverse chronological order.
+        If `count < 0`, all snapshots are loaded.
+        """
         ...
 
     @abstractmethod
-    def save(self, job, guid, data, timestamp, tries, etag=None):
+    def save(self, guid, data, timestamp):
+        """Save a new snapshot"""
+        ...
+
+    @abstractmethod
+    def update(self, guid, **kwargs):
+        """Update last run job state
+
+        Supported keyword arguments:
+            name, location, last_checked, last_id, tries, etag
+        """
         ...
 
     @abstractmethod
@@ -358,12 +392,14 @@ class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
 
     def backup(self):
         for guid in self.get_guids():
-            data, timestamp, tries, etag = self.load(None, guid)
-            yield guid, data, timestamp, tries, etag
+            loaded_data = self.load(guid, -1)
+            yield (guid,) + loaded_data
 
     def restore(self, entries):
-        for guid, data, timestamp, tries, etag in entries:
-            self.save(None, guid, data, timestamp, tries, etag)
+        for guid, name, location, last_checked, tries, etag, snapshots in entries:
+            for data, timestamp in reversed(snapshots):
+                self.save(guid, data, timestamp)
+            self.update(guid, name=name, location=location, last_checked=last_checked, tries=tries, etag=etag)
 
     def gc(self, known_guids):
         for guid in set(self.get_guids()) - set(known_guids):
@@ -383,8 +419,7 @@ class CacheDirStorage(CacheStorage):
             os.makedirs(filename)
 
     def close(self):
-        #  No need to close
-        return 0
+        ...
 
     def _get_filename(self, guid):
         return os.path.join(self.filename, guid)
@@ -392,10 +427,10 @@ class CacheDirStorage(CacheStorage):
     def get_guids(self):
         return os.listdir(self.filename)
 
-    def load(self, job, guid):
+    def load(self, guid, count=1):
         filename = self._get_filename(guid)
         if not os.path.exists(filename):
-            return None, None, None, None
+            return self._loadedcache()
 
         try:
             with open(filename) as fp:
@@ -403,25 +438,15 @@ class CacheDirStorage(CacheStorage):
         except UnicodeDecodeError:
             with open(filename, 'rb') as fp:
                 data = fp.read().decode('utf-8', 'ignore')
-
         timestamp = os.stat(filename)[stat.ST_MTIME]
+        return self._loadedcache(last_checked=timestamp, snapshots=[self._snapshot(data, timestamp)])
 
-        return data, timestamp, None, None
-
-    def save(self, job, guid, data, timestamp, etag=None):
-        # Timestamp and ETag are always ignored
-        filename = self._get_filename(guid)
-        with open(filename, 'w+') as fp:
-            fp.write(data)
-
-    def delete(self, guid):
-        filename = self._get_filename(guid)
-        if os.path.exists(filename):
-            os.unlink(filename)
-
-    def clean(self, guid):
-        # We only store the latest version, no need to clean
-        return 0
+    save = disabled_method('Cannot write to deprecated cache.')
+    update = disabled_method('Cannot write to deprecated cache.')
+    delete = disabled_method('Cannot write to deprecated cache.')
+    clean = disabled_method('Cannot write to deprecated cache.')
+    restore = disabled_method('Cannot write to deprecated cache.')
+    gc = disabled_method('Cannot write to deprecated cache.')
 
 
 class CacheEntry(minidb.Model):
@@ -444,49 +469,145 @@ class CacheMiniDBStorage(CacheStorage):
         self.db.register(CacheEntry)
 
     def close(self):
-        self.db.close()
-        self.db = None
+        if self.db is not None:
+            self.db.close()
+            self.db = None
 
     def get_guids(self):
         return (guid for guid, in CacheEntry.query(self.db, minidb.Function('distinct', CacheEntry.c.guid)))
 
-    def load(self, job, guid):
-        for data, timestamp, tries, etag in CacheEntry.query(self.db, CacheEntry.c.data // CacheEntry.c.timestamp // CacheEntry.c.tries // CacheEntry.c.etag,
-                                                             order_by=minidb.columns(CacheEntry.c.timestamp.desc, CacheEntry.c.tries.desc),
-                                                             where=CacheEntry.c.guid == guid, limit=1):
-            return data, timestamp, tries, etag
+    def load(self, guid, count=1):
+        last_checked, tries, etag = next(
+            CacheEntry.query(
+                self.db,
+                CacheEntry.c.timestamp // CacheEntry.c.tries // CacheEntry.c.etag,
+                order_by=CacheEntry.c.timestamp.desc,
+                where=CacheEntry.c.guid == guid,
+                limit=1
+            ), (None, 0, None)
+        )
+        snapshots = []
+        for data, timestamp in CacheEntry.query(
+                self.db,
+                CacheEntry.c.data // CacheEntry.c.timestamp,
+                order_by=CacheEntry.c.timestamp.desc,
+                where=CacheEntry.c.guid == guid):
+            if len(snapshots) >= count >= 0:
+                break
+            snapshot = self._snapshot(data, timestamp)
+            if len(snapshots) >= 1 and snapshots[-1].data == data:
+                snapshots[-1] = snapshot
+            else:
+                snapshots.append(snapshot)
+        return self._loadedcache(None, None, last_checked, tries, etag, snapshots)
 
-        return None, None, 0, None
+    save = disabled_method('Cannot write to deprecated cache.')
+    update = disabled_method('Cannot write to deprecated cache.')
+    delete = disabled_method('Cannot write to deprecated cache.')
+    clean = disabled_method('Cannot write to deprecated cache.')
+    restore = disabled_method('Cannot write to deprecated cache.')
+    gc = disabled_method('Cannot write to deprecated cache.')
 
-    def get_history_data(self, guid, count=1):
-        history = {}
-        if count < 1:
-            return history
-        for data, timestamp in CacheEntry.query(self.db, CacheEntry.c.data // CacheEntry.c.timestamp,
-                                                order_by=minidb.columns(CacheEntry.c.timestamp.desc, CacheEntry.c.tries.desc),
-                                                where=(CacheEntry.c.guid == guid)
-                                                & ((CacheEntry.c.tries == 0) | (CacheEntry.c.tries == None))):  # noqa
-            if data not in history:
-                history[data] = timestamp
-                if len(history) >= count:
-                    break
-        return history
 
-    def save(self, job, guid, data, timestamp, tries, etag=None):
-        self.db.save(CacheEntry(guid=guid, timestamp=timestamp, data=data, tries=tries, etag=etag))
+class Snapshot(minidb.Model):
+    guid = str
+    timestamp = int
+    data = str
+
+
+class LastRunState(minidb.Model):
+    guid = str
+    name = str
+    location = str
+    last_checked = int
+    last_id = int
+    tries = int
+    etag = str
+
+
+class CacheMiniDBStorage2(CacheStorage):
+    def __init__(self, filename):
+        super().__init__(filename)
+
+        dirname = os.path.dirname(filename)
+        if dirname and not os.path.isdir(dirname):
+            os.makedirs(dirname)
+
+        self.db = minidb.Store(self.filename, debug=True)
+        self.db.register(Snapshot)
+        self.db.register(LastRunState)
+
+    def close(self):
+        if self.db is not None:
+            self.db.close()
+            self.db = None
+
+    def get_guids(self):
+        return (guid for guid, in LastRunState.query(self.db, minidb.Function('distinct', LastRunState.c.guid)))
+
+    def load(self, guid, count=1):
+        if count == 0:
+            snapshots = []
+        else:
+            last_id = next(
+                LastRunState.query(
+                    self.db, LastRunState.c.last_id, where=LastRunState.c.guid == guid
+                ), (None,))[0]
+            snapshots = [self._snapshot(*s) for s in Snapshot.query(
+                self.db,
+                Snapshot.c.data // Snapshot.c.timestamp,
+                where=Snapshot.c.id == last_id)]
+            count -= len(snapshots)
+            snapshots += [self._snapshot(*s) for s in Snapshot.query(
+                self.db,
+                Snapshot.c.data // Snapshot.c.timestamp,
+                order_by=Snapshot.c.timestamp.desc,
+                where=((Snapshot.c.guid == guid) & (Snapshot.c.id != last_id)),
+                limit=count
+            )]
+        name, location, last_checked, tries, etag = next(
+            LastRunState.query(
+                self.db,
+                LastRunState.c.name // LastRunState.c.location // LastRunState.c.last_checked
+                // LastRunState.c.tries // LastRunState.c.etag,
+                where=LastRunState.c.guid == guid
+            ), (None, None, None, 0, None)
+        )
+        return self._loadedcache(name, location, last_checked, tries, etag, snapshots)
+
+    def save(self, guid, data, timestamp):
+        last_id = Snapshot(guid=guid, timestamp=timestamp, data=data).save(self.db).id
+        self.db.commit()
+        self.update(guid, last_id=last_id)
+
+    def update(self, guid, **kwargs):
+        entry = LastRunState.get(self.db, guid=guid)
+        if entry is None:
+            entry = LastRunState(guid=guid, **kwargs)
+        else:
+            for k, v in kwargs.items():
+                setattr(entry, k, v)
+        entry.save(self.db)
         self.db.commit()
 
     def delete(self, guid):
-        CacheEntry.delete_where(self.db, CacheEntry.c.guid == guid)
+        Snapshot.delete_where(self.db, Snapshot.c.guid == guid)
+        LastRunState.delete_where(self.db, LastRunState.c.guid == guid)
         self.db.commit()
 
     def clean(self, guid):
-        keep_id = next((CacheEntry.query(self.db, CacheEntry.c.id, where=CacheEntry.c.guid == guid,
-                                         order_by=CacheEntry.c.timestamp.desc, limit=1)), (None,))[0]
-
+        keep_id = next(
+            LastRunState.query(
+                self.db, LastRunState.c.last_id, where=LastRunState.c.guid == guid
+            ), (None,))[0]
+        if keep_id is None:
+            keep_id = next(
+                Snapshot.query(
+                    self.db, Snapshot.c.id, where=Snapshot.c.guid == guid,
+                    order_by=Snapshot.c.timestamp.desc, limit=1
+                ), (None,))[0]
         if keep_id is not None:
-            result = CacheEntry.delete_where(self.db, (CacheEntry.c.guid == guid) & (CacheEntry.c.id != keep_id))
+            result = Snapshot.delete_where(self.db, (Snapshot.c.guid == guid) & (Snapshot.c.id != keep_id))
             self.db.commit()
             return result
-
         return 0

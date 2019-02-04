@@ -30,9 +30,10 @@
 
 import logging
 import os.path
+import sqlite3
 
 from .util import atomic_rename
-from .storage import UrlsYaml, UrlsTxt, CacheDirStorage, CacheMiniDBStorage
+from .storage import UrlsYaml, UrlsTxt, CacheDirStorage, CacheMiniDBStorage, CacheMiniDBStorage2
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +55,30 @@ def migrate_urls(urlwatch_config):
 
 
 def migrate_cache(urlwatch_config):
-    # Migrate urlwatch 1.x cache to urlwatch 2.x
-
     cache = urlwatch_config.cache
+
+    # Migrate urlwatch 2.0 - 2.17 cache DB to new design (Issue #347)
+    if os.path.isfile(cache):
+        db = sqlite3.connect(cache)
+        tables = [row[1] for row in db.execute('SELECT * FROM sqlite_master WHERE type="table"')]
+        db.close()
+        if 'CacheEntry' in tables:
+            print("""
+    Migrating cache database to new format
+    """)
+            root, ext = os.path.splitext(cache)
+            old_cache = root + '-old' + ext
+            migrated_cache = root + '-migrated' + ext
+
+            atomic_rename(cache, old_cache)
+            old_cache_storage = CacheMiniDBStorage(old_cache)
+            new_cache_storage = CacheMiniDBStorage2(cache)
+            new_cache_storage.restore(old_cache_storage.backup())
+            old_cache_storage.close()
+            new_cache_storage.close()
+            atomic_rename(old_cache, migrated_cache)
+
+    # Migrate urlwatch 1.x cache to urlwatch 2.x
     cache_dir = os.path.join(urlwatch_config.urlwatch_dir, 'cache')
 
     # On Windows and macOS with case-insensitive filesystems, we have to check if
@@ -66,7 +88,7 @@ def migrate_cache(urlwatch_config):
     Migrating cache: {cache_dir} -> {cache_db}
     """.format(cache_dir=cache_dir, cache_db=cache))
         old_cache_storage = CacheDirStorage(cache_dir)
-        new_cache_storage = CacheMiniDBStorage(cache)
+        new_cache_storage = CacheMiniDBStorage2(cache)
         new_cache_storage.restore(old_cache_storage.backup())
         new_cache_storage.close()
         atomic_rename(cache_dir, cache_dir + '.migrated')

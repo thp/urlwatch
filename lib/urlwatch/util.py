@@ -33,6 +33,7 @@ import os
 import platform
 import subprocess
 import shlex
+import collections
 
 logger = logging.getLogger(__name__)
 
@@ -99,3 +100,30 @@ def edit_file(filename):
         raise SystemExit('Please set $VISUAL or $EDITOR.')
 
     subprocess.check_call(shlex.split(editor) + [filename])
+
+
+def namedtuple_with_defaults(typename, field_names, *, defaults=None):
+    """A wrapper around `namedtuple` to support the `defaults` parameter added in Python 3.7
+
+    Not necessary once we require Python >=3.7
+    """
+    def factory(*args, **kwargs):
+        for field_name in field_names[len(args):]:
+            if field_name not in kwargs:
+                try:
+                    kwargs[field_name] = defaults_dict[field_name]
+                except KeyError:
+                    raise ValueError('missing value for `%s`' % field_name)
+        return t(*args, **kwargs)
+
+    t = collections.namedtuple(typename, field_names)
+    if isinstance(field_names, str):
+        field_names = field_names.replace(',', ' ').split()
+    field_names = list(map(str, field_names))
+    defaults = tuple(defaults)
+    if len(defaults) > len(field_names):
+        raise ValueError('More defaults than fields')
+    defaults_dict = {}
+    for field_name, default_value in zip(field_names[-len(defaults):], defaults):
+        defaults_dict[field_name] = default_value
+    return factory

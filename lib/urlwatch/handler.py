@@ -56,19 +56,27 @@ class JobState(object):
         self.error_ignored = False
 
     def load(self):
-        guid = self.job.get_guid()
-        self.old_data, self.timestamp, self.tries, self.etag = self.cache_storage.load(self.job, guid)
+        compared_versions = 1 if self.job.compared_versions is None else self.job.compared_versions
+        loaded_cache = self.cache_storage.load(self.job.get_guid(), count=compared_versions)
+        if len(loaded_cache.snapshots) > 0:
+            self.old_data, self.timestamp = loaded_cache.snapshots[0]
+        self.history_data = dict(reversed(loaded_cache.snapshots))
+        self.tries = loaded_cache.tries
+        self.etag = loaded_cache.etag
         if self.tries is None:
             self.tries = 0
-        if self.job.compared_versions and self.job.compared_versions > 1:
-            self.history_data = self.cache_storage.get_history_data(guid, self.job.compared_versions)
 
     def save(self):
-        if self.new_data is None and self.exception is not None:
-            # If no new data has been retrieved due to an exception, use the old job data
-            self.new_data = self.old_data
+        self.cache_storage.update(
+            self.job.get_guid(),
+            name=self.job.name,
+            location=self.job.get_location(),
+            last_checked=int(time.time()),
+            tries=self.tries,
+            etag=self.etag)
 
-        self.cache_storage.save(self.job, self.job.get_guid(), self.new_data, time.time(), self.tries, self.etag)
+    def save_new_data(self):
+        self.cache_storage.save(self.job.get_guid(), self.new_data, time.time())
 
     def process(self):
         logger.info('Processing: %s', self.job)
@@ -97,6 +105,7 @@ class JobState(object):
                                 subfilter = None
                             data = FilterBase.process(filter_kind, subfilter, self, data)
                 self.new_data = data
+                self.tries = 0
 
             except Exception as e:
                 # job has a chance to format and ignore its error

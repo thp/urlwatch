@@ -74,36 +74,27 @@ def run_jobs(urlwatcher):
             elif isinstance(job_state.exception, NotModifiedError):
                 logger.info('Job %s has not changed (HTTP 304)', job_state.job)
                 report.unchanged(job_state)
-                if job_state.tries > 0:
-                    job_state.tries = 0
-                    job_state.save()
             elif job_state.tries < max_tries:
                 logger.debug('This was try %i of %i for job %s', job_state.tries,
                              max_tries, job_state.job)
-                job_state.save()
             elif job_state.tries >= max_tries:
                 logger.debug('We are now at %i tries ', job_state.tries)
-                job_state.save()
                 report.error(job_state)
 
-        elif job_state.old_data is not None:
+        elif job_state.history_data:
             matched_history_time = job_state.history_data.get(job_state.new_data)
             if matched_history_time:
                 job_state.timestamp = matched_history_time
-            if matched_history_time or job_state.new_data == job_state.old_data:
                 report.unchanged(job_state)
-                if job_state.tries > 0:
-                    job_state.tries = 0
-                    job_state.save()
             else:
                 close_matches = difflib.get_close_matches(job_state.new_data, job_state.history_data, n=1)
                 if close_matches:
                     job_state.old_data = close_matches[0]
                     job_state.timestamp = job_state.history_data[close_matches[0]]
                 report.changed(job_state)
-                job_state.tries = 0
-                job_state.save()
+                job_state.save_new_data()
         else:
             report.new(job_state)
-            job_state.tries = 0
-            job_state.save()
+            job_state.save_new_data()
+
+        job_state.save()

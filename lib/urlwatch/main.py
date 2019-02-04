@@ -33,7 +33,7 @@ import logging
 import os
 import sys
 
-from .storage import YamlConfigStorage, CacheMiniDBStorage, UrlsYaml
+from .storage import YamlConfigStorage, CacheMiniDBStorage2, UrlsYaml
 from .handler import Report
 from .worker import run_jobs
 
@@ -52,7 +52,7 @@ class Urlwatch(object):
         self.check_url()
 
         self.config_storage = YamlConfigStorage(self.urlwatch_config.config)
-        self.cache_storage = CacheMiniDBStorage(self.urlwatch_config.cache)
+        self.cache_storage = CacheMiniDBStorage2(self.urlwatch_config.cache)
         self.urls_storage = UrlsYaml(self.urlwatch_config.urls)
 
         self.report = Report(self)
