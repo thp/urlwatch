@@ -1,13 +1,16 @@
 import sys
 import os
+import tempfile
+import time
 from glob import glob
 
 import pycodestyle
-from nose.tools import raises, with_setup
+from nose.tools import raises
 
-from urlwatch.jobs import JobBase, ShellJob
-from urlwatch.config import BaseConfig
-from urlwatch.main import Urlwatch
+from urlwatch.jobs import JobBase, UrlJob, ShellJob
+from urlwatch.storage import UrlsYaml
+
+from util import default_watcher, TEST_DATA_DIR, REPO_ROOT
 
 
 def test_required_classattrs_in_subclasses():
@@ -27,34 +30,10 @@ def test_pep8_conformance():
     assert result.total_errors == 0, "Found #{0} code style errors".format(result.total_errors)
 
 
-class TestConfig(BaseConfig):
-    def __init__(self, config, urls, cache, hooks, verbose):
-        (prefix, bindir) = os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))
-        super().__init__('urlwatch', os.path.dirname(__file__), config, urls, cache, hooks, verbose)
-        self.edit = False
-        self.edit_hooks = False
-
-
-def teardown_func():
-    "tear down test fixtures"
-    cache = os.path.join(os.path.dirname(__file__), 'data', 'cache.db')
-    if os.path.exists(cache):
-        os.remove(cache)
-
-
-@with_setup(teardown=teardown_func)
 def test_run_watcher():
-    urls = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'share', 'urlwatch', 'examples', 'urls.yaml.example')
-    config = os.path.join(os.path.dirname(__file__), 'data', 'urlwatch.yaml')
-    cache = os.path.join(os.path.dirname(__file__), 'data', 'cache.db')
-    hooks = ''
-
-    urlwatch_config = TestConfig(config, urls, cache, hooks, True)
-    urlwatcher = Urlwatch(urlwatch_config)
-    try:
+    with default_watcher(urls=os.path.join(REPO_ROOT,
+                         'share/urlwatch/examples/urls.yaml.example')) as urlwatcher:
         urlwatcher.run_jobs()
-    finally:
-        urlwatcher.cache_storage.close()
 
 
 def test_unserialize_shell_job_without_kind():
@@ -73,75 +52,71 @@ def test_unserialize_with_unknown_key():
     })
 
 
-def prepare_retry_test():
-    urls = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'test', 'data', 'invalid-url.yaml')
-    config = os.path.join(os.path.dirname(__file__), 'data', 'urlwatch.yaml')
-    cache = os.path.join(os.path.dirname(__file__), 'data', 'cache.db')
-    hooks = ''
+def test_retries():
+    with tempfile.TemporaryDirectory() as tempdir:
+        # save a url job with a valid local url but an invalid filter
+        urls = os.path.join(tempdir, 'urls.yaml')
+        local_url = 'file://' + os.path.join(TEST_DATA_DIR, 'urlwatch.yaml')
+        urls_storage = UrlsYaml(urls)
+        urls_storage.save([UrlJob(url=local_url, filter='invalid-filter', max_tries=2)])
 
-    urlwatch_config = TestConfig(config, urls, cache, hooks, True)
-    urlwatcher = Urlwatch(urlwatch_config)
+        guid = urls_storage.load_secure()[0].get_guid()
+        with default_watcher(tempdir) as urlwatcher:
+            assert urlwatcher.cache_storage.load(guid).tries == 0
+            urlwatcher.run_jobs()
+            assert len(urlwatcher.report.job_states) == 0
+        with default_watcher(tempdir) as urlwatcher:
+            assert urlwatcher.cache_storage.load(guid).tries == 1
+            urlwatcher.run_jobs()
+            assert len(urlwatcher.report.job_states) == 1
+            assert urlwatcher.report.job_states[0].verb == 'error'
 
-    return urlwatcher
+        # remove the invalid filter but keep the same local url (hence guid)
+        urls_storage.save([UrlJob(url=local_url, max_tries=2)])
 
-
-@with_setup(teardown=teardown_func)
-def test_number_of_tries_in_cache_is_increased():
-    urlwatcher = prepare_retry_test()
-    try:
-        job = urlwatcher.jobs[0]
-        tries = urlwatcher.cache_storage.load(job.get_guid()).tries
-        assert tries == 0
-
-        urlwatcher.run_jobs()
-        urlwatcher.run_jobs()
-
-        job = urlwatcher.jobs[0]
-        tries = urlwatcher.cache_storage.load(job.get_guid()).tries
-
-        assert tries == 2
-    finally:
-        urlwatcher.cache_storage.close()
-
-
-@with_setup(teardown=teardown_func)
-def test_report_error_when_out_of_tries():
-    urlwatcher = prepare_retry_test()
-    try:
-        job = urlwatcher.jobs[0]
-        tries = urlwatcher.cache_storage.load(job.get_guid()).tries
-        assert tries == 0
-
-        urlwatcher.run_jobs()
-        urlwatcher.run_jobs()
-
-        assert urlwatcher.report.job_states[-1].verb == 'error'
-    finally:
-        urlwatcher.cache_storage.close()
+        with default_watcher(tempdir) as urlwatcher:
+            assert urlwatcher.cache_storage.load(guid).tries == 2
+            urlwatcher.run_jobs()
+            assert len(urlwatcher.report.job_states) == 1
+            assert urlwatcher.report.job_states[0].verb == 'new'
+            assert urlwatcher.cache_storage.load(guid).tries == 0
 
 
-@with_setup(teardown=teardown_func)
-def test_reset_tries_to_zero_when_successful():
-    urlwatcher = prepare_retry_test()
-    try:
-        job = urlwatcher.jobs[0]
-        tries = urlwatcher.cache_storage.load(job.get_guid()).tries
-        assert tries == 0
+def test_compare_multiple_snapshots():
+    with tempfile.TemporaryDirectory() as tempdir:
+        # save a url job with a local url
+        urls = os.path.join(tempdir, 'urls.yaml')
+        data_file_path = os.path.join(tempdir, 'data_file')
+        local_url = 'file://' + data_file_path
+        urls_storage = UrlsYaml(urls)
+        urls_storage.save([UrlJob(url=local_url, compared_versions=2)])
 
-        urlwatcher.run_jobs()
+        # prepare a history of three different snapshots
+        with default_watcher(tempdir) as urlwatcher:
+            with open(data_file_path, 'w') as f:
+                f.write('version-1')
+            urlwatcher.run_jobs()
+            time.sleep(1.01)
+            with open(data_file_path, 'w') as f:
+                f.write('version-2')
+            urlwatcher.run_jobs()
+            time.sleep(1.01)
+            with open(data_file_path, 'w') as f:
+                f.write('version-3')
+            urlwatcher.run_jobs()
 
-        job = urlwatcher.jobs[0]
-        tries = urlwatcher.cache_storage.load(job.get_guid()).tries
-        assert tries == 1
+        # a reversion to within last 2 snapshots does not count as a change
+        with default_watcher(tempdir) as urlwatcher:
+            with open(data_file_path, 'w') as f:
+                f.write('version-2')
+            urlwatcher.run_jobs()
+            assert len(urlwatcher.report.job_states) == 1
+            assert urlwatcher.report.job_states[0].verb == 'unchanged'
 
-        # use an url that definitely exists
-        job = urlwatcher.jobs[0]
-        job.url = 'file://' + os.path.join(os.path.dirname(__file__), 'data', 'urlwatch.yaml')
-
-        urlwatcher.run_jobs()
-
-        job = urlwatcher.jobs[0]
-        tries = urlwatcher.cache_storage.load(job.get_guid()).tries
-        assert tries == 0
-    finally:
-        urlwatcher.cache_storage.close()
+        # a reversion to before the last 2 snapshots counts as a change
+        with default_watcher(tempdir) as urlwatcher:
+            with open(data_file_path, 'w') as f:
+                f.write('version-1')
+            urlwatcher.run_jobs()
+            assert len(urlwatcher.report.job_states) == 1
+            assert urlwatcher.report.job_states[0].verb == 'changed'

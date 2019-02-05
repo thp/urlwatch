@@ -1,4 +1,0 @@
-name: "invalid url"
-url: "https://invalid"
-max_tries: 2
----

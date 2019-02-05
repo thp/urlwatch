@@ -4,6 +4,8 @@ import yaml
 from urlwatch.filters import FilterBase
 from nose.tools import eq_
 
+from util import TEST_DATA_DIR
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,7 +34,7 @@ def test_filters():
         logger.debug('Actual result:\n%s', result)
         eq_(result, expected_result)
 
-    with open(os.path.join(os.path.dirname(__file__), 'data/filter_tests.yaml'), 'r', encoding='utf8') as fp:
+    with open(os.path.join(TEST_DATA_DIR, 'filter_tests.yaml'), 'r', encoding='utf8') as fp:
         filter_tests = yaml.load(fp)
     for test_name in filter_tests:
         yield check_filter, test_name

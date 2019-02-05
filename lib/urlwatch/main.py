@@ -78,7 +78,7 @@ class Urlwatch(object):
     A default config has been written to {config_yaml}.
     Use "{pkgname} --edit-config" to customize it.
         """.format(config_yaml=config, pkgname=pkgname))
-        if not os.path.isfile(urls) and not any(getattr(urlwatch_config, flag) for flag in (
+        if not os.path.isfile(urls) and not any(getattr(urlwatch_config, flag, None) for flag in (
                 'edit', 'add', 'features', 'edit_hooks', 'edit_config', 'gc_cache',
                 'smtp_login', 'telegram_chats', 'test_slack')):
             print("""

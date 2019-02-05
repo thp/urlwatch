@@ -10,10 +10,9 @@ from urlwatch import storage
 from urlwatch.storage import UrlsYaml, UrlsTxt
 from urlwatch.storage import YamlConfigStorage
 from urlwatch.storage import CacheDirStorage, CacheMiniDBStorage, CacheMiniDBStorage2
+from urlwatch.migration import migrate_urls, migrate_cache
 
-TEST_DIR = os.path.dirname(os.path.abspath(__file__))
-TEST_DATA_DIR = os.path.join(TEST_DIR, 'data')
-REPO_ROOT = os.path.dirname(TEST_DIR)
+from util import REPO_ROOT, TEST_DATA_DIR, TestConfig
 
 
 def test_save_load_jobs():
@@ -83,46 +82,57 @@ def test_rapid_cache_change():
 
 def test_migrate_urls():
     with tempfile.TemporaryDirectory() as tempdir:
-        urls_txt = os.path.join(TEST_DATA_DIR, 'urls.txt')
-        urls = os.path.join(tempdir, 'urls.yaml')
-        UrlsYaml(urls).save(UrlsTxt(urls_txt).load_secure())
-        assert {job.get_guid(): job.serialize() for job in UrlsYaml(urls).load_secure()} \
-            == {job.get_guid(): job.serialize() for job in UrlsTxt(urls_txt).load_secure()}
+        urls_old_src = os.path.join(TEST_DATA_DIR, 'urls.txt')
+        urls_old = os.path.join(tempdir, 'urls.txt')
+        urls_new = os.path.join(tempdir, 'urls.yaml')
+        shutil.copy2(urls_old_src, urls_old)
+
+        old_data = {job.get_guid(): job.serialize() for job in UrlsTxt(urls_old).load_secure()}
+        migrate_urls(TestConfig(tempdir))
+        new_data = {job.get_guid(): job.serialize() for job in UrlsYaml(urls_new).load_secure()}
+
+        assert old_data == new_data
 
 
 def test_migrate_cache_dir():
     with tempfile.TemporaryDirectory() as tempdir:
-        old_cache = os.path.join(TEST_DATA_DIR, 'cache')
+        old_cache_src = os.path.join(TEST_DATA_DIR, 'cache')
+        old_cache = os.path.join(tempdir, 'cache')
         new_cache = os.path.join(tempdir, 'cache.db')
+        shutil.copytree(old_cache_src, old_cache)
+
         old_cache_storage = CacheDirStorage(old_cache)
+        old_data = {guid: old_cache_storage.load(guid, -1)
+                    for guid in old_cache_storage.get_guids()}
+        migrate_cache(TestConfig(tempdir))
         new_cache_storage = CacheMiniDBStorage2(new_cache)
         try:
-            old_data = {guid: old_cache_storage.load(guid, -1)
-                        for guid in old_cache_storage.get_guids()}
-            new_cache_storage.restore(old_cache_storage.backup())
             new_data = {guid: new_cache_storage.load(guid, -1)
                         for guid in new_cache_storage.get_guids()}
-            assert old_data == new_data
         finally:
-            old_cache_storage.close()
             new_cache_storage.close()
+
+        assert old_data == new_data
 
 
 def test_migrate_cache_db():
     with tempfile.TemporaryDirectory() as tempdir:
-        old_cache = os.path.join(tempdir, 'cache-old.db')
-        new_cache = os.path.join(tempdir, 'cache.db')
-        old_cache_origin = os.path.join(TEST_DATA_DIR, 'cache-old.db')
-        shutil.copy(old_cache_origin, old_cache)
-        old_cache_storage = CacheMiniDBStorage(old_cache)
-        new_cache_storage = CacheMiniDBStorage2(new_cache)
+        old_cache_src = os.path.join(TEST_DATA_DIR, 'cache.db')
+        cache = os.path.join(tempdir, 'cache.db')
+        shutil.copy2(old_cache_src, cache)
+
+        old_cache_storage = CacheMiniDBStorage(cache)
         try:
             old_data = {guid: old_cache_storage.load(guid, -1)
                         for guid in old_cache_storage.get_guids()}
-            new_cache_storage.restore(old_cache_storage.backup())
-            new_data = {guid: new_cache_storage.load(guid, -1)
-                        for guid in new_cache_storage.get_guids()}
-            assert old_data == new_data
         finally:
             old_cache_storage.close()
+        migrate_cache(TestConfig(tempdir))
+        new_cache_storage = CacheMiniDBStorage2(cache)
+        try:
+            new_data = {guid: new_cache_storage.load(guid, -1)
+                        for guid in new_cache_storage.get_guids()}
+        finally:
             new_cache_storage.close()
+
+        assert old_data == new_data
