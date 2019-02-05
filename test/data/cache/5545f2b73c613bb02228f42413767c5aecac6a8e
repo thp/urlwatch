@@ -1,0 +1,9 @@
+<h2>Download</h2>
+<ul>
+<li><strong>Current version</strong>: <a href="https://github.com/thp/urlwatch/archive/2.15.tar.gz">urlwatch-2.15.tar.gz</a> (2018-10-23)</li>
+</ul>
+<ul>
+<li><strong>Git:</strong> <a href="https://github.com/thp/urlwatch">github.com/thp/urlwatch</a></li>
+<li><strong>PyPI:</strong> <a href="http://pypi.python.org/pypi/urlwatch">urlwatch</a></li>
+<li>..or check out <a href="https://repology.org/metapackage/urlwatch/versions">urlwatch in Linux distributions</a></li>
+</ul>

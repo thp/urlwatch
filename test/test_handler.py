@@ -1,19 +1,12 @@
 import sys
+import os
 from glob import glob
 
-import pycodestyle as pycodestyle
-from urlwatch.jobs import UrlJob, JobBase, ShellJob
-from urlwatch.storage import UrlsYaml, UrlsTxt
-
+import pycodestyle
 from nose.tools import raises, with_setup
 
-import tempfile
-import os
-import imp
-
-from urlwatch import storage
+from urlwatch.jobs import JobBase, ShellJob
 from urlwatch.config import BaseConfig
-from urlwatch.storage import YamlConfigStorage, CacheMiniDBStorage2
 from urlwatch.main import Urlwatch
 
 
@@ -22,56 +15,6 @@ def test_required_classattrs_in_subclasses():
         assert hasattr(subclass, '__kind__')
         assert hasattr(subclass, '__required__')
         assert hasattr(subclass, '__optional__')
-
-
-def test_save_load_jobs():
-    jobs = [
-        UrlJob(name='news', url='http://news.orf.at/'),
-        ShellJob(name='list homedir', command='ls ~'),
-        ShellJob(name='list proc', command='ls /proc'),
-    ]
-
-    # tempfile.NamedTemporaryFile() doesn't work on Windows
-    # because the returned file object cannot be opened again
-    fd, name = tempfile.mkstemp()
-    UrlsYaml(name).save(jobs)
-    jobs2 = UrlsYaml(name).load()
-    os.chmod(name, 0o777)
-    jobs3 = UrlsYaml(name).load_secure()
-    os.close(fd)
-    os.remove(name)
-
-    assert len(jobs2) == len(jobs)
-    # Assert that the shell jobs have been removed due to secure loading
-    if sys.platform != 'win32':
-        assert len(jobs3) == 1
-
-
-def test_load_config_yaml():
-    config_file = os.path.join(os.path.dirname(__file__), 'data', 'urlwatch.yaml')
-    if os.path.exists(config_file):
-        config = YamlConfigStorage(config_file)
-        assert config is not None
-        assert config.config is not None
-        assert config.config == storage.DEFAULT_CONFIG
-
-
-def test_load_urls_txt():
-    urls_txt = os.path.join(os.path.dirname(__file__), 'data', 'urls.txt')
-    if os.path.exists(urls_txt):
-        assert len(UrlsTxt(urls_txt).load_secure()) > 0
-
-
-def test_load_urls_yaml():
-    urls_yaml = 'share/urlwatch/examples/urls.yaml.example'
-    if os.path.exists(urls_yaml):
-        assert len(UrlsYaml(urls_yaml).load_secure()) > 0
-
-
-def test_load_hooks_py():
-    hooks_py = 'share/urlwatch/examples/hooks.py.example'
-    if os.path.exists(hooks_py):
-        imp.load_source('hooks', hooks_py)
 
 
 def test_pep8_conformance():

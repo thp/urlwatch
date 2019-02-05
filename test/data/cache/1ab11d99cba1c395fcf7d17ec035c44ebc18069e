@@ -1,0 +1,21 @@
+<div class="shrubbery">
+<h2 class="widget-title"><span aria-hidden="true" class="icon-news"></span>Latest News</h2>
+<p class="give-me-more"><a href="http://blog.python.org" title="More News">More</a></p>
+<ul class="menu">
+<li>
+<time datetime="2018-12-12T03:00:00.000002+00:00"><span class="say-no-more">2018-</span>12-12</time>
+<a href="http://feedproxy.google.com/~r/PythonInsider/~3/zUinRORskp0/python-372rc1-and-368rc1-now-available.html">Python&nbsp;3.7.2rc1&nbsp;and&nbsp;3.6.8rc1&nbsp;are now available. 3.7.2rc1 is the&nbsp;release preview&nbsp;of the next maintenance ...</a></li>
+<li>
+<time datetime="2018-12-11T17:17:44.000001+00:00"><span class="say-no-more">2018-</span>12-11</time>
+<a href="https://mailchi.mp/53049c7e2d8b/python-software-foundation-q4-newsletter">Python Software Foundation - Q4 Newsletter p{ margin:10px 0; padding:0; ...</a></li>
+<li>
+<time datetime="2018-12-11T15:46:00.000001+00:00"><span class="say-no-more">2018-</span>12-11</time>
+<a href="http://feedproxy.google.com/~r/PythonSoftwareFoundationNews/~3/etLIsx2u2K4/pyconza-2018-beautiful-community-in.html">This year I attended my second PyConZA, which is held ...</a></li>
+<li>
+<time datetime="2018-12-03T20:02:00+00:00"><span class="say-no-more">2018-</span>12-03</time>
+<a href="http://feedproxy.google.com/~r/PythonSoftwareFoundationNews/~3/z69UmaLym5A/november-2018-board-meeting-summary.html">On November 12th and 13th, ten of the thirteen PSF ...</a></li>
+<li>
+<time datetime="2018-11-19T21:03:00+00:00"><span class="say-no-more">2018-</span>11-19</time>
+<a href="http://feedproxy.google.com/~r/PythonSoftwareFoundationNews/~3/-mPHhqdPknk/pypi-security-and-accessibility-q1-2019.html">The&nbsp;Python Software Foundation&nbsp;Packaging Working Group&nbsp;has applied for and received a ...</a></li>
+</ul>
+</div>
