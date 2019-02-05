@@ -49,7 +49,7 @@ class Urlwatch(object):
         logger.info('Using %s for hooks', self.urlwatch_config.hooks)
         logger.info('Using %s as cache database', self.urlwatch_config.cache)
 
-        self.check_url()
+        self.check_directories()
 
         self.config_storage = YamlConfigStorage(self.urlwatch_config.config)
         self.cache_storage = CacheMiniDBStorage2(self.urlwatch_config.cache)
@@ -58,8 +58,6 @@ class Urlwatch(object):
         self.report = Report(self)
         self.jobs = None
 
-        self.check_directories()
-
         if not self.urlwatch_config.edit_hooks:
             self.load_hooks()
 
@@ -67,19 +65,20 @@ class Urlwatch(object):
             self.load_jobs()
 
     def check_directories(self):
-        if not os.path.isdir(self.urlwatch_config.urlwatch_dir):
-            os.makedirs(self.urlwatch_config.urlwatch_dir)
-        if not os.path.exists(self.urlwatch_config.config):
-            self.config_storage.write_default_config(self.urlwatch_config.config)
+        urlwatch_config = self.urlwatch_config
+        urlwatch_dir = urlwatch_config.urlwatch_dir
+        config = urlwatch_config.config
+        urls = urlwatch_config.urls
+        pkgname = urlwatch_config.pkgname
+        if not os.path.isdir(urlwatch_dir):
+            os.makedirs(urlwatch_dir)
+        if not os.path.exists(config):
+            self.config_storage.write_default_config(config)
             print("""
     A default config has been written to {config_yaml}.
     Use "{pkgname} --edit-config" to customize it.
-        """.format(config_yaml=self.urlwatch_config.config, pkgname=self.urlwatch_config.pkgname))
-
-    def check_url(self):
-        urls = self.urlwatch_config.urls
-        pkgname = self.urlwatch_config.pkgname
-        if not os.path.isfile(urls) and not any(getattr(self.urlwatch_config, flag) for flag in (
+        """.format(config_yaml=config, pkgname=pkgname))
+        if not os.path.isfile(urls) and not any(getattr(urlwatch_config, flag) for flag in (
                 'edit', 'add', 'features', 'edit_hooks', 'edit_config', 'gc_cache',
                 'smtp_login', 'telegram_chats', 'test_slack')):
             print("""
