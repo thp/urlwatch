@@ -20,7 +20,7 @@ command: "ls -al ~"
 #username: "myuser"
 #password: "secret"
 # Filters can be specified here, separated by comma (these are also from hooks.py)
-#filter: case:upper,indent:5
+#filter: customMatchUrlFilter,case:upper,indent:5
 ---
 # If you want to use spaces in URLs, you have to URL-encode them (e.g. %20)
 url: "http://example.org/With%20Spaces/"
