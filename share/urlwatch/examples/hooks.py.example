@@ -81,20 +81,26 @@ from urlwatch import reporters
 
 
 
-class CustomMatchUrlFilter(filters.AutoMatchFilter):
-    # The AutoMatchFilter will apply automatically to all filters
-    # that have the given properties set
-    MATCH = {'url': 'http://example.org/'}
-
-    def filter(self, data):
-        return data.replace('foo', 'bar')
-
-class CustomRegexMatchUrlFilter(filters.RegexMatchFilter):
-    # Similar to AutoMatchFilter
-    MATCH = {'url': re.compile('http://example.org/.*')}
-
-    def filter(self, data):
-        return data.replace('foo', 'bar')
+class CustomMatchUrlFilter(filters.AutoMatchFilter):                                                                                                           
+    # The AutoMatchFilter will apply automatically to all filters                                                                                              
+    # that have the given properties set                                                                                                                       
+                                                                                                                                                               
+    __kind__ = 'customMatchUrlFilter'                                                                                                                          
+                                                                                                                                                               
+    MATCH = {'url': 'http://example.org/'}                                                                                                                     
+                                                                                                                                                               
+    def filter(self, data, subfilter=None):                                                                                                                    
+        return data.replace('foo', 'bar')                                                                                                                      
+                                                                                                                                                               
+class CustomRegexMatchUrlFilter(filters.RegexMatchFilter):                                                                                                     
+    # Similar to AutoMatchFilter                                                                                                                               
+                                                                                                                                                               
+    __kind__ = 'customRegexMatchUrlFilter'                                                                                                                     
+                                                                                                                                                               
+    MATCH = {'url': re.compile('http://example.org/.*')}                                                                                                       
+                                                                                                                                                               
+    def filter(self, data, subfilter=None):                                                                                                                    
+        return data.replace('foo', 'bar') 
 
 
 class CustomTextFileReporter(reporters.TextReporter):
