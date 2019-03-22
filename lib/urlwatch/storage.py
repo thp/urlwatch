@@ -288,7 +288,7 @@ class BaseYamlFileStorage(BaseTextualFileStorage, metaclass=ABCMeta):
         filename = args[0]
         if filename is not None and os.path.exists(filename):
             with open(filename) as fp:
-                return yaml.load(fp)
+                return yaml.load(fp, Loader=yaml.SafeLoader)
 
 
 class YamlConfigStorage(BaseYamlFileStorage):
@@ -307,7 +307,7 @@ class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
         filename = args[0]
         if filename is not None and os.path.exists(filename):
             with open(filename) as fp:
-                return [JobBase.unserialize(job) for job in yaml.load_all(fp) if job is not None]
+                return [JobBase.unserialize(job) for job in yaml.load_all(fp, Loader=yaml.SafeLoader) if job is not None]
 
     def save(self, *args):
         jobs = args[0]
@@ -318,7 +318,7 @@ class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
 
     def load(self, *args):
         with open(self.filename) as fp:
-            return [JobBase.unserialize(job) for job in yaml.load_all(fp) if job is not None]
+            return [JobBase.unserialize(job) for job in yaml.load_all(fp, Loader=yaml.SafeLoader) if job is not None]
 
 
 class UrlsTxt(BaseTxtFileStorage, UrlsBaseFileStorage):
