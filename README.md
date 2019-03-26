@@ -343,7 +343,7 @@ These are the keys you need to configure:
 - `report/email/from`: `you@verified_domain.com` (edit accordingly)
 - `report/email/method`: `smtp`
 - `report/email/smtp/host`: `email-smtp.us-west-2.amazonaws.com` (edit accordingly)
-- `report/email/smtp/smtpuser`: `ABCDEFGHIJ1234567890` (edit accordingly)
+- `report/email/smtp/user`: `ABCDEFGHIJ1234567890` (edit accordingly)
 - `report/email/smtp/keyring`: `true`
 - `report/email/smtp/port`: `587` (25 or 465 also work)
 - `report/email/smtp/starttls`: `true`
