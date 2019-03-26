@@ -394,9 +394,7 @@ class EMailReporter(TextReporter):
             logger.debug('Not sending e-mail (no changes)')
             return
         if self.config['method'] == "smtp":
-            smtp_user = self.config['smtp']['smtpuser']
-            if not smtp_user:
-                smtp_user = self.config['smtp'].get('user', self.config['from'])
+            smtp_user = self.config['smtp'].get('user', self.config['from'])
             mailer = SMTPMailer(smtp_user, self.config['smtp']['host'], self.config['smtp']['port'],
                                 self.config['smtp']['starttls'], self.config['smtp']['keyring'])
         elif self.config['method'] == "sendmail":
