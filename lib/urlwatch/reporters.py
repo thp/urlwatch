@@ -35,6 +35,7 @@ import shlex
 import email.utils
 import itertools
 import logging
+import os
 import sys
 import time
 import cgi
@@ -109,19 +110,22 @@ class ReporterBase(object, metaclass=TrackSubClasses):
 
     def unified_diff(self, job_state):
         if job_state.job.diff_tool is not None:
-            with tempfile.NamedTemporaryFile() as old_file, tempfile.NamedTemporaryFile() as new_file:
-                old_file.write(job_state.old_data.encode('utf-8'))
-                old_file.flush()
-                new_file.write(job_state.new_data.encode('utf-8'))
-                new_file.flush()
-                cmdline = shlex.split(job_state.job.diff_tool) + [old_file.name, new_file.name]
-                proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE)
-                stdout, _ = proc.communicate()
-                # Diff tools return 0 for "nothing changed" or 1 for "files differ", anything else is an error
-                if proc.returncode in (0, 1):
-                    return stdout.decode('utf-8')
-                else:
-                    raise subprocess.CalledProcessError(result, cmdline)
+            with tempfile.TemporaryDirectory() as tmpdir:
+                old_file_path = os.path.join(tmpdir, 'old_file')
+                new_file_path = os.path.join(tmpdir, 'new_file')
+                with open(old_file_path, 'w+b') as old_file, open(new_file_path, 'w+b') as new_file:
+                    old_file.write(job_state.old_data.encode('utf-8'))
+                    old_file.flush()
+                    new_file.write(job_state.new_data.encode('utf-8'))
+                    new_file.flush()
+                    cmdline = shlex.split(job_state.job.diff_tool) + [old_file_path, new_file_path]
+                    proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE)
+                    stdout, _ = proc.communicate()
+                    # Diff tools return 0 for "nothing changed" or 1 for "files differ", anything else is an error
+                    if proc.returncode in (0, 1):
+                        return stdout.decode('utf-8')
+                    else:
+                        raise subprocess.CalledProcessError(proc.returncode, cmdline)
 
         timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
         timestamp_new = email.utils.formatdate(time.time(), localtime=1)
