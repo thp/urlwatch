@@ -115,17 +115,15 @@ class ReporterBase(object, metaclass=TrackSubClasses):
                 new_file_path = os.path.join(tmpdir, 'new_file')
                 with open(old_file_path, 'w+b') as old_file, open(new_file_path, 'w+b') as new_file:
                     old_file.write(job_state.old_data.encode('utf-8'))
-                    old_file.flush()
                     new_file.write(job_state.new_data.encode('utf-8'))
-                    new_file.flush()
-                    cmdline = shlex.split(job_state.job.diff_tool) + [old_file_path, new_file_path]
-                    proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE)
-                    stdout, _ = proc.communicate()
-                    # Diff tools return 0 for "nothing changed" or 1 for "files differ", anything else is an error
-                    if proc.returncode in (0, 1):
-                        return stdout.decode('utf-8')
-                    else:
-                        raise subprocess.CalledProcessError(proc.returncode, cmdline)
+                cmdline = shlex.split(job_state.job.diff_tool) + [old_file_path, new_file_path]
+                proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE)
+                stdout, _ = proc.communicate()
+                # Diff tools return 0 for "nothing changed" or 1 for "files differ", anything else is an error
+                if proc.returncode in (0, 1):
+                    return stdout.decode('utf-8')
+                else:
+                    raise subprocess.CalledProcessError(proc.returncode, cmdline)
 
         timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
         timestamp_new = email.utils.formatdate(time.time(), localtime=1)
