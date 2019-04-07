@@ -78,6 +78,7 @@ DEFAULT_CONFIG = {
             'method': 'smtp',
             'smtp': {
                 'host': 'localhost',
+                'user': '',
                 'port': 25,
                 'starttls': True,
                 'keyring': True,
