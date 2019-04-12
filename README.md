@@ -434,6 +434,22 @@ filter:
 ```
 
 
+COMPARE WITH SEVERAL LATEST SNAPSHOTS
+-------------------------------------
+If a webpage frequently changes between several known stable states, it may be
+desirable to have changes reported only if the webpage changes into a new
+unknown state. You can use `compared_versions` to do this.
+
+```yaml
+url: https://example.com/
+compared_versions: 3
+```
+
+In this example, changes are only reported if the webpage becomes different from
+the latest three distinct states. The differences are shown relative to the
+closest match.
+
+
 MIGRATION FROM URLWATCH 1.x
 ---------------------------
 

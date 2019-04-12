@@ -47,6 +47,7 @@ class JobState(object):
         self.verb = None
         self.old_data = None
         self.new_data = None
+        self.history_data = {}
         self.timestamp = None
         self.exception = None
         self.traceback = None
@@ -55,9 +56,12 @@ class JobState(object):
         self.error_ignored = False
 
     def load(self):
-        self.old_data, self.timestamp, self.tries, self.etag = self.cache_storage.load(self.job, self.job.get_guid())
+        guid = self.job.get_guid()
+        self.old_data, self.timestamp, self.tries, self.etag = self.cache_storage.load(self.job, guid)
         if self.tries is None:
             self.tries = 0
+        if self.job.compared_versions and self.job.compared_versions > 1:
+            self.history_data = self.cache_storage.get_history_data(guid, self.job.compared_versions)
 
     def save(self):
         if self.new_data is None and self.exception is not None:

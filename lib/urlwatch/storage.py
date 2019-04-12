@@ -458,6 +458,20 @@ class CacheMiniDBStorage(CacheStorage):
 
         return None, None, 0, None
 
+    def get_history_data(self, guid, count=1):
+        history = {}
+        if count < 1:
+            return history
+        for data, timestamp in CacheEntry.query(self.db, CacheEntry.c.data // CacheEntry.c.timestamp,
+                                                order_by=minidb.columns(CacheEntry.c.timestamp.desc, CacheEntry.c.tries.desc),
+                                                where=(CacheEntry.c.guid == guid)
+                                                & ((CacheEntry.c.tries == 0) | (CacheEntry.c.tries == None))):  # noqa
+            if data not in history:
+                history[data] = timestamp
+                if len(history) >= count:
+                    break
+        return history
+
     def save(self, job, guid, data, timestamp, tries, etag=None):
         self.db.save(CacheEntry(guid=guid, timestamp=timestamp, data=data, tries=tries, etag=etag))
         self.db.commit()
