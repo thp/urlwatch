@@ -63,6 +63,21 @@ xpath_text:
     expected_result: |-
         foo
         bar
+xpath_exclude:
+    filter:
+        xpath:
+            path: //div
+            exclude: //*[@class='excl'] | //*/@class
+    data: |
+        <html><head></head><body>
+        <div class="excl">you don't want to see me</div>
+        <div class="foo">f<span class="excl">interrupt!</span>o<span class="excl">interrupt!</span>o</div>
+        <div id="bar">bar</div>
+        </body></html>
+    expected_result: |
+        <div>foo</div>
+        
+        <div id="bar">bar</div>
 css:
     filter: css:div
     data: |
@@ -74,6 +89,19 @@ css:
         <div>foo</div>
         
         <div>bar</div>
+css_exclude:
+    filter:
+        css:
+            selector: div
+            exclude: '.excl, #bar'
+    data: |
+        <html><head></head><body>
+        <div class="excl">you don't want to see me</div>
+        <div class="foo">f<span class="excl">interrupt!</span>o<span class="excl">interrupt!</span>o</div>
+        <div id="bar">bar</div>
+        </body></html>
+    expected_result: |
+        <div class="foo">foo</div>
 grep:
     filter: grep:blue
     data: |
