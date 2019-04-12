@@ -4,7 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [2.17] -- 2019-04-12
+
+### Added
+- XPath/CSS: Support for excluding elements (#333, by Chenfeng Bao)
+- Add support for using external `diff_tool` on Windows (#373, by Chenfeng Bao)
+- Document how to use Amazon Simple E-Mail Service "SES" (by mborsetti)
+- Compare data with multiple old versions (`compared_versions`, #328, by Chenfeng Bao)
+
+### Fixed
+- YAML: Fix deprecation warnings (#367, by Florent Aide)
+- Updated manpage with new options: Authentication, filter tests (Fixes #351)
+- Text formatter: Do not emit empty lines for `line_length=0` (Fixes #357)
+
+### Changed
+- SMTP configuration fix: Only use smtp.user config if it's a non-empty value
 
 
 ## [2.16] -- 2019-01-27
