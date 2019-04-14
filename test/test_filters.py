@@ -33,6 +33,6 @@ def test_filters():
         eq_(result, expected_result)
 
     with open(os.path.join(os.path.dirname(__file__), 'data/filter_tests.yaml'), 'r', encoding='utf8') as fp:
-        filter_tests = yaml.load(fp)
+        filter_tests = yaml.load(fp, Loader=yaml.SafeLoader)
     for test_name in filter_tests:
         yield check_filter, test_name
