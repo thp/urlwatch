@@ -138,10 +138,10 @@ class UrlwatchCommand:
 
     def run_job(self):
         job = self._find_job(self.urlwatch_config.run_job)
-        job = job.with_defaults(self.urlwatcher.config_storage.config)
         if job is None:
             print('Not found: %r' % (self.urlwatch_config.run_job,))
             return 1
+        job = job.with_defaults(self.urlwatcher.config_storage.config)
         self.urlwatcher.jobs = [job]
         self.urlwatcher.run_jobs()
         self.urlwatcher.close()
