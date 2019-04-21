@@ -135,6 +135,16 @@ class UrlwatchCommand:
         # We do not save the job state or job on purpose here, since we are possibly modifying the job
         # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
         return 0
+    
+    def run_job(self):
+        job = self._find_job(self.urlwatch_config.run_job)
+        job = job.with_defaults(self.urlwatcher.config_storage.config)
+        if job is None:
+            print('Not found: %r' % (self.urlwatch_config.run_job,))
+            return 1
+        self.urlwatcher.jobs = [job]
+        self.urlwatcher.run_jobs()
+        self.urlwatcher.close()
 
     def modify_urls(self):
         save = True
@@ -177,6 +187,8 @@ class UrlwatchCommand:
             sys.exit(self.edit_hooks())
         if self.urlwatch_config.test_filter:
             sys.exit(self.test_filter())
+        if self.urlwatch_config.run_job:
+            sys.exit(self.run_job())
         if self.urlwatch_config.list:
             sys.exit(self.list_urls())
         if self.urlwatch_config.add is not None or self.urlwatch_config.delete is not None:
