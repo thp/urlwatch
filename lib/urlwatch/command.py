@@ -135,7 +135,7 @@ class UrlwatchCommand:
         # We do not save the job state or job on purpose here, since we are possibly modifying the job
         # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
         return 0
-    
+
     def run_job(self):
         job = self._find_job(self.urlwatch_config.run_job)
         job = job.with_defaults(self.urlwatcher.config_storage.config)
