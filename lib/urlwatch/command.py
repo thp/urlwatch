@@ -139,13 +139,13 @@ class UrlwatchCommand:
     def run_job(self):
         job = self._find_job(self.urlwatch_config.run_job)
         if job is None:
-            # Split the Input and Search for Jobs.
+            #Split the Input and Search for Jobs.
             job_items = [self._find_job(item) for item in self.urlwatch_config.run_job.split(',')]
-            # Remove all None Items
+            #Remove all None Items
             job_items = [job for job in job_items if job is not None]
             job_items = [item.with_defaults(self.urlwatcher.config_storage.config) for item in job_items]
 
-        # Check if Job is None or the Joblist is empty
+        #Check if Job is None or the Joblist is empty
         if job is None and len(job_items) == 0:
             print('Not found: %r' % (self.urlwatch_config.run_job,))
             return 1
