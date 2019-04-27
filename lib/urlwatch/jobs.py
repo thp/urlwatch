@@ -193,7 +193,10 @@ class ShellJob(Job):
         if result != 0:
             raise ShellError(result)
 
-        return stdout_data.decode('utf-8')
+        if 'pdf2text' in self.filter or any('pdf2text' in subfilter for subfilter in self.filter):
+            return stdout_data
+        else:
+            return stdout_data.decode('utf-8')
 
 
 class UrlJob(Job):
@@ -277,6 +280,11 @@ class UrlJob(Job):
 
         # Save ETag from response into job_state, which will be saved in cache
         job_state.etag = response.headers.get('ETag')
+
+        # If 'pdf2text' filter is selected, return bytes content as opposed to str
+        # as it's required by the library used by that filter
+        if 'pdf2text' in self.filter or any('pdf2text' in subfilter for subfilter in self.filter):
+            return response.content
 
         # If we can't find the encoding in the headers, requests gets all
         # old-RFC-y and assumes ISO-8859-1 instead of UTF-8. Use the old
