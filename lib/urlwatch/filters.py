@@ -195,7 +195,7 @@ class JsonFormatFilter(FilterBase):
         if subfilter is not None:
             indentation = int(subfilter)
         parsed_json = json.loads(data)
-        return json.dumps(parsed_json, sort_keys=True, indent=indentation, separators=(',', ': '))
+        return json.dumps(parsed_json, ensure_ascii=False, sort_keys=True, indent=indentation, separators=(',', ': '))
 
 
 class GrepFilter(FilterBase):
