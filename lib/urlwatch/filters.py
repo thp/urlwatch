@@ -186,7 +186,7 @@ class Pdf2TextFilter(FilterBase):
         # data must be bytes
 
         if subfilter is None:
-          password = ''
+            password = ''
         elif isinstance(subfilter, dict):
             password = subfilter['password']
         elif isinstance(subfilter, str):
