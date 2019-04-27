@@ -111,7 +111,7 @@ url: https://example.org/
 filter: html2text,grep:a\054b:,strip
 ```
 
-If you want to extract only the body tag you can use this filer:
+If you want to extract only the body tag you can use this filter:
 ```yaml
 url: https://thp.io/2008/urlwatch/
 filter: element-by-tag:body
@@ -155,6 +155,26 @@ filter: css:body
 
 Some limitations and extensions exist as explained in
 [cssselect's documentation](https://cssselect.readthedocs.io/en/latest/#supported-selectors).
+
+To monitor the text of a PDF file, you use the `pdf2text` filter. It requires 
+the installation of the [pdftotext](https://github.com/jalan/pdftotext/blob/master/README.md#pdftotext)
+library; to install it first to check its 
+[website](https://github.com/jalan/pdftotext/blob/master/README.md#os-dependencies)
+for OS-specific dependencies.
+
+```yaml
+url: https://example.net/sample.pdf
+filter: pdf2text
+```
+
+If the PDF file is password protected, you can specify its password:
+
+```yaml
+url: https://example.net/sample.pdf
+filter: 
+- pdf2text:
+   password: mypassword
+```
 
 In some cases, it might be useful to ignore (temporary) network errors to
 avoid notifications being sent. While there is a `display.error` config
