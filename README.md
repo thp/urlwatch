@@ -228,7 +228,7 @@ registering urlwatch as an application on your Pushover account(https://pushover
 PUSHBULLET
 --------
 
-Pushbullet notification are configured similarly to Pushover (see above).
+Pushbullet notifications are configured similarly to Pushover (see above).
 You'll need to add to the config your Pushbullet Access Token, which you 
 can generate at https://www.pushbullet.com/#settings
 
@@ -270,7 +270,7 @@ Don't forget to also enable the reporter.
 SLACK
 -----
 
-Slack nofifications are configured using "Slack Incoming Webhooks". Here is a
+Slack notifications are configured using "Slack Incoming Webhooks". Here is a
 sample configuration:
 
 ```yaml
