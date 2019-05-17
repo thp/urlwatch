@@ -383,6 +383,8 @@ class EMailReporter(TextReporter):
 
     def submit(self):
         filtered_job_states = list(self.report.get_filtered_job_states(self.job_states))
+        cfg = self.report.config['report']['email']
+        subject_length = cfg['subject_length']
 
         subject_args = {
             'count': len(filtered_job_states),
@@ -407,9 +409,10 @@ class EMailReporter(TextReporter):
         if self.config['html']:
             body_html = '\n'.join(self.convert(HtmlReporter).submit())
 
-            msg = mailer.msg_html(self.config['from'], self.config['to'], subject, body_text, body_html)
+            msg = mailer.msg_html(self.config['from'], self.config['to'], subject[:subject_length],
+                                  body_text, body_html)
         else:
-            msg = mailer.msg_plain(self.config['from'], self.config['to'], subject, body_text)
+            msg = mailer.msg_plain(self.config['from'], self.config['to'], subject[:subject_length], body_text)
 
         mailer.send(msg)
 

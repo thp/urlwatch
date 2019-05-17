@@ -75,6 +75,7 @@ DEFAULT_CONFIG = {
             'to': '',
             'from': '',
             'subject': '{count} changes: {jobs}',
+            'subject_length': 512,
             'method': 'smtp',
             'smtp': {
                 'host': 'localhost',
