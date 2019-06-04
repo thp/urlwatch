@@ -93,7 +93,7 @@ class JobBase(object, metaclass=TrackSubClasses):
 
             for msg, value in (('    Required keys: ', sc.__required__), ('    Optional keys: ', sc.__optional__)):
                 if value:
-                    values = ('\n' + (len(msg)*' ')).join(textwrap.wrap(', '.join(value), 79-len(msg)))
+                    values = ('\n' + (len(msg) * ' ')).join(textwrap.wrap(', '.join(value), 79 - len(msg)))
                     result.append('%s%s' % (msg, values))
             result.append('')
         return '\n'.join(result)
