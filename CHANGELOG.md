@@ -6,6 +6,9 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+### Added
+- New filter: `re.sub` that can replace/remove strings using regular expressions
+
 ### Fixed
 - Fix `--test-filter` when the specified job is not found
 
