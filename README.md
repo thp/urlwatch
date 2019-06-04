@@ -421,6 +421,30 @@ filter:
   - html2text: re
 ```
 
+To match an element in an [XML namespace](https://www.w3.org/TR/xml-names/),
+use a namespace prefix before the tag name. Use a `:` to seperate the namespace
+prefix and the tag name in an XPath expression, and use a `|` in a CSS selector.
+```yaml
+url: 'https://www.wired.com/feed/rss'
+filter:
+  - xpath:
+      path: '//item/media:keywords'
+      method: xml
+      namespaces:
+        media: http://search.yahoo.com/mrss/
+```
+```yaml
+url: 'https://www.wired.com/feed/rss'
+filter:
+  - css:
+      selector: 'item > media|keywords'
+      method: xml
+      namespaces:
+        media: http://search.yahoo.com/mrss/
+```
+Alternatively, use the XPath expression `//*[name()='<tag_name>']` to bypass
+the namespace entirely.
+
 Another useful option with XPath and CSS filters is `exclude`. Elements selected
 by this `exclude` expression are removed from the final result. For example, the
 following job will not have any `<a>` tag in its results:

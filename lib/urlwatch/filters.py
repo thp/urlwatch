@@ -39,6 +39,7 @@ import json
 
 from enum import Enum
 from lxml import etree
+from lxml.cssselect import CSSSelector
 
 from .util import TrackSubClasses
 
@@ -372,31 +373,28 @@ class LxmlParser:
 
     def __init__(self, filter_kind, subfilter, expr_key):
         self.filter_kind = filter_kind
-        self.expression, self.method, self.exclude = self.parse_subfilter(
-            filter_kind, subfilter, expr_key, self.EXPR_NAMES[filter_kind])
-        self.parser = (etree.HTMLParser if self.method == 'html' else etree.XMLParser)()
-        self.data = ''
-
-    @staticmethod
-    def parse_subfilter(filter_kind, subfilter, expr_key, expr_name):
         if subfilter is None:
-            raise ValueError('Need %s for filtering' % (expr_name,))
+            raise ValueError('Need %s for filtering' % (self.EXPR_NAMES[filter_kind],))
         if isinstance(subfilter, str):
-            expression = subfilter
-            method = 'html'
-            exclude = None
+            self.expression = subfilter
+            self.method = 'html'
+            self.exclude = None
+            self.namespaces = None
         elif isinstance(subfilter, dict):
             if expr_key not in subfilter:
-                raise ValueError('Need %s for filtering' % (expr_name,))
-            expression = subfilter[expr_key]
-            method = subfilter.get('method', 'html')
-            exclude = subfilter.get('exclude')
-            if method not in ('html', 'xml'):
-                raise ValueError('%s method must be "html" or "xml", got %r' % (filter_kind, method))
+                raise ValueError('Need %s for filtering' % (self.EXPR_NAMES[filter_kind],))
+            self.expression = subfilter[expr_key]
+            self.method = subfilter.get('method', 'html')
+            self.exclude = subfilter.get('exclude')
+            self.namespaces = subfilter.get('namespaces')
+            if self.method not in ('html', 'xml'):
+                raise ValueError('%s method must be "html" or "xml", got %r' % (filter_kind, self.method))
+            if self.method == 'html' and self.namespaces is not None:
+                raise ValueError('Namespace prefixes only supported with "xml" method.')
         else:
             raise ValueError('%s subfilter must be a string or dict' % (filter_kind,))
-
-        return expression, method, exclude
+        self.parser = (etree.HTMLParser if self.method == 'html' else etree.XMLParser)()
+        self.data = ''
 
     def feed(self, data):
         self.data += data
@@ -430,9 +428,8 @@ class LxmlParser:
                     parent.text = parent.text + element.tail if parent.text else element.tail
             parent.remove(element)
 
-    @classmethod
-    def _reevaluate(cls, element):
-        if cls._orphaned(element):
+    def _reevaluate(self, element):
+        if self._orphaned(element):
             return None
         if isinstance(element, etree._ElementUnicodeResult):
             parent = element.getparent()
@@ -447,8 +444,7 @@ class LxmlParser:
         else:
             return element
 
-    @staticmethod
-    def _orphaned(element):
+    def _orphaned(self, element):
         if isinstance(element, etree._ElementUnicodeResult):
             parent = element.getparent()
             if ((element.is_tail and parent.tail is None)
@@ -460,7 +456,7 @@ class LxmlParser:
         try:
             tree = element.getroottree()
             path = tree.getpath(element)
-            return element is not tree.xpath(path)[0]
+            return element is not tree.xpath(path, namespaces=self.namespaces)[0]
         except (ValueError, IndexError):
             return True
 
@@ -478,11 +474,13 @@ class LxmlParser:
             return []
         excluded_elems = None
         if self.filter_kind == 'css':
-            selected_elems = root.cssselect(self.expression)
-            excluded_elems = root.cssselect(self.exclude) if self.exclude else None
+            selected_elems = CSSSelector(self.expression,
+                                         namespaces=self.namespaces).evaluate(root)
+            excluded_elems = CSSSelector(self.exclude,
+                                         namespaces=self.namespaces).evaluate(root) if self.exclude else None
         elif self.filter_kind == 'xpath':
-            selected_elems = root.xpath(self.expression)
-            excluded_elems = root.xpath(self.exclude) if self.exclude else None
+            selected_elems = root.xpath(self.expression, namespaces=self.namespaces)
+            excluded_elems = root.xpath(self.exclude, namespaces=self.namespaces) if self.exclude else None
         if excluded_elems is not None:
             for el in excluded_elems:
                 self._remove_element(el)
