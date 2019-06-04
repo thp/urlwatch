@@ -35,6 +35,7 @@ import os
 import re
 import subprocess
 import requests
+import textwrap
 import urlwatch
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -85,12 +86,16 @@ class JobBase(object, metaclass=TrackSubClasses):
     def job_documentation(cls):
         result = []
         for sc in TrackSubClasses.sorted_by_kind(cls):
-            result.extend((
-                '  * %s - %s' % (sc.__kind__, sc.__doc__),
-                '    Required keys: %s' % (', '.join(sc.__required__),),
-                '    Optional keys: %s' % (', '.join(sc.__optional__),),
-                '',
-            ))
+            if sc.__doc__:
+                result.append('  * %s - %s' % (sc.__kind__, sc.__doc__))
+            else:
+                result.append('  * %s' % (sc.__kind__,))
+
+            for msg, value in (('    Required keys: ', sc.__required__), ('    Optional keys: ', sc.__optional__)):
+                if value:
+                    values = ('\n' + (len(msg) * ' ')).join(textwrap.wrap(', '.join(value), 79 - len(msg)))
+                    result.append('%s%s' % (msg, values))
+            result.append('')
         return '\n'.join(result)
 
     def get_location(self):

@@ -228,7 +228,7 @@ registering urlwatch as an application on your Pushover account(https://pushover
 PUSHBULLET
 --------
 
-Pushbullet notification are configured similarly to Pushover (see above).
+Pushbullet notifications are configured similarly to Pushover (see above).
 You'll need to add to the config your Pushbullet Access Token, which you 
 can generate at https://www.pushbullet.com/#settings
 
@@ -270,7 +270,7 @@ Don't forget to also enable the reporter.
 SLACK
 -----
 
-Slack nofifications are configured using "Slack Incoming Webhooks". Here is a
+Slack notifications are configured using "Slack Incoming Webhooks". Here is a
 sample configuration:
 
 ```yaml
@@ -448,6 +448,36 @@ compared_versions: 3
 In this example, changes are only reported if the webpage becomes different from
 the latest three distinct states. The differences are shown relative to the
 closest match.
+
+
+REMOVE OR REPLACE TEXT USING REGULAR EXPRESSIONS
+------------------------------------------------
+
+Just like Python's `re.sub` function, there's the possibility to apply a regular
+expression and either remove of replace the matched text. The following example
+applies the filter 3 times:
+
+ 1. Just specifying a string as the value will replace the matches with the empty string.
+ 2. Simple patterns can be replaced with another string using "pattern" as the expression and "repl" as the replacement.
+ 3. You can use groups (`()`) and back-reference them with `\1` (etc..) to put groups into the replacement string.
+
+All features are described in Python's [re.sub](https://docs.python.org/3/library/re.html#re.sub)
+documentation (the `pattern` and `repl` values are passed to this function as-is, with the value
+of `repl` defaulting to the empty string).
+
+
+```yaml
+kind: url
+url: https://example.com/
+filter:
+    - re.sub: '\s*href="[^"]*"'
+    - re.sub:
+        pattern: '<h1>'
+        repl: 'HEADING 1: '
+    - re.sub:
+        pattern: '</([^>]*)>'
+        repl: '<END OF TAG \1>'
+```
 
 
 MIGRATION FROM URLWATCH 1.x

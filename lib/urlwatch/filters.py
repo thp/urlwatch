@@ -512,3 +512,20 @@ class XPathFilter(FilterBase):
         lxml_parser = LxmlParser('xpath', subfilter, 'path')
         lxml_parser.feed(data)
         return lxml_parser.get_filtered_data()
+
+
+class RegexSub(FilterBase):
+    """Replace text with regular expressions using Python's re.sub"""
+
+    __kind__ = 're.sub'
+
+    def filter(self, data, subfilter=None):
+        if subfilter is None:
+            raise ValueError('{} needs a subfilter'.format(self.__kind__))
+
+        # Allow for just specifying a regular expression (that will be removed)
+        if isinstance(subfilter, str):
+            subfilter = {'pattern': subfilter}
+
+        # Default: Replace with empty string if no "repl" value is set
+        return re.sub(subfilter.get('pattern'), subfilter.get('repl', ''), data)
