@@ -6,6 +6,9 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+### Fixed
+- Fix `--test-filter` when the specified job is not found
+
 
 ## [2.17] -- 2019-04-12
 
