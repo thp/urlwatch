@@ -9,6 +9,9 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Fixed
 - Fix `--test-filter` when the specified job is not found
 
+### Changed
+- Nicer formatting of `--features` for jobs with no docstring or many keys
+
 
 ## [2.17] -- 2019-04-12
 
