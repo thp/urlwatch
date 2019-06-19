@@ -455,6 +455,7 @@ class PushoverReport(WebServiceReporter):
     def web_service_submit(self, service, title, body):
         sound = self.config['sound']
         device = self.config['device']
+        if device == 'All': device = None
         msg = service.create_message(title=title, message=body, html=True, sound=sound, device=device)
         msg.send()
 
