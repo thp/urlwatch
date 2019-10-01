@@ -23,7 +23,7 @@ DEPENDENCIES
 
 urlwatch 2 requires:
 
-  * Python 3.3 or newer
+  * Python 3.5 or newer
   * [PyYAML](http://pyyaml.org/)
   * [minidb](https://thp.io/2010/minidb/)
   * [requests](http://python-requests.org/)
