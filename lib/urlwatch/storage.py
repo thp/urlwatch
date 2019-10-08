@@ -64,7 +64,7 @@ DEFAULT_CONFIG = {
             'footer': True,
             'minimal': False,
         },
-        
+
         'html': {
             'diff': 'unified',  # "unified" or "table"
         },
