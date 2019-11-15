@@ -115,3 +115,10 @@ class CustomHtmlFileReporter(reporters.HtmlReporter):
     def submit(self):
         with open(self.config['filename'], 'w') as fp:
             fp.write('\n'.join(super().submit()))
+
+
+class SimpleReplaceFilter(filters.FilterBase):
+    __kind__ = 'simple-replace-filter'
+    def filter(self, data, subfilter=None):
+        data = re.sub(subfilter.get('search'), subfilter.get('replace'), data)
+        return data
