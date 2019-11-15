@@ -40,3 +40,10 @@ data:
   button: Search
   q: something
   category: 4
+---
+# Use the simple-replace-filter to introduce line breaks
+url: "http://example.com/foo"
+filter:
+  - simple-replace-filter:
+        search: "\<br\>"
+        replace: "\n"
