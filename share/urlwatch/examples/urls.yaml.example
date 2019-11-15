@@ -45,5 +45,5 @@ data:
 url: "http://example.com/foo"
 filter:
   - simple-replace-filter:
-        search: "\<br\>"
+        search: "<br>"
         replace: "\n"
