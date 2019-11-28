@@ -38,7 +38,7 @@ import logging
 import os
 import sys
 import time
-import cgi
+import html
 import functools
 
 import requests
@@ -140,8 +140,8 @@ class SafeHtml(object):
         return self.s
 
     def format(self, *args, **kwargs):
-        return str(self).format(*(cgi.escape(str(arg)) for arg in args),
-                                **{k: cgi.escape(str(v)) for k, v in kwargs.items()})
+        return str(self).format(*(html.escape(str(arg)) for arg in args),
+                                **{k: html.escape(str(v)) for k, v in kwargs.items()})
 
 
 class HtmlReporter(ReporterBase):
