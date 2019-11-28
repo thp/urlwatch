@@ -209,7 +209,7 @@ class UrlJob(Job):
     __required__ = ('url',)
     __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
                     'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding', 'timeout',
-                    'ignore_timeout_errors', 'ignore_toomanyredirects')
+                    'ignore_timeout_errors', 'ignore_too_many_redirects')
 
     LOCATION_IS_URL = True
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
@@ -327,7 +327,7 @@ class UrlJob(Job):
             return True
         if isinstance(exception, requests.exceptions.Timeout) and self.ignore_timeout_errors:
             return True
-        if isinstance(exception, requests.exceptions.TooManyRedirects) and self.ignore_toomanyredirects:
+        if isinstance(exception, requests.exceptions.TooManyRedirects) and self.ignore_too_many_redirects:
             return True
         elif isinstance(exception, requests.exceptions.HTTPError):
             status_code = exception.response.status_code
