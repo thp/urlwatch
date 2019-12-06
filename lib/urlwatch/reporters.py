@@ -397,8 +397,13 @@ class EMailReporter(TextReporter):
             return
         if self.config['method'] == "smtp":
             smtp_user = self.config['smtp'].get('user', None) or self.config['from']
+            # Legacy support: The current smtp "auth" setting was previously called "keyring"
+            if 'keyring' in self.config['smtp']:
+                logger.info('The SMTP config key "keyring" is now called "auth".')
+            use_auth = self.config['smtp'].get('auth', self.config['smtp'].get('keyring', False))
             mailer = SMTPMailer(smtp_user, self.config['smtp']['host'], self.config['smtp']['port'],
-                                self.config['smtp']['starttls'], self.config['smtp']['keyring'])
+                                self.config['smtp']['starttls'], use_auth,
+                                self.config['smtp'].get('insecure_password'))
         elif self.config['method'] == "sendmail":
             mailer = SendmailMailer(self.config['sendmail']['path'])
         else:

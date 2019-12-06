@@ -256,8 +256,8 @@ class UrlwatchCommand:
                 print('Please set the method to SMTP for the e-mail reporter.')
                 success = False
 
-            if not smtp_config['keyring']:
-                print('Keyring authentication must be enabled for SMTP.')
+            if not smtp_config.get('auth', smtp_config.get('keyring', False)):
+                print('Authentication must be enabled for SMTP.')
                 success = False
 
             smtp_hostname = smtp_config['host']
@@ -272,6 +272,10 @@ class UrlwatchCommand:
 
             if not success:
                 sys.exit(1)
+
+            if 'insecure_password' in smtp_config:
+                print('The password is already set in the config (key "insecure_password").')
+                sys.exit(0)
 
             if have_password(smtp_hostname, smtp_username):
                 message = 'Password for %s / %s already set, update? [y/N] ' % (smtp_username, smtp_hostname)
