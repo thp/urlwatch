@@ -35,6 +35,7 @@ import os
 import re
 import subprocess
 import requests
+import textwrap
 import urlwatch
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -85,12 +86,16 @@ class JobBase(object, metaclass=TrackSubClasses):
     def job_documentation(cls):
         result = []
         for sc in TrackSubClasses.sorted_by_kind(cls):
-            result.extend((
-                '  * %s - %s' % (sc.__kind__, sc.__doc__),
-                '    Required keys: %s' % (', '.join(sc.__required__),),
-                '    Optional keys: %s' % (', '.join(sc.__optional__),),
-                '',
-            ))
+            if sc.__doc__:
+                result.append('  * %s - %s' % (sc.__kind__, sc.__doc__))
+            else:
+                result.append('  * %s' % (sc.__kind__,))
+
+            for msg, value in (('    Required keys: ', sc.__required__), ('    Optional keys: ', sc.__optional__)):
+                if value:
+                    values = ('\n' + (len(msg) * ' ')).join(textwrap.wrap(', '.join(value), 79 - len(msg)))
+                    result.append('%s%s' % (msg, values))
+            result.append('')
         return '\n'.join(result)
 
     def get_location(self):
@@ -206,7 +211,8 @@ class UrlJob(Job):
 
     __required__ = ('url',)
     __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
-                    'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding', 'timeout')
+                    'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding', 'timeout',
+                    'ignore_timeout_errors', 'ignore_too_many_redirects')
 
     LOCATION_IS_URL = True
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
@@ -326,6 +332,10 @@ class UrlJob(Job):
 
     def ignore_error(self, exception):
         if isinstance(exception, requests.exceptions.ConnectionError) and self.ignore_connection_errors:
+            return True
+        if isinstance(exception, requests.exceptions.Timeout) and self.ignore_timeout_errors:
+            return True
+        if isinstance(exception, requests.exceptions.TooManyRedirects) and self.ignore_too_many_redirects:
             return True
         elif isinstance(exception, requests.exceptions.HTTPError):
             status_code = exception.response.status_code
