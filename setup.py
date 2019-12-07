@@ -53,8 +53,10 @@ class InstallDependencies(cmd.Command):
             from pip._internal import main
         except ImportError:
             from pip import main
-        main(['install', '--upgrade'] + m['install_requires'])
-
+        try:
+            main(['install', '--upgrade'] + m['install_requires'])
+        except TypeError:  # recent pip
+            main.main(['install', '--upgrade'] + m['install_requires'])
 
 m['cmdclass'] = {'install_dependencies': InstallDependencies}
 
