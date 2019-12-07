@@ -58,6 +58,7 @@ class InstallDependencies(cmd.Command):
         except TypeError:  # recent pip
             main.main(['install', '--upgrade'] + m['install_requires'])
 
+
 m['cmdclass'] = {'install_dependencies': InstallDependencies}
 
 del m['copyright']
