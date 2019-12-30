@@ -92,7 +92,7 @@ class SMTPMailer(Mailer):
                 raise ValueError('No password available in keyring for {}, {}'.format(self.smtp_server, self.smtp_user))
             s.login(self.smtp_user, passwd)
 
-        s.sendmail(msg['From'], [msg['To']], msg.as_string())
+        s.sendmail(msg['From'], msg['To'].split(','), msg.as_string())
         s.quit()
 
 
