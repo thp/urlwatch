@@ -99,7 +99,7 @@ class UrlwatchCommand:
                 pretty_name = job.pretty_name()
                 location = job.get_location()
                 if pretty_name != location:
-                    print('%d: %s (%s)' % (idx + 1, pretty_name, location))
+                    print('%d: %s ( %s )' % (idx + 1, pretty_name, location))
                 else:
                     print('%d: %s' % (idx + 1, pretty_name))
         return 0
