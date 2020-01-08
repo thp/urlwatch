@@ -249,7 +249,7 @@ class TextReporter(ReporterBase):
                 pretty_name = job_state.job.pretty_name()
                 location = job_state.job.get_location()
                 if pretty_name != location:
-                    location = '%s (%s)' % (pretty_name, location)
+                    location = '%s ( %s )' % (pretty_name, location)
                 yield ': '.join((job_state.verb.upper(), location))
             return
 
@@ -296,7 +296,7 @@ class TextReporter(ReporterBase):
         pretty_name = job_state.job.pretty_name()
         location = job_state.job.get_location()
         if pretty_name != location:
-            location = '%s (%s)' % (pretty_name, location)
+            location = '%s ( %s )' % (pretty_name, location)
 
         pretty_summary = ': '.join((job_state.verb.upper(), pretty_name))
         summary = ': '.join((job_state.verb.upper(), location))
