@@ -81,7 +81,7 @@ DEFAULT_CONFIG = {
                 'user': '',
                 'port': 25,
                 'starttls': True,
-                'keyring': True,
+                'auth': True,
             },
             'sendmail': {
                 'path': 'sendmail',

@@ -328,7 +328,7 @@ These are the keys you need to configure (see #158):
 - `report/email/from`: `your.username@gmail.com` (edit accordingly)
 - `report/email/method`: `smtp`
 - `report/email/smtp/host`: `smtp.gmail.com`
-- `report/email/smtp/keyring`: `true`
+- `report/email/smtp/auth`: `true`
 - `report/email/smtp/port`: `587`
 - `report/email/smtp/starttls`: `true`
 - `report/email/to`: The e-mail address you want to send reports to
@@ -350,13 +350,37 @@ These are the keys you need to configure:
 - `report/email/method`: `smtp`
 - `report/email/smtp/host`: `email-smtp.us-west-2.amazonaws.com` (edit accordingly)
 - `report/email/smtp/user`: `ABCDEFGHIJ1234567890` (edit accordingly)
-- `report/email/smtp/keyring`: `true`
+- `report/email/smtp/auth`: `true`
 - `report/email/smtp/port`: `587` (25 or 465 also work)
 - `report/email/smtp/starttls`: `true`
 - `report/email/to`: The e-mail address you want to send reports to
 
 The password is not stored in the config file, but in your keychain. To store
 the password, run: `urlwatch --smtp-login` and enter your password.
+
+
+SMTP LOGIN WITHOUT KEYRING
+--------------------------
+
+If for whatever reason you cannot use a keyring to store your password
+(for example, when using it from a `cron` job)
+you can also set the `insecure_password` option in the SMTP config:
+
+- `report/email/smtp/auth`: `true`
+- `report/email/smtp/insecure_password`: `secret123`
+
+The `insecure_password` key will be preferred over the data stored in
+the keyring. Please note that as the name says, storing the password
+as plaintext in the configuration is insecure and bad practice, but
+for an e-mail account that's only dedicated for sending mails this
+might be a way. **Never ever use this with your your primary
+e-mail account!** Seriously! Create a throw-away GMail (or other)
+account just for sending out those e-mails or use local `sendmail` with
+a mail server configured instead of relying on SMTP and password auth.
+
+Note that this makes it really easy for your password to be picked up
+by software running on your machine, by other users logged into the system
+and/or for the password to appear in log files accidentally.
 
 
 TESTING FILTERS
