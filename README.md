@@ -317,6 +317,7 @@ matrix:
   homeserver: https://matrix.org
   access_token: "YOUR_TOKEN_HERE"
   room_id: "!roomroomroom:matrix.org"
+  enabled: true
 ```
 
 You will probably want to use the following configuration for the `markdown` reporter, if you intend to post change
@@ -327,6 +328,7 @@ markdown:
   details: false
   footer: false
   minimal: true
+  enabled: true
 ```
 
 BROWSER
