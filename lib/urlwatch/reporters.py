@@ -724,6 +724,9 @@ class MatrixReporter(MarkdownReporter):
             logger.debug('Not calling Matrix API (no changes)')
             return
 
+        if len(body_markdown) > self.MAX_LENGTH:
+            body_markdown = body_markdown[:self.MAX_LENGTH]
+
         client_api = matrix_client.api.MatrixHttpApi(homeserver_url, access_token)
 
         if Markdown is not None:
