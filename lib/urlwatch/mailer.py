@@ -105,7 +105,7 @@ class SendmailMailer(Mailer):
         self.sendmail_path = sendmail_path
 
     def send(self, msg):
-        p = subprocess.Popen([self.sendmail_path, '-t', '-oi'],
+        p = subprocess.Popen([self.sendmail_path, '-oi', msg['To']],
                              stdin=subprocess.PIPE,
                              stderr=subprocess.PIPE,
                              universal_newlines=True)
