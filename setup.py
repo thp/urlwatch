@@ -22,7 +22,7 @@ if sys.version_info < (3, 4):
     m['install_requires'].extend(['enum34'])
 if sys.platform == 'win32':
     m['install_requires'].extend(['colorama'])
-m['scripts'] = ['urlwatch']
+m['entry_points'] = {"console_scripts": ["urlwatch=urlwatch.cli:main"]}
 m['package_dir'] = {'': 'lib'}
 m['packages'] = ['urlwatch']
 m['python_requires'] = '>3.3.0'

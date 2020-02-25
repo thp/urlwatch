@@ -84,7 +84,7 @@ def setup_logger(verbose):
         root_logger.info('turning on verbose logging mode')
 
 
-if __name__ == '__main__':
+def main():
     config_file = os.path.join(urlwatch_dir, CONFIG_FILE)
     urls_file = os.path.join(urlwatch_dir, URLS_FILE)
     hooks_file = os.path.join(urlwatch_dir, HOOKS_FILE)
@@ -109,3 +109,7 @@ if __name__ == '__main__':
 
     # run urlwatcher
     urlwatch_command.run()
+
+
+if __name__ == '__main__':
+    main()

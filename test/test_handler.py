@@ -79,7 +79,6 @@ def test_pep8_conformance():
     style = pycodestyle.StyleGuide(ignore=['E501', 'E402', 'W503'])
 
     py_files = [y for x in os.walk(os.path.abspath('.')) for y in glob(os.path.join(x[0], '*.py'))]
-    py_files.append(os.path.abspath('urlwatch'))
     result = style.check_files(py_files)
     assert result.total_errors == 0, "Found #{0} code style errors".format(result.total_errors)
 
