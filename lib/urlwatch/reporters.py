@@ -588,7 +588,7 @@ class TelegramReporter(TextReporter):
 
 class SlackReporter(TextReporter):
     """Custom Slack reporter"""
-    MAX_LENGTH = 4096
+    MAX_LENGTH = 40000
 
     __kind__ = 'slack'
 
