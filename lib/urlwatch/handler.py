@@ -75,7 +75,8 @@ class JobState(object):
         try:
             try:
                 self.load()
-                data = self.job.retrieve(self)
+                data, content_type = self.job.retrieve(self)
+                self.job.content_type = content_type
 
                 # Apply automatic filters first
                 data = FilterBase.auto_process(self, data)

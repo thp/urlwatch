@@ -41,7 +41,10 @@ from urlwatch import reporters
 #    __required__ = ('username', 'password')
 #
 #    def retrieve(self, job_state):
-#        return 'Would log in to {} with {} and {}\n'.format(self.url, self.username, self.password)
+#        return (
+#            'Would log in to {} with {} and {}\n'.format(self.url, self.username, self.password),
+#            'text/plain',
+#        )
 
 
 #class CaseFilter(filters.FilterBase):

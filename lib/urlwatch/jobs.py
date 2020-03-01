@@ -198,7 +198,7 @@ class ShellJob(Job):
         if result != 0:
             raise ShellError(result)
 
-        return stdout_data.decode('utf-8')
+        return (stdout_data.decode('utf-8'), 'text/plain')
 
 
 class UrlJob(Job):
@@ -254,7 +254,7 @@ class UrlJob(Job):
         file_scheme = 'file://'
         if self.url.startswith(file_scheme):
             logger.info('Using local filesystem (%s URI scheme)', file_scheme)
-            return open(self.url[len(file_scheme):], 'rt').read()
+            return (open(self.url[len(file_scheme):], 'rt').read(), 'text/plain')
 
         if self.headers:
             self.add_custom_headers(headers)
@@ -310,7 +310,7 @@ class UrlJob(Job):
             result = response.text
         if self.encoding:
             response.encoding = self.encoding
-        return result
+        return (result, content_type)
 
     def add_custom_headers(self, headers):
         """
@@ -364,4 +364,4 @@ class BrowserJob(Job):
         from requests_html import HTMLSession
         session = HTMLSession()
         response = session.get(self.navigate)
-        return response.html.html
+        return (response.html.html, response.headers.get('Content-type', ''))
