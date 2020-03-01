@@ -289,7 +289,9 @@ class UrlJob(Job):
         # urlwatch behavior and try UTF-8 decoding first.
         content_type = response.headers.get('Content-type', '')
         content_type_match = self.CHARSET_RE.match(content_type)
-        if not content_type_match and not self.encoding:
+        result = None
+
+        def try_decoding(response):
             try:
                 try:
                     try:
@@ -301,10 +303,14 @@ class UrlJob(Job):
             except LookupError:
                 # If this is an invalid encoding, decode as ascii (Debian bug 731931)
                 return response.content.decode('ascii', 'ignore')
+
+        if not content_type_match and not self.encoding:
+            result = try_decoding(response)
+        else:
+            result = response.text
         if self.encoding:
             response.encoding = self.encoding
-
-        return response.text
+        return result
 
     def add_custom_headers(self, headers):
         """
