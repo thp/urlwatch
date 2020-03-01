@@ -76,7 +76,9 @@ class JobState(object):
             try:
                 self.load()
                 data, content_type = self.job.retrieve(self)
-                self.job.content_type = content_type
+                if content_type:
+                    self.job.content_type = content_type
+                    self.job.mime_type = content_type.split(';')[0].strip()
 
                 # Apply automatic filters first
                 data = FilterBase.auto_process(self, data)
