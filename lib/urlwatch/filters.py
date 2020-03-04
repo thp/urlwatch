@@ -36,10 +36,14 @@ import imp
 import html.parser
 import hashlib
 import json
+import jsbeautifier
+import cssbeautifier
+
 
 from enum import Enum
 from lxml import etree
 from lxml.cssselect import CSSSelector
+from bs4 import BeautifulSoup as bs
 
 from .util import TrackSubClasses
 
@@ -153,6 +157,26 @@ class LegacyHooksPyFilter(FilterBase):
         except Exception as e:
             logger.warn('Could not apply legacy hooks filter: %s', e)
             return data
+
+
+class BeautifierFilter(FilterBase):
+    """Beautify HTML"""
+
+    __kind__ = 'beautifier'
+
+    def filter(self, data, subfilter=None):
+        soup = bs(data, features="lxml")
+        scripts = soup.find_all('script')
+        for script in scripts:
+            if script.string is not None:
+                beautified_js = jsbeautifier.beautify(script.string)
+                script.string = beautified_js
+        styles = soup.find_all('style')
+        for style in styles:
+            if style.string is not None:
+                beautified_css = cssbeautifier.beautify(style.string)
+                style.string = beautified_css
+        return soup.prettify()
 
 
 class Html2TextFilter(FilterBase):
