@@ -89,28 +89,28 @@ DEFAULT_CONFIG = {
         },
         'pushover': {
             'enabled': False,
-            'app': '',
+            'app': os.environ.get('URLWATCH_PUSHOVER_APP', ''),
             'device': None,
             'sound': 'spacealarm',
-            'user': '',
+            'user': os.environ.get('URLWATCH_PUSHOVER_USER', ''),
         },
         'pushbullet': {
             'enabled': False,
-            'api_key': '',
+            'api_key': os.environ.get('URLWATCH_PUSHBULLET_API_KEY', ''),
         },
         'telegram': {
             'enabled': False,
-            'bot_token': '',
-            'chat_id': '',
+            'bot_token': os.environ.get('URLWATCH_TELEGRAM_BOT_TOKEN', ''),
+            'chat_id': os.environ.get('URLWATCH_TELEGRAM_CHAT_ID', ''),
         },
         'slack': {
             'enabled': False,
-            'webhook_url': '',
+            'webhook_url': os.environ.get('URLWATCH_SLACK_WEBHOOK_URL', ''),
         },
         'mailgun': {
             'enabled': False,
             'region': 'us',
-            'api_key': '',
+            'api_key': os.environ.get('URLWATCH_MAILGUN_API_KEY', ''),
             'domain': '',
             'from_mail': '',
             'from_name': '',
@@ -127,6 +127,9 @@ DEFAULT_CONFIG = {
     }
 }
 
+if 'URLWATCH_EMAIL_SMTP_PASSWORD' in os.environ:
+    DEFAULT_CONFIG['report']['email']['smpt']['insecure_password'] = \
+        os.environ['URLWATCH_EMAIL_SMTP_PASSWORD']
 
 def merge(source, destination):
     # http://stackoverflow.com/a/20666342
