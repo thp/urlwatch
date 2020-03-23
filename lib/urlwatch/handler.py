@@ -75,7 +75,12 @@ class JobState(object):
         try:
             try:
                 self.load()
-                data, content_type = self.job.retrieve(self)
+                retrieved = self.job.retrieve(self)
+                try:
+                    data, content_type = retrieved
+                except ValueError:  # backward compatibility
+                    data = retrieved
+                    content_type = ''
                 if content_type:
                     self.job.content_type = content_type
                     self.job.mime_type = content_type.split(';')[0].strip()
