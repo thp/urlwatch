@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+# Convenience script to run urlwatch from a Git checkout
+# This is NOT the script that gets installed as part of "setup.py install"
+
+import sys
+sys.path.insert(0, 'lib')
+from urlwatch.cli import main
+main()
