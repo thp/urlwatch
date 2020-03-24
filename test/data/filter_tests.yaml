@@ -51,7 +51,7 @@ xpath_elements:
         </body></html>
     expected_result: |
         <div>foo</div>
-
+        
         <div id="bar">bar</div>
 xpath_text:
     filter: xpath://div[1]/text() | //div[2]/@id
@@ -76,7 +76,7 @@ xpath_exclude:
         </body></html>
     expected_result: |
         <div>foo</div>
-
+        
         <div id="bar">bar</div>
 xpath_xml_namespaces:
     filter:
@@ -101,11 +101,11 @@ xpath_xml_namespaces:
         </feed>
     expected_result: |
         <item xmlns:f="foo">
-
-
+        
+        
         <data>abc</data>
         </item>
-
+        
         <f:item xmlns:f="foo">
         <year>2018</year>
         <f:author>Jerry</f:author>
@@ -120,7 +120,7 @@ css:
         </body></html>
     expected_result: |
         <div>foo</div>
-
+        
         <div>bar</div>
 css_exclude:
     filter:
@@ -158,11 +158,11 @@ css_xml_namespaces:
         </feed>
     expected_result: |
         <item xmlns:f="foo">
-
-
+        
+        
         <data>abc</data>
         </item>
-
+        
         <f:item xmlns:f="foo">
         <year>2018</year>
         <f:author>Jerry</f:author>
@@ -220,13 +220,3 @@ hexdump:
     expected_result: |-
         48 65 6c 6c 6f 20 77 6f 72 6c 64 21 0a e4 bd a0  Hello world!....
         e5 a5 bd ef bc 8c e4 b8 96 e7 95 8c ef bc 81 0a  ................
-beautifier:
-    filter: 'beautifier'
-    data: <html><head></head><body></body></html>
-    expected_result: |-
-        <html>
-         <head>
-         </head>
-         <body>
-         </body>
-        </html>

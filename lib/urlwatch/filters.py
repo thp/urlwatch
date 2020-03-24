@@ -37,7 +37,6 @@ import html.parser
 import hashlib
 import json
 
-
 from enum import Enum
 from lxml import etree
 from lxml.cssselect import CSSSelector
@@ -157,15 +156,14 @@ class LegacyHooksPyFilter(FilterBase):
 
 
 class BeautifyFilter(FilterBase):
-    import jsbeautifier
-    import cssbeautifier
-    from bs4 import BeautifulSoup as bs
-
     """Beautify HTML"""
 
     __kind__ = 'beautify'
 
     def filter(self, data, subfilter=None):
+        import jsbeautifier
+        import cssbeautifier
+        from bs4 import BeautifulSoup as bs
         soup = bs(data, features="lxml")
         scripts = soup.find_all('script')
         for script in scripts:
