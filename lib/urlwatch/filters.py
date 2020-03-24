@@ -36,14 +36,11 @@ import imp
 import html.parser
 import hashlib
 import json
-import jsbeautifier
-import cssbeautifier
 
 
 from enum import Enum
 from lxml import etree
 from lxml.cssselect import CSSSelector
-from bs4 import BeautifulSoup as bs
 
 from .util import TrackSubClasses
 
@@ -159,10 +156,14 @@ class LegacyHooksPyFilter(FilterBase):
             return data
 
 
-class BeautifierFilter(FilterBase):
+class BeautifyFilter(FilterBase):
+    import jsbeautifier
+    import cssbeautifier
+    from bs4 import BeautifulSoup as bs
+
     """Beautify HTML"""
 
-    __kind__ = 'beautifier'
+    __kind__ = 'beautify'
 
     def filter(self, data, subfilter=None):
         soup = bs(data, features="lxml")

@@ -35,7 +35,7 @@ urlwatch 2 requires:
 
 The dependencies can be installed with (add `--user` to install to `$HOME`):
 
-`python3 -m pip install pyyaml minidb requests keyring appdirs lxml cssselect beautifulsoup4 jsbeautifier cssbeautifier`
+`python3 -m pip install pyyaml minidb requests keyring appdirs lxml cssselect`
 
 
 Optional dependencies (install via `python3 -m pip install <packagename>`):
@@ -45,6 +45,7 @@ Optional dependencies (install via `python3 -m pip install <packagename>`):
   * Stdout reporter with color on Windows: [colorama](https://github.com/tartley/colorama)
   * "browser" job kind: [requests-html](https://html.python-requests.org)
   * Unit testing: [pycodestyle](http://pycodestyle.pycqa.org/en/latest/)
+  * Beautify filter : [beautifulsoup4](https://pypi.org/project/beautifulsoup4/) [jsbeautifier](https://pypi.org/project/jsbeautifier/) [cssbeautifier](https://pypi.org/project/cssbeautifier/)
 
 
 QUICK START
