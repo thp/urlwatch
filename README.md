@@ -112,7 +112,7 @@ url: https://example.org/
 filter: html2text,grep:a\054b:,strip
 ```
 
-If you want to extract only the body tag you can use this filer:
+If you want to extract only the body tag you can use this filter:
 ```yaml
 url: https://thp.io/2008/urlwatch/
 filter: element-by-tag:body
