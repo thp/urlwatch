@@ -155,6 +155,29 @@ class LegacyHooksPyFilter(FilterBase):
             return data
 
 
+class BeautifyFilter(FilterBase):
+    """Beautify HTML"""
+
+    __kind__ = 'beautify'
+
+    def filter(self, data, subfilter=None):
+        import jsbeautifier
+        import cssbeautifier
+        from bs4 import BeautifulSoup as bs
+        soup = bs(data, features="lxml")
+        scripts = soup.find_all('script')
+        for script in scripts:
+            if script.string is not None:
+                beautified_js = jsbeautifier.beautify(script.string)
+                script.string = beautified_js
+        styles = soup.find_all('style')
+        for style in styles:
+            if style.string is not None:
+                beautified_css = cssbeautifier.beautify(style.string)
+                style.string = beautified_css
+        return soup.prettify()
+
+
 class Html2TextFilter(FilterBase):
     """Convert HTML to plaintext"""
 
