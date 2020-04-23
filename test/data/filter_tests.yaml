@@ -220,3 +220,15 @@ hexdump:
     expected_result: |-
         48 65 6c 6c 6f 20 77 6f 72 6c 64 21 0a e4 bd a0  Hello world!....
         e5 a5 bd ef bc 8c e4 b8 96 e7 95 8c ef bc 81 0a  ................
+sort:
+    filter: sort
+    data: |
+        The rose is red;
+        the violet's blue.
+        Sugar is sweet,
+        and so are you.
+    expected_result: |-
+        and so are you.
+        Sugar is sweet,
+        The rose is red;
+        the violet's blue.

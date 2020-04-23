@@ -550,3 +550,14 @@ class RegexSub(FilterBase):
 
         # Default: Replace with empty string if no "repl" value is set
         return re.sub(subfilter.get('pattern'), subfilter.get('repl', ''), data)
+
+class SortFilter(FilterBase):
+    """Sort the results before comparison"""
+
+    __kind__ = 'sort'
+
+    def filter(self, data, subfilter=None):
+        data_list = data.splitlines()
+        data_list = sorted(data_list,key=str.casefold)
+
+        return '\n'.join(data_list)

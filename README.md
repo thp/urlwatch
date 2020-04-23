@@ -216,6 +216,13 @@ job_defaults:
 The above config file sets all jobs to use wdiff as diff tool, and all "url" jobs
 to ignore connection errors.
 
+Sometimes a web page can have the same data between comparisons but it appears in random order.
+If that happens, you can choose to sort before the comparison.
+```yaml
+url: https://example.net/
+filter: sort
+```
+
 PUSHOVER
 --------
 
