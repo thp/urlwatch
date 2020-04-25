@@ -562,3 +562,15 @@ class SortFilter(FilterBase):
         data_list = sorted(data_list, key=str.casefold)
 
         return '\n'.join(data_list)
+
+
+class ReverseFilter(FilterBase):
+    """Reverse the results before comparison"""
+
+    __kind__ = 'reverse'
+
+    def filter(self, data, subfilter=None):
+        data_list = data.splitlines()
+        data_list = reversed(data_list)
+
+        return '\n'.join(data_list)

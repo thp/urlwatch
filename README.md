@@ -223,6 +223,14 @@ url: https://example.net/
 filter: sort
 ```
 
+You can choose to reverse the items before the comparison transactions.
+```yaml
+url: https://example.net/
+filter:
+- reverse:
+- html2text: re
+```
+
 PUSHOVER
 --------
 
