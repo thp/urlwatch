@@ -574,3 +574,4 @@ class ReverseFilter(FilterBase):
         data_list = reversed(data_list)
 
         return '\n'.join(data_list)
+    
