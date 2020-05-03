@@ -4,16 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [2.18] -- 2020-05-03
 
 ### Added
 - New filter: `re.sub` that can replace/remove strings using regular expressions
+- Support `ignore_timeout_errors` and `ignore_too_many_redirects` for URL jobs (#423, by Josh aka Zevlag)
+- HTML reporter: Add `viewport` meta tag for improved viewing on mobile devices (#432, by Mike Borsetti)
+- Optional support for insecure SMTP password storage in the config; use with caution (#431)
 
 ### Fixed
 - Fix `--test-filter` when the specified job is not found
+- Fix another `YAMLLoadWarning` in unit tests (#382, by Louis Sautier)
+- Documentation updates and typo fixes (by Nate Eagleson)
+- Pushover: Fix default device config (Fixes #409 and #372, documented by Richard Goodwin)
 
 ### Changed
 - Nicer formatting of `--features` for jobs with no docstring or many keys
+- The XPath and CSS filters now support XML namespaces (#404, by Chenfeng Bao)
+- Drop support for Python 3.3 and Python 3.4 (new minimum requirement is Python 3.5)
+- Use `html.escape` instead of `cgi.escape` (which was removed in Python 3.8; #424, by Chenfeng Bao)
+- Allow non-ASCII characters in `format-json` output filter (#433, by Mike Borsetti)
 
 
 ## [2.17] -- 2019-04-12
