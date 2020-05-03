@@ -8,7 +8,7 @@ a unified diff of what has changed.
 
 pkgname = 'urlwatch'
 
-__copyright__ = 'Copyright 2008-2019 Thomas Perl'
+__copyright__ = 'Copyright 2008-2020 Thomas Perl'
 __author__ = 'Thomas Perl <m@thp.io>'
 __license__ = 'BSD'
 __url__ = 'https://thp.io/2008/urlwatch/'
