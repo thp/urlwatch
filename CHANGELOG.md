@@ -6,6 +6,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+### Added
+
+- Project URLs added to `setup.py`
+
 ### Fixed
 
 - Declare updated Python 3.5 dependency in `setup.py`

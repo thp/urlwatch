@@ -33,6 +33,10 @@ m['data_files'] = [
         'share/urlwatch/examples/urls.yaml.example',
     ]),
 ]
+m['project_urls'] = {
+    'Source': 'https://github.com/thp/urlwatch',
+    'Tracker': 'https://github.com/thp/urlwatch/issues',
+}
 
 
 class InstallDependencies(cmd.Command):
