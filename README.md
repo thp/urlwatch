@@ -18,6 +18,6 @@ urlwatch is intended to help you watch changes in webpages and get notified
 changes. The change notification will include the URL that has changed and
 a unified diff of what has changed.
 
-Documentation: https://urlwatch.readthedocs.io/
-Website: https://thp.io/2008/urlwatch/
-E-Mail: m@thp.io
+* Documentation: https://urlwatch.readthedocs.io/
+* Website: https://thp.io/2008/urlwatch/
+* E-Mail: m@thp.io
