@@ -198,6 +198,29 @@ class Html2TextFilter(FilterBase):
         return html2text(data, method=method, options=options)
 
 
+class Pdf2TextFilter(FilterBase):
+    """Convert PDF to plaintext"""
+    # Requires data to be in bytes (not unicode)
+    # Dependency: pdftotext (https://github.com/jalan/pdftotext), itself based
+    # on poppler (https://poppler.freedesktop.org/)
+    # Note: check pdftotext website for OS-specific dependencies for install
+
+    __kind__ = 'pdf2text'
+
+    def filter(self, data, subfilter=None):
+        # data must be bytes
+
+        if subfilter is None:
+            password = ''
+        elif isinstance(subfilter, dict):
+            password = subfilter['password']
+        elif isinstance(subfilter, str):
+            password = subfilter
+        import pdftotext
+        import io
+        return '\n\n'.join(pdftotext.PDF(io.BytesIO(data), password=password))
+
+
 class Ical2TextFilter(FilterBase):
     """Convert iCalendar to plaintext"""
 

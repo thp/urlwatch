@@ -37,6 +37,7 @@ At the moment, the following filters are built-in:
 - **grepi**: Filter which removes lines matching a regular expression
 - **hexdump**: Convert binary data to hex dump format
 - **html2text**: Convert HTML to plaintext
+- **pdf2text**: Convert PDF to plaintext
 - **ical2text**: Convert iCalendar to plaintext
 - **re.sub**: Replace text with regular expressions using Python's re.sub
 - **sha1sum**: Calculate the SHA-1 checksum of the content
@@ -209,6 +210,30 @@ tag in its results:
      - css:
          selector: 'body'
          exclude: 'a'
+
+
+Filtering PDF documents
+-----------------------
+
+To monitor the text of a PDF file, you use the `pdf2text` filter. It requires 
+the installation of the `pdftotext <https://github.com/jalan/pdftotext/blob/master/README.md#pdftotext>`__
+library and any of its OS-specific dependencies (see 
+`website <https://github.com/jalan/pdftotext/blob/master/README.md#os-dependencies>`__.
+
+.. code:: yaml
+
+   url: https://example.net/sample.pdf
+   filter: pdf2text
+
+
+If the PDF file is password protected, you can specify its password:
+
+.. code:: yaml
+
+   url: https://example.net/sample.pdf
+   filter: 
+    - pdf2text:
+        password: pdfpassword
 
 
 Line-based sorting of webpage content

@@ -284,6 +284,11 @@ class UrlJob(Job):
         # Save ETag from response into job_state, which will be saved in cache
         job_state.etag = response.headers.get('ETag')
 
+        # If 'pdf2text' filter is selected, return content in bytes instead of in unicode
+        # as that's what's required by the library used by that filter
+        if self.filter and ('pdf2text' in self.filter or any('pdf2text' in subfilter for subfilter in self.filter)):
+            return response.content
+
         # If we can't find the encoding in the headers, requests gets all
         # old-RFC-y and assumes ISO-8859-1 instead of UTF-8. Use the old
         # urlwatch behavior and try UTF-8 decoding first.

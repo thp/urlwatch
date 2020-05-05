@@ -38,7 +38,7 @@ Where ``<packagename>`` is one of the following:
 +-------------------------+---------------------------------------------------------------------+
 | Feature                 | Python package(s) to install                                        |
 +=========================+=====================================================================+
-| Pushover reporter       | `chump <https://github.com/karanlyons/chump/>`__                    |
+| Pushover reporter       | `chump <https://github.com/karanlyons/chump>`__                     |
 +-------------------------+---------------------------------------------------------------------+
 | Pushbullet reporter     | `pushbullet.py <https://github.com/randomchars/pushbullet.py>`__    |
 +-------------------------+---------------------------------------------------------------------+
@@ -55,5 +55,8 @@ Where ``<packagename>`` is one of the following:
 | `beautify` filter       | `beautifulsoup4 <https://pypi.org/project/beautifulsoup4/>`__,      |
 |                         | `jsbeautifier <https://pypi.org/project/jsbeautifier/>`__ and       |
 |                         | `cssbeautifier <https://pypi.org/project/cssbeautifier/>`__         |
++-------------------------+---------------------------------------------------------------------+
+| `pdf2text` filter       | `pdftotext <https://github.com/jalan/pdftotext>`__ and              |
+|                         | its OS-specific dependencies (see the above link)                   |
 +-------------------------+---------------------------------------------------------------------+
 
