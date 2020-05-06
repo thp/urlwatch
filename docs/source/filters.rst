@@ -220,7 +220,9 @@ the installation of the `pdftotext <https://github.com/jalan/pdftotext/blob/mast
 library and any of its OS-specific dependencies (see 
 `website <https://github.com/jalan/pdftotext/blob/master/README.md#os-dependencies>`__.
 
-.. code:: yaml
+This filter *must* be the first filter in a chain of filters.
+
+.. code-block:: yaml
 
    url: https://example.net/sample.pdf
    filter: pdf2text
@@ -228,7 +230,7 @@ library and any of its OS-specific dependencies (see
 
 If the PDF file is password protected, you can specify its password:
 
-.. code:: yaml
+.. code-block:: yaml
 
    url: https://example.net/sample.pdf
    filter: 

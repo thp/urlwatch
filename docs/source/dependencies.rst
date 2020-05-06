@@ -38,7 +38,7 @@ Where ``<packagename>`` is one of the following:
 +-------------------------+---------------------------------------------------------------------+
 | Feature                 | Python package(s) to install                                        |
 +=========================+=====================================================================+
-| Pushover reporter       | `chump <https://github.com/karanlyons/chump>`__                     |
+| Pushover reporter       | `chump <https://github.com/karanlyons/chump/>`__                    |
 +-------------------------+---------------------------------------------------------------------+
 | Pushbullet reporter     | `pushbullet.py <https://github.com/randomchars/pushbullet.py>`__    |
 +-------------------------+---------------------------------------------------------------------+
