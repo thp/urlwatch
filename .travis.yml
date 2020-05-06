@@ -1,9 +1,11 @@
 language: python
+cache: pip
 python:
   - "3.5"
   - "3.6"
   - "3.7"
   - "3.8"
 install:
-  - python setup.py install_dependencies
+  - pip install -r requirements.txt
+  - pip install pycodestyle
 script: nosetests -v
