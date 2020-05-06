@@ -206,16 +206,17 @@ class Pdf2TextFilter(FilterBase):
     # Note: check pdftotext website for OS-specific dependencies for install
 
     __kind__ = 'pdf2text'
+    __uses_bytes__ = True
 
     def filter(self, data, subfilter=None):
         # data must be bytes
+        if not isinstance(data, bytes):
+            raise ValueError('The pdf2text filter needs bytes input (is it the first filter?)')
 
         if subfilter is None:
             password = ''
         elif isinstance(subfilter, dict):
             password = subfilter['password']
-        elif isinstance(subfilter, str):
-            password = subfilter
         import pdftotext
         import io
         return '\n\n'.join(pdftotext.PDF(io.BytesIO(data), password=password))

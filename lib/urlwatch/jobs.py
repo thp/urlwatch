@@ -40,6 +40,7 @@ import urlwatch
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from .util import TrackSubClasses
+from .filters import FilterBase
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -284,9 +285,11 @@ class UrlJob(Job):
         # Save ETag from response into job_state, which will be saved in cache
         job_state.etag = response.headers.get('ETag')
 
-        # If 'pdf2text' filter is selected, return content in bytes instead of in unicode
-        # as that's what's required by the library used by that filter
-        if self.filter and ('pdf2text' in self.filter or any('pdf2text' in subfilter for subfilter in self.filter)):
+        bytes_filters = [name for name, class_ in FilterBase.__subclasses__.items()
+                         if getattr(class_, '__uses_bytes__', False)]
+        if self.filter and (self.filter in bytes_filters or self.filter[0] in bytes_filters):
+            # The first filter is a bytes filter, return content in bytes instead of in unicode
+            # as that's what's required by the library used by that filter
             return response.content
 
         # If we can't find the encoding in the headers, requests gets all
