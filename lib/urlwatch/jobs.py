@@ -293,8 +293,6 @@ class UrlJob(Job):
 
         # If the first filter is a bytes filter, return content in bytes instead of in unicode
         # as that's what's required by the library used by that filter
-        print(f'{next(iter(self.filter[0]))=}')
-        print(f'{list(self.filter[0])=}')
         if self.filter and (FilterBase.is_bytes_filter(self.filter)
                             or FilterBase.is_bytes_filter(next(iter(self.filter[0])))):
             return response.content
