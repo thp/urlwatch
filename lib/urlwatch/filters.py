@@ -214,8 +214,6 @@ class Pdf2TextFilter(FilterBase):
             password = ''
         elif isinstance(subfilter, dict):
             password = subfilter['password']
-        elif isinstance(subfilter, str):
-            password = subfilter
         import pdftotext
         import io
         return '\n\n'.join(pdftotext.PDF(io.BytesIO(data), password=password))
