@@ -1,3 +1,5 @@
+.. _dependencies:
+
 Dependencies
 ============
 
@@ -21,9 +23,7 @@ The dependencies can be installed with (add ``--user`` to install to ``$HOME``):
 
 ::
 
-    python3 -m pip install \
-        pyyaml minidb requests \
-        keyring appdirs lxml cssselect
+    python3 -m pip install pyyaml minidb requests keyring appdirs lxml cssselect
 
 
 Optional Packages

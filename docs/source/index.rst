@@ -1,4 +1,5 @@
 .. highlight:: none
+
 ::
 
                             _               _       _       ____
@@ -55,6 +56,7 @@ The Handbook
 .. toctree::
    :maxdepth: 2
 
+   introduction
    dependencies
    jobs
    filters
