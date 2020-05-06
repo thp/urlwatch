@@ -89,6 +89,11 @@ class FilterBase(object, metaclass=TrackSubClasses):
             raise ValueError('Unknown filter kind: %s:%s' % (filter_kind, subfilter))
         return filtercls(state.job, state).filter(data, subfilter)
 
+    @classmethod
+    def is_bytes_filter(cls, filter):
+        return (filter in [name for name, class_ in FilterBase.__subclasses__.items()
+                           if getattr(class_, '__uses_bytes__', False)])
+
     def match(self):
         return False
 
