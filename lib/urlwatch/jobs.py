@@ -201,7 +201,8 @@ class ShellJob(Job):
 
         # If the first filter is a bytes filter, return content in bytes instead of in unicode
         # as that's what's required by the library used by that filter
-        if self.filter and (FilterBase(self, self.filter) or FilterBase(self, self.filter[0])):
+        if self.filter and (FilterBase.is_bytes_filter(self.filter)
+                            or any(FilterBase.is_bytes_filter(filter) for filter in self.filter[0])):
             return stdout_data
 
         return stdout_data.decode('utf-8')
@@ -292,7 +293,8 @@ class UrlJob(Job):
 
         # If the first filter is a bytes filter, return content in bytes instead of in unicode
         # as that's what's required by the library used by that filter
-        if self.filter and (FilterBase(self, self.filter) or FilterBase(self, self.filter[0])):
+        if self.filter and (FilterBase.is_bytes_filter(self.filter)
+                            or any(FilterBase.is_bytes_filter(filter) for filter in self.filter[0])):
             return response.content
 
         # If we can't find the encoding in the headers, requests gets all
