@@ -199,6 +199,13 @@ class ShellJob(Job):
         if result != 0:
             raise ShellError(result)
 
+        bytes_filters = [name for name, class_ in FilterBase.__subclasses__.items()
+                         if getattr(class_, '__uses_bytes__', False)]
+        if self.filter and (self.filter in bytes_filters or self.filter[0] in bytes_filters):
+            # The first filter is a bytes filter, return content in bytes instead of in unicode
+            # as that's what's required by the library used by that filter
+            return stdout_data
+
         return stdout_data.decode('utf-8')
 
 
