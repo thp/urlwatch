@@ -1,7 +1,6 @@
-pyyaml
-minidb
-requests
-keyring
 appdirs
+keyring
 lxml
-cssselect
+minidb
+pyyaml
+requests
