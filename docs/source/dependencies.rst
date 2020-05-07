@@ -56,4 +56,7 @@ Where ``<packagename>`` is one of the following:
 |                         | `jsbeautifier <https://pypi.org/project/jsbeautifier/>`__ and       |
 |                         | `cssbeautifier <https://pypi.org/project/cssbeautifier/>`__         |
 +-------------------------+---------------------------------------------------------------------+
+| `pdf2text` filter       | `pdftotext <https://github.com/jalan/pdftotext>`__ and              |
+|                         | its OS-specific dependencies (see the above link)                   |
++-------------------------+---------------------------------------------------------------------+
 

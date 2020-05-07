@@ -40,6 +40,7 @@ import urlwatch
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from .util import TrackSubClasses
+from .filters import FilterBase
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -198,6 +199,12 @@ class ShellJob(Job):
         if result != 0:
             raise ShellError(result)
 
+        # If the first filter is a bytes filter, return content in bytes instead of in unicode
+        # as that's what's required by the library used by that filter
+        if self.filter and (FilterBase.is_bytes_filter(self.filter)
+                            or FilterBase.is_bytes_filter(next(iter(self.filter[0])))):
+            return stdout_data
+
         return stdout_data.decode('utf-8')
 
 
@@ -283,6 +290,12 @@ class UrlJob(Job):
 
         # Save ETag from response into job_state, which will be saved in cache
         job_state.etag = response.headers.get('ETag')
+
+        # If the first filter is a bytes filter, return content in bytes instead of in unicode
+        # as that's what's required by the library used by that filter
+        if self.filter and (FilterBase.is_bytes_filter(self.filter)
+                            or FilterBase.is_bytes_filter(next(iter(self.filter[0])))):
+            return response.content
 
         # If we can't find the encoding in the headers, requests gets all
         # old-RFC-y and assumes ISO-8859-1 instead of UTF-8. Use the old

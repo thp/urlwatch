@@ -89,6 +89,11 @@ class FilterBase(object, metaclass=TrackSubClasses):
             raise ValueError('Unknown filter kind: %s:%s' % (filter_kind, subfilter))
         return filtercls(state.job, state).filter(data, subfilter)
 
+    @classmethod
+    def is_bytes_filter(cls, filter):
+        return (filter in [name for name, class_ in FilterBase.__subclasses__.items()
+                           if getattr(class_, '__uses_bytes__', False)])
+
     def match(self):
         return False
 
@@ -196,6 +201,30 @@ class Html2TextFilter(FilterBase):
             options = {}
         from .html2txt import html2text
         return html2text(data, method=method, options=options)
+
+
+class Pdf2TextFilter(FilterBase):
+    """Convert PDF to plaintext"""
+    # Requires data to be in bytes (not unicode)
+    # Dependency: pdftotext (https://github.com/jalan/pdftotext), itself based
+    # on poppler (https://poppler.freedesktop.org/)
+    # Note: check pdftotext website for OS-specific dependencies for install
+
+    __kind__ = 'pdf2text'
+    __uses_bytes__ = True
+
+    def filter(self, data, subfilter=None):
+        # data must be bytes
+        if not isinstance(data, bytes):
+            raise ValueError('The pdf2text filter needs bytes input (is it the first filter?)')
+
+        if subfilter is None:
+            password = ''
+        elif isinstance(subfilter, dict):
+            password = subfilter['password']
+        import pdftotext
+        import io
+        return '\n\n'.join(pdftotext.PDF(io.BytesIO(data), password=password))
 
 
 class Ical2TextFilter(FilterBase):
