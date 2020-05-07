@@ -32,8 +32,6 @@ import concurrent.futures
 import logging
 import difflib
 
-import requests
-
 from .handler import JobState
 from .jobs import NotModifiedError
 

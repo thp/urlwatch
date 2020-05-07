@@ -93,7 +93,8 @@ class SMTPMailer(Mailer):
             elif keyring is not None:
                 passwd = keyring.get_password(self.smtp_server, self.smtp_user)
                 if passwd is None:
-                    raise ValueError('No password available in keyring for {}, {}'.format(self.smtp_server, self.smtp_user))
+                    raise ValueError('No password available in keyring for {}, {}'
+                                     .format(self.smtp_server, self.smtp_user))
             s.login(self.smtp_user, passwd)
 
         s.sendmail(msg['From'], msg['To'].split(','), msg.as_string())
