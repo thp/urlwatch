@@ -253,6 +253,15 @@ the comparison.
    filter: sort
 
 
+If you want to sort the content in reversed order, you can use:
+
+.. code:: yaml
+
+   url: http://example.com/
+   filter:
+     - sort:
+         reverse: true
+
 Watching Github releases
 ------------------------
 

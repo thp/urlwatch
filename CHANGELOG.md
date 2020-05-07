@@ -15,6 +15,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - Declare updated Python 3.5 dependency in `setup.py`
 
+### Changed
+
+- `sort` filter: Add `reverse` option to reverse the sorting order
+
 
 ## [2.18] -- 2020-05-03
 

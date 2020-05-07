@@ -587,7 +587,10 @@ class SortFilter(FilterBase):
     __kind__ = 'sort'
 
     def filter(self, data, subfilter=None):
+        reverse = ((isinstance(subfilter, dict) and subfilter.get('reverse', False) == True) or
+                   (isinstance(subfilter, str) and subfilter == 'reverse'))
+
         data_list = data.splitlines()
-        data_list = sorted(data_list, key=str.casefold)
+        data_list = sorted(data_list, key=str.casefold, reverse=reverse)
 
         return '\n'.join(data_list)
