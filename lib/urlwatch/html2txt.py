@@ -36,7 +36,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def html2text(data, method, options):
+def html2text(data, baseurl, method, options):
     """
     Convert a string consisting of HTML to plain text
     for easy difference checking.
@@ -61,6 +61,7 @@ def html2text(data, method, options):
     if method == 'pyhtml2text':
         import html2text
         parser = html2text.HTML2Text()
+        parser.baseurl = baseurl
         for k, v in options.items():
             setattr(parser, k.lower(), v)
         d = parser.handle(data)
