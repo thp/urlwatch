@@ -321,7 +321,7 @@ class UrlJob(Job):
 
     def add_custom_headers(self, headers):
         """
-        Adds custom request headers from the job list (URLs) to the pre-filled dictionary `headers`.
+        Adds custom request headers from the job list to the pre-filled dictionary `headers`.
         Pre-filled values of conflicting header keys (case-insensitive) are overwritten by custom value.
         """
         headers_to_remove = [x for x in headers if x.lower() in [y.lower() for y in self.headers]]
@@ -361,6 +361,9 @@ class BrowserJob(Job):
     __kind__ = 'browser'
 
     __required__ = ('navigate',)
+    __optional__ = ('cookies', 'data', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
+                    'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding', 'timeout',
+                    'ignore_timeout_errors', 'ignore_too_many_redirects')
 
     LOCATION_IS_URL = True
 
@@ -368,7 +371,68 @@ class BrowserJob(Job):
         return self.navigate
 
     def retrieve(self, job_state):
+        headers = {
+            'User-agent': urlwatch.__user_agent__,
+        }
+
+        proxies = {
+            'http': os.getenv('HTTP_PROXY'),
+            'https': os.getenv('HTTPS_PROXY'),
+        }
+
+        if job_state.etag is not None:
+            headers['If-None-Match'] = job_state.etag
+
+        if job_state.timestamp is not None:
+            headers['If-Modified-Since'] = email.utils.formatdate(job_state.timestamp)
+
+        if self.ignore_cached or job_state.tries > 0:
+            headers['If-None-Match'] = None
+            headers['If-Modified-Since'] = email.utils.formatdate(0)
+            headers['Cache-Control'] = 'max-age=172800'
+            headers['Expires'] = email.utils.formatdate()
+
+        if self.http_proxy is not None:
+            proxies['http'] = self.http_proxy
+        if self.https_proxy is not None:
+            proxies['https'] = self.https_proxy
+
+        file_scheme = 'file://'
+        if self.navigate.startswith(file_scheme):
+            logger.info('Using local filesystem (%s URI scheme)', file_scheme)
+            from requests_html import HTML
+            return HTML(open(self.navigate[len(file_scheme):], 'rt').read())
+
+        if self.headers:
+            self.add_custom_headers(headers)
+
+        if self.timeout is None:
+            # default timeout
+            timeout = 60
+        elif self.timeout == 0:
+            # never timeout
+            timeout = None
+        else:
+            timeout = self.timeout
+
         from requests_html import HTMLSession
         session = HTMLSession()
-        response = session.get(self.navigate)
+        response = session.get(url=self.navigate,
+                               data=self.data,
+                               headers=headers,
+                               verify=(not self.ssl_no_verify),
+                               cookies=self.cookies,
+                               proxies=proxies,
+                               timeout=timeout)
         return response.html.html
+
+    def add_custom_headers(self, headers):
+        """
+        Adds custom request headers from the job list to the pre-filled dictionary `headers`.
+        Pre-filled values of conflicting header keys (case-insensitive) are overwritten by custom value.
+        """
+        print(headers)
+        headers_to_remove = [x for x in headers if x.lower() in [y.lower() for y in self.headers]]
+        for header in headers_to_remove:
+            headers.pop(header, None)
+        headers.update(self.headers)
