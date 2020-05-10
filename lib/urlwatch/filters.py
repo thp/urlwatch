@@ -200,7 +200,8 @@ class Html2TextFilter(FilterBase):
             method = subfilter
             options = {}
         from .html2txt import html2text
-        return html2text(data, method=method, options=options)
+        return html2text(data, baseurl=getattr(self.job, 'url', getattr(self.job, 'navigate', '')),
+                         method=method, options=options)
 
 
 class Pdf2TextFilter(FilterBase):
