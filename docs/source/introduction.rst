@@ -67,7 +67,7 @@ If you have more than one job, per `YAML specifications <https://yaml.org/spec/>
 ----------------
 `urlwatch` can be configured to do something with its report besides (or in addition to) the default of displaying it on the console, such as one or more of:
 
-- ``email`` (using SMPT)
+- ``email`` (using SMTP)
 - email using ``mailgun``
 - ``slack``
 - ``pushbullet``
