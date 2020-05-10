@@ -30,6 +30,7 @@
 
 import logging
 import os
+import sys
 
 from .storage import YamlConfigStorage, CacheMiniDBStorage, CacheRedisStorage, UrlsYaml
 from .handler import Report
@@ -47,6 +48,8 @@ class Urlwatch(object):
         logger.info('Using %s as URLs file', self.urlwatch_config.urls)
         logger.info('Using %s for hooks', self.urlwatch_config.hooks)
         logger.info('Using %s as cache database', self.urlwatch_config.cache)
+
+        self.check_url()
 
         self.config_storage = YamlConfigStorage(self.urlwatch_config.config)
         if any(self.urlwatch_config.cache.startswith(prefix) for prefix in ('redis://', 'rediss://')):
@@ -81,6 +84,18 @@ class Urlwatch(object):
     A default config has been written to {config_yaml}.
     Use "{pkgname} --edit-config" to customize it.
         """.format(config_yaml=self.urlwatch_config.config, pkgname=self.urlwatch_config.pkgname))
+
+    def check_url(self):
+        urls = self.urlwatch_config.urls
+        pkgname = self.urlwatch_config.pkgname
+        if not os.path.isfile(urls) and not any(getattr(self.urlwatch_config, flag) for flag in (
+                'edit', 'add', 'features', 'edit_hooks', 'edit_config', 'gc_cache',
+                'smtp_login', 'telegram_chats', 'test_slack')):
+            print("""
+    You need to create {urls_yaml} in order to use {pkgname}.
+    Use "{pkgname} --edit" to open the file with your editor.
+        """.format(urls_yaml=urls, pkgname=pkgname))
+            sys.exit(1)
 
     def load_hooks(self):
         if os.path.exists(self.urlwatch_config.hooks):

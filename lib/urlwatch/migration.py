@@ -30,7 +30,6 @@
 
 import logging
 import os.path
-import sys
 
 from .util import atomic_rename
 from .storage import UrlsYaml, UrlsTxt, CacheDirStorage
@@ -45,12 +44,6 @@ def migrate_urls(urlwatcher):
     pkgname = urlwatch_config.pkgname
     urls = urlwatch_config.urls
     urls_txt = os.path.join(urlwatch_config.urlwatch_dir, 'urls.txt')
-    edit = urlwatch_config.edit
-    add = urlwatch_config.add
-    features = urlwatch_config.features
-    edit_hooks = urlwatch_config.edit_hooks
-    edit_config = urlwatch_config.edit_config
-    gc_cache = urlwatch_config.gc_cache
 
     if os.path.isfile(urls_txt) and not os.path.isfile(urls):
         print("""
@@ -59,13 +52,6 @@ def migrate_urls(urlwatcher):
     """.format(urls_txt=urls_txt, urls_yaml=urls, pkgname=pkgname))
         UrlsYaml(urls).save(UrlsTxt(urls_txt).load_secure())
         atomic_rename(urls_txt, urls_txt + '.migrated')
-
-    if not any([os.path.isfile(urls), edit, add, features, edit_hooks, edit_config, gc_cache]):
-        print("""
-    You need to create {urls_yaml} in order to use {pkgname}.
-    Use "{pkgname} --edit" to open the file with your editor.
-    """.format(urls_yaml=urls, pkgname=pkgname))
-        sys.exit(1)
 
 
 def migrate_cache(urlwatcher):
