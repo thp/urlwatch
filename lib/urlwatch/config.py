@@ -33,7 +33,6 @@ import logging
 import os
 
 import urlwatch
-from .migration import migrate_cache, migrate_urls
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +55,6 @@ class CommandConfig(BaseConfig):
         super().__init__(pkgname, urlwatch_dir, config, urls, cache, hooks, verbose)
         self.bindir = bindir
         self.prefix = prefix
-        self.migrate_cache = migrate_cache
-        self.migrate_urls = migrate_urls
 
         if self.bindir == 'bin':
             # Installed system-wide

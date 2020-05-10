@@ -53,6 +53,7 @@ if bindir != 'bin':
 from urlwatch.command import UrlwatchCommand
 from urlwatch.config import CommandConfig
 from urlwatch.main import Urlwatch
+from urlwatch.migration import migrate_cache, migrate_urls
 
 # Ignore SIGPIPE for stdout (see https://github.com/thp/urlwatch/issues/77)
 try:
@@ -92,6 +93,10 @@ def main():
     command_config = CommandConfig(pkgname, urlwatch_dir, bindir, prefix,
                                    config_file, urls_file, hooks_file, cache_file, False)
     setup_logger(command_config.verbose)
+
+    # migration
+    migrate_urls(command_config)
+    migrate_cache(command_config)
 
     # setup urlwatcher
     urlwatch = Urlwatch(command_config)

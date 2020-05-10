@@ -32,15 +32,14 @@ import logging
 import os.path
 
 from .util import atomic_rename
-from .storage import UrlsYaml, UrlsTxt, CacheDirStorage
+from .storage import UrlsYaml, UrlsTxt, CacheDirStorage, CacheMiniDBStorage
 
 logger = logging.getLogger(__name__)
 
 
-def migrate_urls(urlwatcher):
+def migrate_urls(urlwatch_config):
     # Migrate urlwatch 1.x URLs to urlwatch 2.x
 
-    urlwatch_config = urlwatcher.urlwatch_config
     pkgname = urlwatch_config.pkgname
     urls = urlwatch_config.urls
     urls_txt = os.path.join(urlwatch_config.urlwatch_dir, 'urls.txt')
@@ -54,10 +53,9 @@ def migrate_urls(urlwatcher):
         atomic_rename(urls_txt, urls_txt + '.migrated')
 
 
-def migrate_cache(urlwatcher):
+def migrate_cache(urlwatch_config):
     # Migrate urlwatch 1.x cache to urlwatch 2.x
 
-    urlwatch_config = urlwatcher.urlwatch_config
     cache = urlwatch_config.cache
     cache_dir = os.path.join(urlwatch_config.urlwatch_dir, 'cache')
 
@@ -67,8 +65,8 @@ def migrate_cache(urlwatcher):
         print("""
     Migrating cache: {cache_dir} -> {cache_db}
     """.format(cache_dir=cache_dir, cache_db=cache))
-
         old_cache_storage = CacheDirStorage(cache_dir)
-        urlwatcher.cache_storage.restore(old_cache_storage.backup())
-        urlwatcher.cache_storage.gc([job.get_guid() for job in urlwatcher.jobs])
+        new_cache_storage = CacheMiniDBStorage(cache)
+        new_cache_storage.restore(old_cache_storage.backup())
+        new_cache_storage.close()
         atomic_rename(cache_dir, cache_dir + '.migrated')

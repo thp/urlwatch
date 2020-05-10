@@ -63,17 +63,11 @@ class Urlwatch(object):
 
         self.check_directories()
 
-        if hasattr(self.urlwatch_config, 'migrate_urls'):
-            self.urlwatch_config.migrate_urls(self)
-
         if not self.urlwatch_config.edit_hooks:
             self.load_hooks()
 
         if not self.urlwatch_config.edit:
             self.load_jobs()
-
-        if hasattr(self.urlwatch_config, 'migrate_urls'):
-            self.urlwatch_config.migrate_cache(self)
 
     def check_directories(self):
         if not os.path.isdir(self.urlwatch_config.urlwatch_dir):
