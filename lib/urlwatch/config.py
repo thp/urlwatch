@@ -84,7 +84,7 @@ class CommandConfig(BaseConfig):
                            default=self.config)
         group.add_argument('--hooks', metavar='FILE', help='use FILE as hooks.py module',
                            default=self.hooks)
-        group.add_argument('--cache', metavar='FILE', help='use FILE as cache database, alternatives can accept a redis path',
+        group.add_argument('--cache', metavar='FILE', help='use FILE as cache database, alternatively can accept a redis path',
                            default=self.cache)
 
         group = parser.add_argument_group('Authentication')
