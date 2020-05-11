@@ -61,12 +61,6 @@ DEFAULT_CONFIG = {
         'unchanged': False,
     },
 
-    'storage': {
-        'cache': {
-            'redis': False,
-        },
-    },
-
     'report': {
         'text': {
             'line_length': 75,
