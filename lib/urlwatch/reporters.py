@@ -137,8 +137,8 @@ class ReporterBase(object, metaclass=TrackSubClasses):
 
         timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
         timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-        return ''.join(difflib.unified_diff([l + '\n' for l in job_state.old_data.splitlines()],
-                                            [l + '\n' for l in job_state.new_data.splitlines()],
+        return ''.join(difflib.unified_diff([line + '\n' for line in job_state.old_data.splitlines()],
+                                            [line + '\n' for line in job_state.new_data.splitlines()],
                                             '@', '@', timestamp_old, timestamp_new))
 
 
