@@ -160,6 +160,22 @@ class JobBase(object, metaclass=TrackSubClasses):
         sha_hash.update(location.encode('utf-8'))
         return sha_hash.hexdigest()
 
+    def request_resources(self, resources):
+        """Request external resources.
+        Primarily used for resources that are shared or can only be created
+        on the main thread. Check if required resources are available in
+        `resources` (a dict). If not, request and save them in `resources`.
+        Keys should typically be `self` or class, depending on the shared or
+        exclusive nature of the resource.
+        Args:
+            resources: A dict storing external resources.
+        """
+        ...
+
+    def release_resources(self, resources):
+        """Release external resources requested in `request_resources`."""
+        ...
+
     def retrieve(self, job_state):
         raise NotImplementedError()
 

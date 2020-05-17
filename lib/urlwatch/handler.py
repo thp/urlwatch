@@ -41,6 +41,8 @@ logger = logging.getLogger(__name__)
 
 
 class JobState(object):
+    resouces = {}
+
     def __init__(self, cache_storage, job):
         self.cache_storage = cache_storage
         self.job = job
@@ -54,6 +56,24 @@ class JobState(object):
         self.tries = 0
         self.etag = None
         self.error_ignored = False
+
+    def __enter__(self):
+        try:
+            self.job.request_resources(JobState.resouces)
+        except Exception as ex:
+            self.exception = ex
+            self.traceback = traceback.format_exc()
+        finally:
+            return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        try:
+            self.job.release_resources(JobState.resouces)
+        except Exception as ex:
+            logger.error('Got exception while releasing resources for job: %r', self.job, exc_info=ex)
+            if self.exception is None:
+                self.exception = ex
+                self.traceback = traceback.format_exc()
 
     def load(self):
         guid = self.job.get_guid()
@@ -71,6 +91,8 @@ class JobState(object):
         self.cache_storage.save(self.job, self.job.get_guid(), self.new_data, time.time(), self.tries, self.etag)
 
     def process(self):
+        if self.exception:
+            return self
         logger.info('Processing: %s', self.job)
         try:
             try:

@@ -126,13 +126,13 @@ class UrlwatchCommand:
             # Force re-retrieval of job, as we're testing filters
             job.ignore_cached = True
 
-        job_state = JobState(self.urlwatcher.cache_storage, job)
-        job_state.process()
-        if job_state.exception is not None:
-            raise job_state.exception
-        print(job_state.new_data)
-        # We do not save the job state or job on purpose here, since we are possibly modifying the job
-        # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
+        with JobState(self.urlwatcher.cache_storage, job) as job_state:
+            job_state.process()
+            if job_state.exception is not None:
+                raise job_state.exception
+            print(job_state.new_data)
+            # We do not save the job state or job on purpose here, since we are possibly modifying the job
+            # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
         return 0
 
     def modify_urls(self):
