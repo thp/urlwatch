@@ -55,7 +55,7 @@ def html2text(data, baseurl, method, options):
     """
     if method == 're':
         stripped_tags = re.sub(r'<[^>]*>', '', data)
-        d = '\n'.join((l.rstrip() for l in stripped_tags.splitlines() if l.strip() != ''))
+        d = '\n'.join((line.rstrip() for line in stripped_tags.splitlines() if line.strip() != ''))
         return d
 
     if method == 'pyhtml2text':
