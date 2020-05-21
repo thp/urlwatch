@@ -137,8 +137,8 @@ class ReporterBase(object, metaclass=TrackSubClasses):
 
         timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
         timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-        return ''.join(difflib.unified_diff([line + '\n' for line in job_state.old_data.splitlines()],
-                                            [line + '\n' for line in job_state.new_data.splitlines()],
+        return ''.join(difflib.unified_diff(job_state.old_data.splitlines(keepends=True),
+                                            job_state.new_data.splitlines(keepends=True),
                                             '@', '@', timestamp_old, timestamp_new))
 
 
@@ -235,7 +235,8 @@ class HtmlReporter(ReporterBase):
             timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
             timestamp_new = email.utils.formatdate(time.time(), localtime=1)
             html_diff = difflib.HtmlDiff()
-            return SafeHtml(html_diff.make_table(job_state.old_data.splitlines(1), job_state.new_data.splitlines(1),
+            return SafeHtml(html_diff.make_table(job_state.old_data.splitlines(keepends=True),
+                                                 job_state.new_data.splitlines(keepends=True),
                                                  timestamp_old, timestamp_new, True, 3))
         elif difftype == 'unified':
             return ''.join((
