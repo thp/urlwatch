@@ -33,6 +33,9 @@ import os
 import platform
 import subprocess
 import shlex
+import importlib.machinery
+import importlib.util
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -99,3 +102,12 @@ def edit_file(filename):
         raise SystemExit('Please set $VISUAL or $EDITOR.')
 
     subprocess.check_call(shlex.split(editor) + [filename])
+
+
+def import_module_from_source(module_name, source_path):
+    loader = importlib.machinery.SourceFileLoader(module_name, source_path)
+    spec = importlib.util.spec_from_file_location(module_name, source_path, loader=loader)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    loader.exec_module(module)
+    return module

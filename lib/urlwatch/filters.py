@@ -32,7 +32,6 @@ import re
 import logging
 import itertools
 import os
-import imp
 import html.parser
 import hashlib
 import json
@@ -41,7 +40,7 @@ from enum import Enum
 from lxml import etree
 from lxml.cssselect import CSSSelector
 
-from .util import TrackSubClasses
+from .util import TrackSubClasses, import_module_from_source
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +141,7 @@ class LegacyHooksPyFilter(FilterBase):
         self.hooks = None
         if os.path.exists(self.FILENAME):
             try:
-                self.hooks = imp.load_source('legacy_hooks', self.FILENAME)
+                self.hooks = import_module_from_source('legacy_hooks', self.FILENAME)
             except Exception as e:
                 logger.error('Could not load legacy hooks file: %s', e)
 

@@ -9,12 +9,12 @@ from nose.tools import raises, with_setup
 
 import tempfile
 import os
-import imp
 
 from urlwatch import storage
 from urlwatch.config import BaseConfig
 from urlwatch.storage import YamlConfigStorage, CacheMiniDBStorage
 from urlwatch.main import Urlwatch
+from urlwatch.util import import_module_from_source
 
 
 def test_required_classattrs_in_subclasses():
@@ -71,7 +71,7 @@ def test_load_urls_yaml():
 def test_load_hooks_py():
     hooks_py = 'share/urlwatch/examples/hooks.py.example'
     if os.path.exists(hooks_py):
-        imp.load_source('hooks', hooks_py)
+        import_module_from_source('hooks', hooks_py)
 
 
 def test_pep8_conformance():

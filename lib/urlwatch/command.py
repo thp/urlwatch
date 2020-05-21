@@ -28,7 +28,6 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import imp
 import logging
 import os
 import shutil
@@ -39,7 +38,7 @@ from .filters import FilterBase
 from .handler import JobState
 from .jobs import JobBase, UrlJob
 from .reporters import ReporterBase
-from .util import atomic_rename, edit_file
+from .util import atomic_rename, edit_file, import_module_from_source
 from .mailer import set_password, have_password
 
 logger = logging.getLogger(__name__)
@@ -61,7 +60,7 @@ class UrlwatchCommand:
                     self.urlwatch_config.hooks_py_example):
                 shutil.copy(self.urlwatch_config.hooks_py_example, hooks_edit)
             edit_file(hooks_edit)
-            imp.load_source('hooks', hooks_edit)
+            import_module_from_source('hooks', hooks_edit)
             atomic_rename(hooks_edit, self.urlwatch_config.hooks)
             print('Saving edit changes in', self.urlwatch_config.hooks)
         except SystemExit:

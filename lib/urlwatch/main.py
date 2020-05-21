@@ -28,12 +28,12 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import imp
 import logging
 import os
 
 from .handler import Report
 from .worker import run_jobs
+from .util import import_module_from_source
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +80,7 @@ class Urlwatch(object):
 
     def load_hooks(self):
         if os.path.exists(self.urlwatch_config.hooks):
-            imp.load_source('hooks', self.urlwatch_config.hooks)
+            import_module_from_source('hooks', self.urlwatch_config.hooks)
 
     def load_jobs(self):
         if os.path.isfile(self.urlwatch_config.urls):
