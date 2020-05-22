@@ -232,3 +232,17 @@ sort:
         Sugar is sweet,
         The rose is red;
         the violet's blue.
+
+
+reverse:
+    filter: reverse
+    data: |
+        The rose is red;
+        the violet's blue.
+        Sugar is sweet,
+        and so are you.
+    expected_result: |-
+        and so are you.
+        Sugar is sweet,
+        the violet's blue.
+        The rose is red;
