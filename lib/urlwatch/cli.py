@@ -101,7 +101,7 @@ def main():
     # setup storage API
     config_storage = YamlConfigStorage(command_config.config)
 
-    if command_config.cache.startswith('redis://') or command_config.cache.startswith('rediss://'):
+    if any(command_config.cache.startswith(prefix) for prefix in ('redis://', 'rediss://')):
         cache_storage = CacheRedisStorage(command_config.cache)
     else:
         cache_storage = CacheMiniDBStorage(command_config.cache)

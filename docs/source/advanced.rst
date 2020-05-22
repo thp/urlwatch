@@ -153,6 +153,6 @@ Using Redis as a cache backend
 If you want to use Redis as a cache backend over the default SQLite3 file::
 
     urlwatch --cache=redis://localhost:6379/
-    
+
 There is no migration path from the SQLite3 format, the cache will be empty
-the first time Redis is used.0
+the first time Redis is used.
