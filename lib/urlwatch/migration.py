@@ -29,6 +29,7 @@
 
 
 import logging
+import os
 import os.path
 
 from .util import atomic_rename
@@ -49,6 +50,7 @@ def migrate_urls(urlwatch_config):
     Migrating URLs: {urls_txt} -> {urls_yaml}
     Use "{pkgname} --edit" to customize it.
     """.format(urls_txt=urls_txt, urls_yaml=urls, pkgname=pkgname))
+        os.makedirs(os.path.dirname(urls), exist_ok=True)
         UrlsYaml(urls).save(UrlsTxt(urls_txt).load_secure())
         atomic_rename(urls_txt, urls_txt + '.migrated')
 
@@ -66,6 +68,7 @@ def migrate_cache(urlwatch_config):
     Migrating cache: {cache_dir} -> {cache_db}
     """.format(cache_dir=cache_dir, cache_db=cache))
         old_cache_storage = CacheDirStorage(cache_dir)
+        os.makedirs(os.path.dirname(cache), exist_ok=True)
         new_cache_storage = CacheMiniDBStorage(cache)
         new_cache_storage.restore(old_cache_storage.backup())
         new_cache_storage.close()
