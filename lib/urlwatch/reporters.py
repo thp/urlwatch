@@ -138,7 +138,6 @@ class ReporterBase(object, metaclass=TrackSubClasses):
         timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=True)
         timestamp_new = email.utils.formatdate(time.time(), localtime=True)
         contextlines = 0 if job_state.job.comparison_filter else 3
-        print(f'{contextlines=}')
         diff = list(difflib.unified_diff(job_state.old_data.splitlines(keepends=True),
                                          job_state.new_data.splitlines(keepends=True),
                                          '@', '@', timestamp_old, timestamp_new, n=contextlines))
