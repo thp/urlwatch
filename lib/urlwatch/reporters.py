@@ -143,12 +143,12 @@ class ReporterBase(object, metaclass=TrackSubClasses):
                                          '@', '@', timestamp_old, timestamp_new, n=contextlines))
         if job_state.job.comparison_filter == 'additions':
             head = diff[0]
-            diff = [dif for dif in diff if dif.startswith('+')]
+            diff = [dif for dif in diff if dif.startswith('+') or dif.startswith('@')]
             if diff:
                 diff = ['Comparison type: Additions only\n', '   ' + head[3:]] + diff
         if job_state.job.comparison_filter == 'deletions':
             head = diff[1]
-            diff = [dif for dif in diff if dif.startswith('-')]
+            diff = [dif for dif in diff if dif.startswith('-') or dif.startswith('@')]
             if diff:
                 diff = ['Comparison type: Deletions only\n', diff[0], '   ' + head[3:]] + diff[2:]
         return ''.join(diff)
