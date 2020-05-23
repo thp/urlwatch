@@ -135,11 +135,24 @@ class ReporterBase(object, metaclass=TrackSubClasses):
                 else:
                     raise subprocess.CalledProcessError(proc.returncode, cmdline)
 
-        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
-        timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-        return ''.join(difflib.unified_diff(job_state.old_data.splitlines(keepends=True),
-                                            job_state.new_data.splitlines(keepends=True),
-                                            '@', '@', timestamp_old, timestamp_new))
+        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=True)
+        timestamp_new = email.utils.formatdate(time.time(), localtime=True)
+        contextlines = 0 if job_state.job.comparison_filter else 3
+        print(f'{contextlines=}')
+        diff = list(difflib.unified_diff(job_state.old_data.splitlines(keepends=True),
+                                         job_state.new_data.splitlines(keepends=True),
+                                         '@', '@', timestamp_old, timestamp_new, n=contextlines))
+        if job_state.job.comparison_filter == 'additions':
+            head = diff[0]
+            diff = [dif for dif in diff if dif.startswith('+')]
+            if diff:
+                diff = ['Comparison type: Additions only\n', '   ' + head[3:]] + diff
+        if job_state.job.comparison_filter == 'deletions':
+            head = diff[1]
+            diff = [dif for dif in diff if dif.startswith('-')]
+            if diff:
+                diff = ['Comparison type: Deletions only\n', diff[0], '   ' + head[3:]] + diff[2:]
+        return ''.join(diff)
 
 
 class SafeHtml(object):
