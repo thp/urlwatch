@@ -118,6 +118,7 @@ class ReporterBase(object, metaclass=TrackSubClasses):
     def submit(self):
         raise NotImplementedError()
 
+    @functools.lru_cache(maxsize=1)
     def unified_diff(self, job_state):
         if job_state.job.diff_tool is not None:
             with tempfile.TemporaryDirectory() as tmpdir:
