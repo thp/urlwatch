@@ -431,6 +431,19 @@ class EMailReporter(TextReporter):
         mailer.send(msg)
 
 
+class IFTTTReport(TextReporter):
+    """Send summary via IFTTT"""
+
+    __kind__ = 'ifttt'
+
+    def submit(self):
+        webhook_url = self.config['webhook_url']
+        for job_state in self.report.get_filtered_job_states(self.job_states):
+            pretty_name = job_state.job.pretty_name()
+            location = job_state.job.get_location()
+            requests.post(webhook_url, json={"value1": "URL changed ({0})".format(job_state.verb), "value2": pretty_name, "value3": location})
+
+
 class WebServiceReporter(TextReporter):
     MAX_LENGTH = 1024
 
