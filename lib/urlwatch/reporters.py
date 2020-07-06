@@ -64,7 +64,7 @@ except ImportError:
     matrix_client = None
 
 try:
-    # markdown2 is an optional dependency which provides better formatting for Matrix.
+    # markdown2 is an optional dependency which provides better formatting for html and Matrix reporters.
     from markdown2 import Markdown
 except ImportError:
     Markdown = None
@@ -135,8 +135,8 @@ class ReporterBase(object, metaclass=TrackSubClasses):
                 else:
                     raise subprocess.CalledProcessError(proc.returncode, cmdline)
 
-        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
-        timestamp_new = email.utils.formatdate(time.time(), localtime=1)
+        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=True)
+        timestamp_new = email.utils.formatdate(time.time(), localtime=True)
         return ''.join(difflib.unified_diff(job_state.old_data.splitlines(keepends=True),
                                             job_state.new_data.splitlines(keepends=True),
                                             '@', '@', timestamp_old, timestamp_new))
@@ -161,24 +161,16 @@ class HtmlReporter(ReporterBase):
     def _parts(self):
         cfg = self.report.config['report']['html']
 
-        yield SafeHtml("""<!DOCTYPE html>
-        <html><head>
-            <title>urlwatch</title>
-            <meta http-equiv="content-type" content="text/html; charset=utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style type="text/css">
-                body { font-family: sans-serif; }
-                .diff_add { color: green; background-color: lightgreen; }
-                .diff_sub { color: red; background-color: lightred; }
-                .diff_chg { color: orange; background-color: lightyellow; }
-                .unified_add { color: green; }
-                .unified_sub { color: red; }
-                .unified_nor { color: #333; }
-                table { font-family: monospace; }
-                h2 span.verb { color: #888; }
-            </style>
-        </head><body>
-        """)
+        yield SafeHtml(
+            '<!DOCTYPE html>\n'
+            '<html>\n'
+            '<head>\n'
+            '<title>urlwatch</title>\n'
+            '<meta http-equiv="content-type" content="text/html; charset=utf-8">\n'
+            '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+            # No stylesheet: styles are embedded to avoid overwriting by email clients
+            '</head>\n'
+            '<body>\n')
 
         for job_state in self.report.get_filtered_job_states(self.job_states):
             job = job_state.job
@@ -186,12 +178,12 @@ class HtmlReporter(ReporterBase):
             if job.LOCATION_IS_URL:
                 title = '<a href="{location}">{pretty_name}</a>'
             elif job.pretty_name() != job.get_location():
-                title = '<span title="{location}">{pretty_name}</span>'
+                title = '<span title="{location}" style="color:#888888">{pretty_name}</span>'
             else:
                 title = '{location}'
-            title = '<h2><span class="verb">{verb}:</span> ' + title + '</h2>'
+            title = '<h2><span style="color:#888888">{verb}:</span> ' + title + '</h2>'
 
-            yield SafeHtml(title).format(verb=job_state.verb,
+            yield SafeHtml(title).format(verb=job_state.verb.title(),
                                          location=job.get_location(),
                                          pretty_name=job.pretty_name())
 
@@ -201,49 +193,96 @@ class HtmlReporter(ReporterBase):
 
             yield SafeHtml('<hr>')
 
-        yield SafeHtml("""
-        <address>
-        {pkgname} {version}, {copyright}<br>
-        Website: {url}<br>
-        watched {count} URLs in {duration} seconds
-        </address>
-        </body>
-        </html>
-        """).format(pkgname=urlwatch.pkgname, version=urlwatch.__version__, copyright=urlwatch.__copyright__,
-                    url=urlwatch.__url__, count=len(self.job_states), duration=self.duration.seconds)
+        yield SafeHtml(
+            '<div style="font-family:monospace;font-style:italic">\n'
+            '<span>{pkgname} {version}, {copyright}</span>\n'
+            '<address>Website: <a href="{url}">{url}</a></address>\n'
+            '<span>Watched {count} URLs in {duration} seconds</span>\n'
+            '</div>\n'
+            '</body>\n'
+            '</html>\n').format(pkgname=urlwatch.pkgname, version=urlwatch.__version__, copyright=urlwatch.__copyright__,
+                                url=urlwatch.__url__, count=len(self.job_states), duration=self.duration.seconds)
 
-    def _diff_to_html(self, unified_diff):
-        for line in unified_diff.splitlines():
-            if line.startswith('+'):
-                yield SafeHtml('<span class="unified_add">{line}</span>').format(line=line)
-            elif line.startswith('-'):
-                yield SafeHtml('<span class="unified_sub">{line}</span>').format(line=line)
-            else:
-                yield SafeHtml('<span class="unified_nor">{line}</span>').format(line=line)
+    def _diff_to_html(self, unified_diff, is_markdown=False):
+        if is_markdown and Markdown:
+            # rebuild html from markdown using markdonw2 library's Markdown
+            markdowner = Markdown(safe_mode='escape', extras=['strike', 'target-blank-links'])
+            atags = re.compile(r'<a ')
+            htags = re.compile(r'<(/?)h\d>')
+            tags = re.compile(r'^<p>(<code>)?|(</code>)?</p>$')
+
+            def mark_to_html(text):
+                '''converts Markdown (as generated by pyhtml2text filter) back to html'''
+                if text == '* * *':  # manually expand horizontal ruler since <hr> tag is used by us to separate jobs
+                    return '-' * 80
+                pre = ''
+                if text.lstrip().startswith('* '):  # item of unordered list
+                    lstripped = text.lstrip()
+                    indent = len(text) - len(lstripped)
+                    pre = '&nbsp;' * indent
+                    pre += '● ' if indent == 2 else '◾ ' if indent == 4 else '○ '
+                    text = text.split('* ', 1)[1]
+                elif text.startswith(' '):  # replace leading spaces or converter will strip
+                    lstripped = text.lstrip()
+                    text = '&nbsp;' * (len(text) - len(lstripped)) + lstripped
+                html_out = markdowner.convert(text).strip('\n')  # convert markdown to html
+                html_out = atags.sub('<a style="font-family:inherit;color:inherit" ', html_out)  # fix <a> tag styling
+                html_out, sub = tags.subn('', html_out)  # remove added tags
+                if sub:
+                    return pre + html_out
+                html_out = htags.sub(r'<\g<1>strong>', html_out)  # replace heading tags with <strong>
+                return pre + html_out
+
+            for line in unified_diff.splitlines():
+                if line[0] == '+':
+                    yield '<span style="color:green">' + '+' + mark_to_html(line[1:]) + '</span>'
+                elif line[0] == '-':
+                    yield '<span style="color:red">' + '-' + mark_to_html(line[1:]) + '</span>'
+                elif line[0] == '@':
+                    yield '<span style="background-color:whitesmoke">' + line + '</span>'
+                else:
+                    yield line[0] + mark_to_html(line[1:])
+        else:
+            for line in unified_diff.splitlines():
+                if line[0] == '+':
+                    yield SafeHtml('<span style="color:green">{line}</span>').format(line=line)
+                elif line[0] == '-':
+                    yield SafeHtml('<span style="color:red">{line}</span>').format(line=line)
+                elif line[0] == '@':
+                    yield SafeHtml('<span style="background-color:whitesmoke">{line}</span>').format(line=line)
+                else:
+                    yield SafeHtml('{line}').format(line=line)
 
     def _format_content(self, job_state, difftype):
         if job_state.verb == 'error':
-            return SafeHtml('<pre style="text-color: red;">{error}</pre>').format(error=job_state.traceback.strip())
+            return SafeHtml('<pre style="white-space:pre-wrap;color:red;">{error}</pre>').format(error=job_state.traceback.strip())
 
         if job_state.verb == 'unchanged':
-            return SafeHtml('<pre>{old_data}</pre>').format(old_data=job_state.old_data)
+            return SafeHtml('<pre style="white-space:pre-wrap">{old_data}</pre>').format(old_data=job_state.old_data)
 
         if job_state.old_data in (None, job_state.new_data):
             return SafeHtml('...')
 
-        if difftype == 'table':
-            timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
-            timestamp_new = email.utils.formatdate(time.time(), localtime=1)
+        if difftype == 'unified':
+            # Style should include 'padding-left:2.3em;text-indent:-2.3em' to have hanging indents of long lines
+            # but Gmail strips the 'text-indent:-2.3em' and end up with everything indented
+            return ''.join(('<pre style="white-space:pre-wrap">', '\n'.join(self._diff_to_html(
+                self.unified_diff(job_state), getattr(job_state.job, 'is_markdown', False))), '</pre>'))
+        elif difftype == 'table':
+            timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=True)
+            timestamp_new = email.utils.formatdate(time.time(), localtime=True)
             html_diff = difflib.HtmlDiff()
-            return SafeHtml(html_diff.make_table(job_state.old_data.splitlines(keepends=True),
-                                                 job_state.new_data.splitlines(keepends=True),
-                                                 timestamp_old, timestamp_new, True, 3))
-        elif difftype == 'unified':
-            return ''.join((
-                '<pre>',
-                '\n'.join(self._diff_to_html(self.unified_diff(job_state))),
-                '</pre>',
-            ))
+            table = html_diff.make_table(job_state.old_data.splitlines(keepends=True),
+                                         job_state.new_data.splitlines(keepends=True),
+                                         timestamp_old, timestamp_new, True, 3)
+            table = table.replace('<th ', '<th style="font-family:monospace" ')
+            table = table.replace('<td ', '<td style="font-family:monospace" ')
+            table = table.replace(' nowrap="nowrap"', '')
+            table = table.replace('<a ', '<a style="font-family:monospace;color:inherit" ')
+            table = table.replace('<span class="diff_add"', '<span style="color:green;background-color:lightgreen"')
+            table = table.replace('<span class="diff_sub"', '<span style="color:red;background-color:lightred"')
+            table = table.replace('<span class="diff_chg"', '<span style="color:orange;background-color:lightyellow"')
+            return table
         else:
             raise ValueError('Diff style not supported: %r' % (difftype,))
 

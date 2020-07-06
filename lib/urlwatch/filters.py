@@ -199,8 +199,11 @@ class Html2TextFilter(FilterBase):
             method = subfilter
             options = {}
         from .html2txt import html2text
-        return html2text(data, baseurl=getattr(self.job, 'url', getattr(self.job, 'navigate', '')),
+        text = html2text(data, baseurl=getattr(self.job, 'url', getattr(self.job, 'navigate', '')),
                          method=method, options=options)
+        if method == 'pyhtml2text':
+            setattr(self.job, 'is_markdown', True)
+        return text
 
 
 class Pdf2TextFilter(FilterBase):
