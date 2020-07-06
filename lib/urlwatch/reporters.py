@@ -135,11 +135,35 @@ class ReporterBase(object, metaclass=TrackSubClasses):
                 else:
                     raise subprocess.CalledProcessError(proc.returncode, cmdline)
 
-        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
-        timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-        return ''.join(difflib.unified_diff(job_state.old_data.splitlines(keepends=True),
-                                            job_state.new_data.splitlines(keepends=True),
-                                            '@', '@', timestamp_old, timestamp_new))
+        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=True)
+        timestamp_new = email.utils.formatdate(time.time(), localtime=True)
+        contextlines = 0 if job_state.job.comparison_filter else 3
+        diff = list(difflib.unified_diff(job_state.old_data.splitlines(keepends=True),
+                                         job_state.new_data.splitlines(keepends=True),
+                                         '@', '@', timestamp_old, timestamp_new, n=contextlines))
+        if job_state.job.comparison_filter == 'additions':
+            before_len = len(diff) - 2
+            head = '...' + diff[0][3:]
+            diff = [dif for dif in diff if dif.startswith('+') or dif.startswith('@')]
+            diff = [dif for dif, dif2 in zip([''] + diff, diff + ['']) if
+                    not (dif.startswith('@') and dif2.startswith('@'))][1:]
+            diff = diff[:-1] if diff[-1].startswith('@') else diff
+            diff = diff + ['.** No additions (only deletions)\n'] if len(diff) == 1 else diff
+            diff = (diff + [f'--- WARNING: {before_len - len(diff) - 2} lines deleted; suggest checking source']
+                    if len(diff) / before_len < .25 else diff)
+            diff = [head, diff[0], '-**Comparison type: Additions only**\n'] + diff[1:]
+        elif job_state.job.comparison_filter == 'deletions':
+            head = '...' + diff[1][3:]
+            diff = [dif for dif in diff if dif.startswith('-') or dif.startswith('@')]
+            diff = [dif for dif, dif2 in zip([''] + diff, diff + ['']) if
+                    not (dif.startswith('@') and dif2.startswith('@'))][1:]
+            diff = diff[:-1] if diff[-1].startswith('@') else diff
+            diff = diff + ['.** No deletions (only additions)\n'] if len(diff) == 1 else diff
+            diff = [diff[0], head, '+**Comparison type: Deletions only**\n'] + diff[1:]
+        elif job_state.job.comparison_filter is not None:
+            raise ValueError('Comparison type filter not supported: %r' % (job_state.job.comparison_filter,))
+
+        return ''.join(diff)
 
 
 class SafeHtml(object):
