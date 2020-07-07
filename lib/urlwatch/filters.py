@@ -265,7 +265,7 @@ class GrepFilter(FilterBase):
 
 
 class InverseGrepFilter(FilterBase):
-    """Filter which removes lines matching a regular expression"""
+    """Remove lines matching a regular expression"""
 
     __kind__ = 'grepi'
 
