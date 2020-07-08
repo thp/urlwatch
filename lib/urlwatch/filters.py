@@ -32,7 +32,6 @@ import re
 import logging
 import itertools
 import os
-import imp
 import html.parser
 import hashlib
 import json
@@ -41,7 +40,7 @@ from enum import Enum
 from lxml import etree
 from lxml.cssselect import CSSSelector
 
-from .util import TrackSubClasses
+from .util import TrackSubClasses, import_module_from_source
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +141,7 @@ class LegacyHooksPyFilter(FilterBase):
         self.hooks = None
         if os.path.exists(self.FILENAME):
             try:
-                self.hooks = imp.load_source('legacy_hooks', self.FILENAME)
+                self.hooks = import_module_from_source('legacy_hooks', self.FILENAME)
             except Exception as e:
                 logger.error('Could not load legacy hooks file: %s', e)
 
@@ -200,7 +199,8 @@ class Html2TextFilter(FilterBase):
             method = subfilter
             options = {}
         from .html2txt import html2text
-        return html2text(data, method=method, options=options)
+        return html2text(data, baseurl=getattr(self.job, 'url', getattr(self.job, 'navigate', '')),
+                         method=method, options=options)
 
 
 class Pdf2TextFilter(FilterBase):
@@ -265,7 +265,7 @@ class GrepFilter(FilterBase):
 
 
 class InverseGrepFilter(FilterBase):
-    """Filter which removes lines matching a regular expression"""
+    """Remove lines matching a regular expression"""
 
     __kind__ = 'grepi'
 

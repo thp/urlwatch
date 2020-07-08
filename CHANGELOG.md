@@ -18,6 +18,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Changed
 
 - `sort` filter: Add `reverse` option to reverse the sorting order
+- Travis CI: Set `pycodestyle` version to 2.6.0 to avoid CI breakage when new style checks are added
 
 
 ## [2.18] -- 2020-05-03

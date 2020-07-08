@@ -36,11 +36,11 @@ At the moment, the following filters are built-in:
 - **element-by-tag**: Get an HTML element by its tag
 - **format-json**: Convert to formatted json
 - **grep**: Filter only lines matching a regular expression
-- **grepi**: Filter which removes lines matching a regular expression
+- **grepi**: Remove lines matching a regular expression
 - **hexdump**: Convert binary data to hex dump format
 - **html2text**: Convert HTML to plaintext
 - **pdf2text**: Convert PDF to plaintext
-- **ical2text**: Convert iCalendar to plaintext
+- **ical2text**: Convert `iCalendar`_ to plaintext
 - **re.sub**: Replace text with regular expressions using Python's re.sub
 - **sha1sum**: Calculate the SHA-1 checksum of the content
 - **sort**: Sort the results before comparison
@@ -49,6 +49,8 @@ At the moment, the following filters are built-in:
 
 .. To convert the "urlwatch --features" output, use:
    sed -e 's/^  \* \(.*\) - \(.*\)$/- **\1**: \2/'
+
+.. _iCalendar: https://en.wikipedia.org/wiki/ICalendar
 
 
 Picking out elements from a webpage
@@ -80,7 +82,7 @@ removal to get just a certain info field from a webpage:
 
 .. code:: yaml
 
-   url: https://thp.io/2008/urlwatch/
+   url: https://example.net/
    filter: html2text,grep:Current.*version,strip
 
 For most cases, this means that you can specify a filter chain in your
@@ -109,7 +111,7 @@ If you want to extract only the body tag you can use this filter:
 
 .. code:: yaml
 
-   url: https://thp.io/2008/urlwatch/
+   url: https://example.org/
    filter: element-by-tag:body
 
 
@@ -218,11 +220,14 @@ Filtering PDF documents
 -----------------------
 
 To monitor the text of a PDF file, you use the `pdf2text` filter. It requires 
-the installation of the `pdftotext <https://github.com/jalan/pdftotext/blob/master/README.md#pdftotext>`__
-library and any of its OS-specific dependencies (see 
-`website <https://github.com/jalan/pdftotext/blob/master/README.md#os-dependencies>`__.
+the installation of the `pdftotext`_ library and any of its
+`OS-specific dependencies`_.
 
-This filter *must* be the first filter in a chain of filters.
+.. _pdftotext: https://github.com/jalan/pdftotext/blob/master/README.md#pdftotext
+.. _OS-specific dependencies: https://github.com/jalan/pdftotext/blob/master/README.md#os-dependencies
+
+This filter *must* be the first filter in a chain of filters, since it
+consumes binary data and outputs text data.
 
 .. code-block:: yaml
 

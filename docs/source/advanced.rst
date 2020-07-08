@@ -156,3 +156,20 @@ If you want to use Redis as a cache backend over the default SQLite3 file::
 
 There is no migration path from the SQLite3 format, the cache will be empty
 the first time Redis is used.
+
+
+Watching changes on .onion (Tor) pages
+--------------------------------------
+
+Since pages on the `Tor Network`_ are not accessible via public DNS and TCP,
+you need to either configure a Tor client as HTTP/HTTPS proxy or use the
+``torify(1)`` tool from the ``tor`` package (``apt install tor`` on Debian,
+``brew install tor`` on macOS). Setting up Tor is out of scope for this
+document. On a properly set up Tor installation, one can just prefix the
+``urlwatch`` command with the ``torify`` wrapper to access .onion pages:
+
+.. code-block:: bash
+
+   torify urlwatch
+
+.. _Tor Network: https://www.torproject.org

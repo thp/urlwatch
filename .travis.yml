@@ -7,5 +7,5 @@ python:
   - "3.8"
 install:
   - pip install -r requirements.txt
-  - pip install pycodestyle
+  - pip install pycodestyle==2.6.0
 script: nosetests -v

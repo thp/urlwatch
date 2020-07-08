@@ -137,8 +137,8 @@ class ReporterBase(object, metaclass=TrackSubClasses):
 
         timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
         timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-        return ''.join(difflib.unified_diff([l + '\n' for l in job_state.old_data.splitlines()],
-                                            [l + '\n' for l in job_state.new_data.splitlines()],
+        return ''.join(difflib.unified_diff(job_state.old_data.splitlines(keepends=True),
+                                            job_state.new_data.splitlines(keepends=True),
                                             '@', '@', timestamp_old, timestamp_new))
 
 
@@ -235,7 +235,8 @@ class HtmlReporter(ReporterBase):
             timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
             timestamp_new = email.utils.formatdate(time.time(), localtime=1)
             html_diff = difflib.HtmlDiff()
-            return SafeHtml(html_diff.make_table(job_state.old_data.splitlines(1), job_state.new_data.splitlines(1),
+            return SafeHtml(html_diff.make_table(job_state.old_data.splitlines(keepends=True),
+                                                 job_state.new_data.splitlines(keepends=True),
                                                  timestamp_old, timestamp_new, True, 3))
         elif difftype == 'unified':
             return ''.join((
@@ -465,6 +466,9 @@ class PushoverReport(WebServiceReporter):
     __kind__ = 'pushover'
 
     def web_service_get(self):
+        if chump is None:
+            raise ImportError('Python module "chump" not installed')
+
         app = chump.Application(self.config['app'])
         return app.get_user(self.config['user'])
 
@@ -483,6 +487,9 @@ class PushbulletReport(WebServiceReporter):
     __kind__ = 'pushbullet'
 
     def web_service_get(self):
+        if Pushbullet is None:
+            raise ImportError('Python module "pushbullet" not installed')
+
         return Pushbullet(self.config['api_key'])
 
     def web_service_submit(self, service, title, body):
@@ -714,6 +721,9 @@ class MatrixReporter(MarkdownReporter):
     __kind__ = 'matrix'
 
     def submit(self):
+        if matrix_client is None:
+            raise ImportError('Python module "matrix_client" not installed')
+
         homeserver_url = self.config['homeserver']
         access_token = self.config['access_token']
         room_id = self.config['room_id']
