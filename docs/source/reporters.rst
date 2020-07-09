@@ -134,7 +134,7 @@ guide <https://t2bot.io/docs/access_tokens/>`__:
 1. Open `Riot.im <https://riot.im/app/>`__ in a private browsing window
 2. Register/Log in as your bot, using its user ID and password.
 3. Set the display name and avatar, if desired.
-4. In the settings page, scroll down to the bottom and click Access
+4. In the settings page, select the "Help & About" tab, scroll down to the bottom and click Access
    Token: <click to reveal>.
 5. Copy the highlighted text to your configuration.
 6. Join the room that you wish to send notifications to.
