@@ -42,8 +42,9 @@ At the moment, the following filters are built-in:
 - **pdf2text**: Convert PDF to plaintext
 - **ical2text**: Convert `iCalendar`_ to plaintext
 - **re.sub**: Replace text with regular expressions using Python's re.sub
+- **reverse**: Reverse input items
 - **sha1sum**: Calculate the SHA-1 checksum of the content
-- **sort**: Sort the results before comparison
+- **sort**: Sort input items
 - **strip**: Strip leading and trailing whitespace
 - **xpath**: Filter XML/HTML using XPath expressions
 
@@ -245,8 +246,8 @@ If the PDF file is password protected, you can specify its password:
         password: pdfpassword
 
 
-Line-based sorting of webpage content
--------------------------------------
+Sorting of webpage content
+--------------------------
 
 Sometimes a web page can have the same data between comparisons but it
 appears in random order. If that happens, you can choose to sort before
@@ -257,15 +258,62 @@ the comparison.
    url: https://example.net/
    filter: sort
 
+The sort filter takes an optional ``separator`` parameter that defines
+the item separator (by default sorting is line-based), for example to
+sort text paragraphs (text separated by an empty line):
 
-If you want to sort the content in reversed order, you can use:
+.. code:: yaml
+
+   url: http://example.org/
+   filter:
+     - sort:
+         separator: "\n\n"
+
+This can be combined with a boolean ``reverse`` option, which is useful
+for sorting and reversing with the same separator (using ``%`` as
+separator, this would turn ``3%2%4%1`` into ``4%3%2%1``):
+
+.. code:: yaml
+
+   url: http://example.org/
+   filter:
+     - sort:
+         separator: '%'
+         reverse: true
+
+
+Reversing of lines or separated items
+-------------------------------------
+
+To reverse the order of items without sorting, the ``reverse`` filter
+can be used. By default it reverses lines:
 
 .. code:: yaml
 
    url: http://example.com/
+   filter: reverse
+
+This behavior can be changed by using an optional separator string
+argument (e.g. items separated by a pipe (``|``) symbol,
+as in ``1|4|2|3``, which would be reversed to ``3|2|4|1``):
+
+.. code:: yaml
+
+   url: http://example.net/
    filter:
-     - sort:
-         reverse: true
+     - reverse: '|'
+
+Alternatively, the filter can be specified more verbose with a dict.
+In this example ``"\n\n"`` is used to separate paragraphs (items that
+are separated by an empty line):
+
+.. code:: yaml
+
+   url: http://example.org/
+   filter:
+     - reverse:
+         separator: "\n\n"
+
 
 Watching Github releases
 ------------------------
