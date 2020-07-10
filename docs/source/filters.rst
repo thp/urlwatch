@@ -64,14 +64,17 @@ can use the following in your ``urls.yaml``:
 .. code:: yaml
 
    url: http://example.org/
-   filter: element-by-id:something
+   filter:
+     - element-by-id: something
 
 Also, you can chain filters, so you can run html2text on the result:
 
 .. code:: yaml
 
    url: http://example.net/
-   filter: element-by-id:something,html2text
+   filter:
+     - element-by-id: something
+     - html2text
 
 
 Chaining multiple filters
@@ -84,25 +87,10 @@ removal to get just a certain info field from a webpage:
 .. code:: yaml
 
    url: https://example.net/
-   filter: html2text,grep:Current.*version,strip
-
-For most cases, this means that you can specify a filter chain in your
-urls.yaml page without requiring a custom hook where previously you
-would have needed to write custom filtering code in Python.
-
-
-Using the ``grep`` filter with `,`
-----------------------------------
-
-If you are using the ``grep`` filter, you can grep for a comma (``,``)
-by using ``\054`` (``:`` does not need to be escaped separately and can
-be used as-is), for example to convert HTML to text, then grep for
-``a,b:``, and then strip whitespace, use this:
-
-.. code:: yaml
-
-   url: https://example.org/
-   filter: html2text,grep:a\054b:,strip
+   filter:
+     - html2text
+     - grep: Current.*version
+     - strip
 
 
 Extracting only the ``<body>`` tag of a page
@@ -113,7 +101,8 @@ If you want to extract only the body tag you can use this filter:
 .. code:: yaml
 
    url: https://example.org/
-   filter: element-by-tag:body
+   filter:
+     - element-by-tag: body
 
 
 Filtering based on an XPath expression
@@ -128,7 +117,8 @@ page for some other examples):
 .. code:: yaml
 
    url: https://example.net/
-   filter: xpath:/body
+   filter:
+     - xpath: /body
 
 This filters only the ``<body>`` element of the HTML document, stripping
 out everything else.
@@ -144,7 +134,8 @@ you can use the ``css`` filter like so:
 .. code:: yaml
 
    url: https://example.net/
-   filter: css:body
+   filter:
+     - css: body
 
 Some limitations and extensions exist as explained in `cssselect’s
 documentation <https://cssselect.readthedocs.io/en/latest/#supported-selectors>`__.
