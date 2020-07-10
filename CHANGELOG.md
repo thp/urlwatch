@@ -11,6 +11,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Project URLs added to `setup.py`
 - Sphinx-based documentation
 - `reverse` filter: Reverse input items (default: line-based) with optional `separator`
+- Add `__supported_subfilters__` to `FilterBase` for sub filter checking and `--features` output
 
 ### Fixed
 
