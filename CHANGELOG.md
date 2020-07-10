@@ -22,6 +22,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - `sort` filter: Add `reverse` option to reverse the sorting order
 - `sort` filter: Add `separator` option to specify item separator (default is still line-based)
 - Travis CI: Set `pycodestyle` version to 2.6.0 to avoid CI breakage when new style checks are added
+- The ``pushover`` reporter can now have the message ``priority`` configured
 
 
 ## [2.18] -- 2020-05-03
