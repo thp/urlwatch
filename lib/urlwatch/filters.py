@@ -581,16 +581,33 @@ class RegexSub(FilterBase):
         return re.sub(subfilter.get('pattern'), subfilter.get('repl', ''), data)
 
 
+def separator_from_subfilter(subfilter):
+    if subfilter is None:
+        return '\n'
+    elif isinstance(subfilter, dict):
+        return subfilter.get('separator', '\n')
+    elif isinstance(subfilter, str):
+        return subfilter
+    else:
+        raise ValueError('Subfilter needs to be a dict or str, got: {}'.format(subfilter))
+
+
 class SortFilter(FilterBase):
-    """Sort the results before comparison"""
+    """Sort input items"""
 
     __kind__ = 'sort'
 
     def filter(self, data, subfilter=None):
-        reverse = ((isinstance(subfilter, dict) and subfilter.get('reverse', False) is True)
-                   or (isinstance(subfilter, str) and subfilter == 'reverse'))
+        reverse = (isinstance(subfilter, dict) and subfilter.get('reverse', False) is True)
+        separator = separator_from_subfilter(subfilter)
+        return separator.join(sorted(data.split(separator), key=str.casefold, reverse=reverse))
 
-        data_list = data.splitlines()
-        data_list = sorted(data_list, key=str.casefold, reverse=reverse)
 
-        return '\n'.join(data_list)
+class ReverseFilter(FilterBase):
+    """Reverse input items"""
+
+    __kind__ = 'reverse'
+
+    def filter(self, data, subfilter=None):
+        separator = separator_from_subfilter(subfilter)
+        return separator.join(reversed(data.split(separator)))

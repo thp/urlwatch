@@ -10,6 +10,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - Project URLs added to `setup.py`
 - Sphinx-based documentation
+- `reverse` filter: Reverse input items (default: line-based) with optional `separator`
 
 ### Fixed
 
@@ -18,6 +19,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Changed
 
 - `sort` filter: Add `reverse` option to reverse the sorting order
+- `sort` filter: Add `separator` option to specify item separator (default is still line-based)
 - Travis CI: Set `pycodestyle` version to 2.6.0 to avoid CI breakage when new style checks are added
 
 
