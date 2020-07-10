@@ -32,6 +32,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Support `ignore_timeout_errors` and `ignore_too_many_redirects` for URL jobs (#423, by Josh aka Zevlag)
 - HTML reporter: Add `viewport` meta tag for improved viewing on mobile devices (#432, by Mike Borsetti)
 - Optional support for insecure SMTP password storage in the config; use with caution (#431)
+- Add `matrix` reporter
 
 ### Fixed
 - Fix `--test-filter` when the specified job is not found
