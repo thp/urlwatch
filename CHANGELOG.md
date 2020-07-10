@@ -12,6 +12,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Sphinx-based documentation
 - `reverse` filter: Reverse input items (default: line-based) with optional `separator`
 - Add `__supported_subfilters__` to `FilterBase` for sub filter checking and `--features` output
+- Support for a Redis cache backend via `--cache=redis://localhost:6379/`
 
 ### Fixed
 

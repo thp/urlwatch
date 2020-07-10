@@ -148,6 +148,16 @@ Since the output of ``date`` changes every second, this job should produce a
 report every time urlwatch is run.
 
 
+Using Redis as a cache backend
+------------------------------------------
+If you want to use Redis as a cache backend over the default SQLite3 file::
+
+    urlwatch --cache=redis://localhost:6379/
+
+There is no migration path from the SQLite3 format, the cache will be empty
+the first time Redis is used.
+
+
 Watching changes on .onion (Tor) pages
 --------------------------------------
 
@@ -163,4 +173,3 @@ document. On a properly set up Tor installation, one can just prefix the
    torify urlwatch
 
 .. _Tor Network: https://www.torproject.org
-
