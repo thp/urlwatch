@@ -1,5 +1,10 @@
 .. _filters:
 
+.. All code examples here should have a unique URL that maps to
+   an entry in test/data/filter_documentation_testdata.yaml which
+   will be used to provide input/output data for the filter example
+   so that the examples can be verified to be correct automatically.
+
 Filters
 =======
 
@@ -63,7 +68,7 @@ can use the following in your ``urls.yaml``:
 
 .. code:: yaml
 
-   url: http://example.org/
+   url: http://example.org/idtest.html
    filter:
      - element-by-id: something
 
@@ -71,7 +76,7 @@ Also, you can chain filters, so you can run html2text on the result:
 
 .. code:: yaml
 
-   url: http://example.net/
+   url: http://example.net/id2text.html
    filter:
      - element-by-id: something
      - html2text
@@ -86,10 +91,10 @@ removal to get just a certain info field from a webpage:
 
 .. code:: yaml
 
-   url: https://example.net/
+   url: https://example.net/version.html
    filter:
      - html2text
-     - grep: Current.*version
+     - grep: "Current.*version"
      - strip
 
 
@@ -100,7 +105,7 @@ If you want to extract only the body tag you can use this filter:
 
 .. code:: yaml
 
-   url: https://example.org/
+   url: https://example.org/bodytag.html
    filter:
      - element-by-tag: body
 
@@ -116,12 +121,13 @@ page for some other examples):
 
 .. code:: yaml
 
-   url: https://example.net/
+   url: https://example.net/xpath.html
    filter:
-     - xpath: /body
+     - xpath: /html/body/marquee
 
-This filters only the ``<body>`` element of the HTML document, stripping
-out everything else.
+This filters only the ``<marquee>`` elements directly below the ``<body>``
+element, which in turn must be below the ``<html>`` element of the document,
+stripping out everything else.
 
 
 Filtering based on CSS selectors
@@ -133,9 +139,12 @@ you can use the ``css`` filter like so:
 
 .. code:: yaml
 
-   url: https://example.net/
+   url: https://example.net/css.html
    filter:
-     - css: body
+     - css: ul#groceries > li.unchecked
+
+This would filter only ``<li class="unchecked">`` tags directly
+below ``<ul id="groceries">`` elements.
 
 Some limitations and extensions exist as explained in `cssselect’s
 documentation <https://cssselect.readthedocs.io/en/latest/#supported-selectors>`__.
@@ -151,7 +160,7 @@ dates):
 
 .. code:: yaml
 
-   url: 'https://heronebag.com/blog/index.xml'
+   url: https://example.com/blog/xpath-index.rss
    filter:
      - xpath:
          path: '//item/title/text()|//item/pubDate/text()'
@@ -159,7 +168,7 @@ dates):
 
 .. code:: yaml
 
-   url: 'https://heronebag.com/blog/index.xml'
+   url: http://example.com/blog/css-index.rss
    filter:
      - css:
          selector: 'item > title, item > pubDate'
@@ -173,23 +182,24 @@ the tag name in an XPath expression, and use a ``|`` in a CSS selector.
 
 .. code:: yaml
 
-   url: 'https://www.wired.com/feed/rss'
+   url: https://example.net/feed/xpath-namespace.xml
    filter:
      - xpath:
-         path: '//item/media:keywords'
+         path: '//item/media:keywords/text()'
          method: xml
          namespaces:
            media: http://search.yahoo.com/mrss/
 
 .. code:: yaml
 
-   url: 'https://www.wired.com/feed/rss'
+   url: http://example.org/feed/css-namespace.xml
    filter:
      - css:
          selector: 'item > media|keywords'
          method: xml
          namespaces:
            media: http://search.yahoo.com/mrss/
+     - html2text
 
 Alternatively, use the XPath expression ``//*[name()='<tag_name>']`` to
 bypass the namespace entirely.
@@ -201,11 +211,11 @@ tag in its results:
 
 .. code:: yaml
 
-   url: https://example.org/
+   url: https://example.org/css-exclude.html
    filter:
      - css:
-         selector: 'body'
-         exclude: 'a'
+         selector: body
+         exclude: a
 
 
 Filtering PDF documents
@@ -223,18 +233,19 @@ consumes binary data and outputs text data.
 
 .. code-block:: yaml
 
-   url: https://example.net/sample.pdf
-   filter: pdf2text
+   url: https://example.net/pdf-test.pdf
+   filter:
+     - pdf2text
 
 
 If the PDF file is password protected, you can specify its password:
 
 .. code-block:: yaml
 
-   url: https://example.net/sample.pdf
-   filter: 
-    - pdf2text:
-        password: pdfpassword
+   url: https://example.net/pdf-test-password.pdf
+   filter:
+     - pdf2text:
+         password: urlwatchsecret
 
 
 Sorting of webpage content
@@ -246,8 +257,9 @@ the comparison.
 
 .. code:: yaml
 
-   url: https://example.net/
-   filter: sort
+   url: https://example.net/sorting.txt
+   filter:
+     - sort
 
 The sort filter takes an optional ``separator`` parameter that defines
 the item separator (by default sorting is line-based), for example to
@@ -255,7 +267,7 @@ sort text paragraphs (text separated by an empty line):
 
 .. code:: yaml
 
-   url: http://example.org/
+   url: http://example.org/paragraphs.txt
    filter:
      - sort:
          separator: "\n\n"
@@ -266,7 +278,7 @@ separator, this would turn ``3%2%4%1`` into ``4%3%2%1``):
 
 .. code:: yaml
 
-   url: http://example.org/
+   url: http://example.org/reverse-percent.txt
    filter:
      - sort:
          separator: '%'
@@ -281,8 +293,9 @@ can be used. By default it reverses lines:
 
 .. code:: yaml
 
-   url: http://example.com/
-   filter: reverse
+   url: http://example.com/reverse-lines.txt
+   filter:
+     - reverse
 
 This behavior can be changed by using an optional separator string
 argument (e.g. items separated by a pipe (``|``) symbol,
@@ -290,7 +303,7 @@ as in ``1|4|2|3``, which would be reversed to ``3|2|4|1``):
 
 .. code:: yaml
 
-   url: http://example.net/
+   url: http://example.net/reverse-separator.txt
    filter:
      - reverse: '|'
 
@@ -300,7 +313,7 @@ are separated by an empty line):
 
 .. code:: yaml
 
-   url: http://example.org/
+   url: http://example.org/reverse-paragraphs.txt
    filter:
      - reverse:
          separator: "\n\n"
@@ -314,10 +327,11 @@ project for the latest release version, to be notified of new releases:
 
 .. code:: yaml
 
-   url: "https://github.com/thp/urlwatch/releases/latest"
+   url: https://github.com/thp/urlwatch/releases
    filter:
      - xpath: '(//div[contains(@class,"release-timeline-tags")]//h4)[1]/a'
      - html2text: re
+     - strip
 
 
 Remove or replace text using regular expressions
@@ -342,8 +356,7 @@ string).
 
 .. code:: yaml
 
-   kind: url
-   url: https://example.com/
+   url: https://example.com/regex-substitute.html
    filter:
        - re.sub: '\s*href="[^"]*"'
        - re.sub:

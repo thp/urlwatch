@@ -8,4 +8,5 @@ python:
 install:
   - pip install -r requirements.txt
   - pip install pycodestyle==2.6.0
+  - pip install pdftotext
 script: nosetests -v
