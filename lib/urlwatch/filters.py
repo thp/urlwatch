@@ -35,6 +35,7 @@ import os
 import html.parser
 import hashlib
 import json
+import yaml
 
 from enum import Enum
 from lxml import etree
@@ -53,21 +54,19 @@ class FilterBase(object, metaclass=TrackSubClasses):
         self.job = job
         self.state = state
 
-    def _no_subfilters(self, subfilter):
-        if subfilter is not None:
-            raise ValueError('No subfilters supported for {}'.format(self.__kind__))
-
     @classmethod
     def filter_documentation(cls):
         result = []
         for sc in TrackSubClasses.sorted_by_kind(cls):
+            default_subfilter = getattr(sc, '__default_subfilter__', None)
             result.extend((
                 '  * %s - %s' % (sc.__kind__, sc.__doc__),
             ))
             if hasattr(sc, '__supported_subfilters__'):
-                result.append('    Optional parameters:')
                 for key, doc in sc.__supported_subfilters__.items():
-                    result.append('      %s ... %s' % (key, doc))
+                    result.append('      %s%s%s ... %s' % ('[' if key == default_subfilter else '', key,
+                                                           ']' if key == default_subfilter else '', doc))
+        result.append('\n[] ... Parameter can be supplied as unnamed value\n')
         return '\n'.join(result)
 
     @classmethod
@@ -85,19 +84,62 @@ class FilterBase(object, metaclass=TrackSubClasses):
         return data
 
     @classmethod
+    def normalize_filter_list(cls, filter_spec):
+        for filter_kind, subfilter in cls._internal_normalize_filter_list(filter_spec):
+            filtercls = cls.__subclasses__.get(filter_kind, None)
+
+            if filtercls is None:
+                raise ValueError('Unknown filter kind: {} (subfilter {})'.format(filter_kind, subfilter))
+
+            if getattr(filtercls, '__no_subfilter__', False) and subfilter:
+                raise ValueError('No subfilters supported for {}'.format(filter_kind))
+
+            if isinstance(subfilter, dict) and hasattr(filtercls, '__supported_subfilters__'):
+                provided_keys = set(subfilter.keys())
+                allowed_keys = set(filtercls.__supported_subfilters__.keys())
+                unknown_keys = provided_keys.difference(allowed_keys)
+                if unknown_keys and '<any>' not in allowed_keys:
+                    raise ValueError('Filter "{}" does not support subfilter(s): {} (supported: {})'.format(filter_kind,
+                                                                                                            unknown_keys,
+                                                                                                            allowed_keys))
+
+            yield filter_kind, subfilter
+
+    @classmethod
+    def _internal_normalize_filter_list(cls, filter_spec):
+        if isinstance(filter_spec, str):
+            old_filter_spec = filter_spec
+
+            # Legacy string-based filter list specification:
+            # "filter1:param1,filter2,filter3,filter4:param4"
+            filter_spec = [dict([filter_kind.split(':', 1)]) if ':' in filter_kind else filter_kind
+                           for filter_kind in filter_spec.split(',')]
+
+            logger.warn('String-based filter definitions (%s) are deprecated, please convert to dict-style:\n\n%s',
+                        old_filter_spec, yaml.dump(filter_spec, default_flow_style=False))
+
+        if isinstance(filter_spec, list):
+            for item in filter_spec:
+                if isinstance(item, str):
+                    filter_kind, subfilter = item, None
+                elif isinstance(item, dict):
+                    filter_kind, subfilter = next(iter(item.items()))
+
+                filtercls = cls.__subclasses__.get(filter_kind, None)
+
+                if isinstance(subfilter, dict):
+                    yield filter_kind, subfilter
+                elif subfilter is None:
+                    yield filter_kind, {}
+                elif hasattr(filtercls, '__default_subfilter__'):
+                    yield filter_kind, {getattr(filtercls, '__default_subfilter__'): subfilter}
+                else:
+                    yield filter_kind, subfilter
+
+    @classmethod
     def process(cls, filter_kind, subfilter, state, data):
         logger.info('Applying filter %r, subfilter %r to %s', filter_kind, subfilter, state.job.get_location())
         filtercls = cls.__subclasses__.get(filter_kind, None)
-        if filtercls is None:
-            raise ValueError('Unknown filter kind: %s:%s' % (filter_kind, subfilter))
-        if isinstance(subfilter, dict) and hasattr(filtercls, '__supported_subfilters__'):
-            provided_keys = set(subfilter.keys())
-            allowed_keys = set(filtercls.__supported_subfilters__.keys())
-            unknown_keys = provided_keys.difference(allowed_keys)
-            if unknown_keys:
-                raise ValueError('Filter "{}" does not support subfilter(s): {} (supported: {})'.format(filter_kind,
-                                                                                                        unknown_keys,
-                                                                                                        allowed_keys))
         return filtercls(state.job, state).filter(data, subfilter)
 
     @classmethod
@@ -108,7 +150,7 @@ class FilterBase(object, metaclass=TrackSubClasses):
     def match(self):
         return False
 
-    def filter(self, data, subfilter=None):
+    def filter(self, data, subfilter):
         raise NotImplementedError()
 
 
@@ -160,7 +202,7 @@ class LegacyHooksPyFilter(FilterBase):
     def match(self):
         return self.hooks is not None
 
-    def filter(self, data, subfilter=None):
+    def filter(self, data, subfilter):
         try:
             result = self.hooks.filter(self.job.get_location(), data)
             if result is None:
@@ -176,7 +218,9 @@ class BeautifyFilter(FilterBase):
 
     __kind__ = 'beautify'
 
-    def filter(self, data, subfilter=None):
+    __no_subfilter__ = True
+
+    def filter(self, data, subfilter):
         import jsbeautifier
         import cssbeautifier
         from bs4 import BeautifulSoup as bs
@@ -199,17 +243,22 @@ class Html2TextFilter(FilterBase):
 
     __kind__ = 'html2text'
 
-    def filter(self, data, subfilter=None):
+    __supported_subfilters__ = {
+        'method': 'Method to use for conversion (default: re)',
+        '<any>': 'Method-specific options passed to html2text',
+    }
 
-        if subfilter is None:
+    __default_subfilter__ = 'method'
+
+    def filter(self, data, subfilter):
+        if 'method' in subfilter:
+            method = subfilter['method']
+            del subfilter['method']
+            options = subfilter
+        else:
             method = 're'
             options = {}
-        elif isinstance(subfilter, dict):
-            method = subfilter.pop('method')
-            options = subfilter
-        elif isinstance(subfilter, str):
-            method = subfilter
-            options = {}
+
         from .html2txt import html2text
         return html2text(data, baseurl=getattr(self.job, 'url', getattr(self.job, 'navigate', '')),
                          method=method, options=options)
@@ -229,18 +278,14 @@ class Pdf2TextFilter(FilterBase):
         'password': 'PDF password for decryption',
     }
 
-    def filter(self, data, subfilter=None):
+    def filter(self, data, subfilter):
         # data must be bytes
         if not isinstance(data, bytes):
             raise ValueError('The pdf2text filter needs bytes input (is it the first filter?)')
 
-        if subfilter is None:
-            password = ''
-        elif isinstance(subfilter, dict):
-            password = subfilter['password']
         import pdftotext
         import io
-        return '\n\n'.join(pdftotext.PDF(io.BytesIO(data), password=password))
+        return '\n\n'.join(pdftotext.PDF(io.BytesIO(data), password=subfilter.get('password', '')))
 
 
 class Ical2TextFilter(FilterBase):
@@ -248,8 +293,9 @@ class Ical2TextFilter(FilterBase):
 
     __kind__ = 'ical2text'
 
-    def filter(self, data, subfilter=None):
-        self._no_subfilters(subfilter)
+    __no_subfilter__ = True
+
+    def filter(self, data, subfilter):
         from .ical2txt import ical2text
         return ical2text(data)
 
@@ -259,10 +305,14 @@ class JsonFormatFilter(FilterBase):
 
     __kind__ = 'format-json'
 
-    def filter(self, data, subfilter=None):
-        indentation = 4
-        if subfilter is not None:
-            indentation = int(subfilter)
+    __supported_subfilters__ = {
+        'indentation': 'Indentation level for pretty-printing',
+    }
+
+    __default_subfilter__ = 'indentation'
+
+    def filter(self, data, subfilter):
+        indentation = int(subfilter.get('indentation', 4))
         parsed_json = json.loads(data)
         return json.dumps(parsed_json, ensure_ascii=False, sort_keys=True, indent=indentation, separators=(',', ': '))
 
@@ -272,12 +322,18 @@ class GrepFilter(FilterBase):
 
     __kind__ = 'grep'
 
-    def filter(self, data, subfilter=None):
-        if subfilter is None:
+    __supported_subfilters__ = {
+        're': 'Lines matching this expression are kept (required)',
+    }
+
+    __default_subfilter__ = 're'
+
+    def filter(self, data, subfilter):
+        if 're' not in subfilter:
             raise ValueError('The grep filter needs a regular expression')
 
         return '\n'.join(line for line in data.splitlines()
-                         if re.search(subfilter, line) is not None)
+                         if re.search(subfilter['re'], line) is not None)
 
 
 class InverseGrepFilter(FilterBase):
@@ -285,12 +341,18 @@ class InverseGrepFilter(FilterBase):
 
     __kind__ = 'grepi'
 
-    def filter(self, data, subfilter=None):
-        if subfilter is None:
+    __supported_subfilters__ = {
+        're': 'Lines matching this expression are removed (required)',
+    }
+
+    __default_subfilter__ = 're'
+
+    def filter(self, data, subfilter):
+        if 're' not in subfilter:
             raise ValueError('The inverse grep filter needs a regular expression')
 
         return '\n'.join(line for line in data.splitlines()
-                         if re.search(subfilter, line) is None)
+                         if re.search(subfilter['re'], line) is None)
 
 
 class StripFilter(FilterBase):
@@ -298,8 +360,9 @@ class StripFilter(FilterBase):
 
     __kind__ = 'strip'
 
-    def filter(self, data, subfilter=None):
-        self._no_subfilters(subfilter)
+    __no_subfilter__ = True
+
+    def filter(self, data, subfilter):
         return data.strip()
 
 
@@ -358,11 +421,17 @@ class GetElementById(FilterBase):
 
     __kind__ = 'element-by-id'
 
-    def filter(self, data, subfilter=None):
-        if subfilter is None:
+    __supported_subfilters__ = {
+        'id': 'ID of the element to filter for (required)',
+    }
+
+    __default_subfilter__ = 'id'
+
+    def filter(self, data, subfilter):
+        if 'id' not in subfilter:
             raise ValueError('Need an element ID for filtering')
 
-        element_by_id = ElementsBy(FilterBy.ATTRIBUTE, 'id', subfilter)
+        element_by_id = ElementsBy(FilterBy.ATTRIBUTE, 'id', subfilter['id'])
         element_by_id.feed(data)
         return element_by_id.get_html()
 
@@ -372,11 +441,17 @@ class GetElementByClass(FilterBase):
 
     __kind__ = 'element-by-class'
 
-    def filter(self, data, subfilter=None):
-        if subfilter is None:
+    __supported_subfilters__ = {
+        'class': 'HTML class attribute to filter for (required)',
+    }
+
+    __default_subfilter__ = 'class'
+
+    def filter(self, data, subfilter):
+        if 'class' not in subfilter:
             raise ValueError('Need an element class for filtering')
 
-        element_by_class = ElementsBy(FilterBy.ATTRIBUTE, 'class', subfilter)
+        element_by_class = ElementsBy(FilterBy.ATTRIBUTE, 'class', subfilter['class'])
         element_by_class.feed(data)
         return element_by_class.get_html()
 
@@ -386,11 +461,17 @@ class GetElementByStyle(FilterBase):
 
     __kind__ = 'element-by-style'
 
-    def filter(self, data, subfilter=None):
-        if subfilter is None:
+    __supported_subfilters__ = {
+        'style': 'HTML style attribute value to filter for (required)',
+    }
+
+    __default_subfilter__ = 'style'
+
+    def filter(self, data, subfilter):
+        if 'style' not in subfilter:
             raise ValueError('Need an element style for filtering')
 
-        element_by_style = ElementsBy(FilterBy.ATTRIBUTE, 'style', subfilter)
+        element_by_style = ElementsBy(FilterBy.ATTRIBUTE, 'style', subfilter['style'])
         element_by_style.feed(data)
         return element_by_style.get_html()
 
@@ -400,11 +481,17 @@ class GetElementByTag(FilterBase):
 
     __kind__ = 'element-by-tag'
 
-    def filter(self, data, subfilter=None):
-        if subfilter is None:
+    __supported_subfilters__ = {
+        'tag': 'HTML tag name to filter for (required)',
+    }
+
+    __default_subfilter__ = 'tag'
+
+    def filter(self, data, subfilter):
+        if 'tag' not in subfilter:
             raise ValueError('Need a tag for filtering')
 
-        element_by_tag = ElementsBy(FilterBy.TAG, subfilter)
+        element_by_tag = ElementsBy(FilterBy.TAG, subfilter['tag'])
         element_by_tag.feed(data)
         return element_by_tag.get_html()
 
@@ -414,8 +501,9 @@ class Sha1Filter(FilterBase):
 
     __kind__ = 'sha1sum'
 
-    def filter(self, data, subfilter=None):
-        self._no_subfilters(subfilter)
+    __no_subfilter__ = True
+
+    def filter(self, data, subfilter):
         sha = hashlib.sha1()
         sha.update(data.encode('utf-8', 'ignore'))
         return sha.hexdigest()
@@ -426,8 +514,9 @@ class HexdumpFilter(FilterBase):
 
     __kind__ = 'hexdump'
 
-    def filter(self, data, subfilter=None):
-        self._no_subfilters(subfilter)
+    __no_subfilter__ = True
+
+    def filter(self, data, subfilter):
         data = bytearray(data.encode('utf-8', 'ignore'))
         blocks = [data[i * 16:(i + 1) * 16] for i in range(int((len(data) + (16 - 1)) / 16))]
         return '\n'.join('%s  %s' % (' '.join('%02x' % c for c in block),
@@ -563,7 +652,16 @@ class CssFilter(FilterBase):
 
     __kind__ = 'css'
 
-    def filter(self, data, subfilter=None):
+    __supported_subfilters__ = {
+        'selector': 'The CSS selector to use for filtering (required)',
+        'method': 'The method (html or xml) used for parsing',
+        'exclude': 'Elements to remove from the final result',
+        'namespaces': 'Mapping of XML namespaces for matching',
+    }
+
+    __default_subfilter__ = 'selector'
+
+    def filter(self, data, subfilter):
         lxml_parser = LxmlParser('css', subfilter, 'selector')
         lxml_parser.feed(data)
         return lxml_parser.get_filtered_data()
@@ -574,7 +672,16 @@ class XPathFilter(FilterBase):
 
     __kind__ = 'xpath'
 
-    def filter(self, data, subfilter=None):
+    __supported_subfilters__ = {
+        'path': 'The XPath to use for filtering (required)',
+        'method': 'The method (html or xml) used for parsing',
+        'exclude': 'Elements to remove from the final result',
+        'namespaces': 'Mapping of XML namespaces for matching',
+    }
+
+    __default_subfilter__ = 'path'
+
+    def filter(self, data, subfilter):
         lxml_parser = LxmlParser('xpath', subfilter, 'path')
         lxml_parser.feed(data)
         return lxml_parser.get_filtered_data()
@@ -586,31 +693,18 @@ class RegexSub(FilterBase):
     __kind__ = 're.sub'
 
     __supported_subfilters__ = {
-        'pattern': 'Regular expression to search for',
+        'pattern': 'Regular expression to search for (required)',
         'repl': 'Replacement string (default: empty string)',
     }
 
-    def filter(self, data, subfilter=None):
-        if subfilter is None:
-            raise ValueError('{} needs a subfilter'.format(self.__kind__))
+    __default_subfilter__ = 'pattern'
 
-        # Allow for just specifying a regular expression (that will be removed)
-        if isinstance(subfilter, str):
-            subfilter = {'pattern': subfilter}
+    def filter(self, data, subfilter):
+        if 'pattern' not in subfilter:
+            raise ValueError('{} needs a pattern'.format(self.__kind__))
 
         # Default: Replace with empty string if no "repl" value is set
-        return re.sub(subfilter.get('pattern'), subfilter.get('repl', ''), data)
-
-
-def separator_from_subfilter(subfilter):
-    if subfilter is None:
-        return '\n'
-    elif isinstance(subfilter, dict):
-        return subfilter.get('separator', '\n')
-    elif isinstance(subfilter, str):
-        return subfilter
-    else:
-        raise ValueError('Subfilter needs to be a dict or str, got: {}'.format(subfilter))
+        return re.sub(subfilter['pattern'], subfilter.get('repl', ''), data)
 
 
 class SortFilter(FilterBase):
@@ -623,9 +717,11 @@ class SortFilter(FilterBase):
         'separator': 'Item separator (default: newline)',
     }
 
-    def filter(self, data, subfilter=None):
+    __default_subfilter__ = 'separator'
+
+    def filter(self, data, subfilter):
         reverse = (isinstance(subfilter, dict) and subfilter.get('reverse', False) is True)
-        separator = separator_from_subfilter(subfilter)
+        separator = subfilter.get('separator', '\n')
         return separator.join(sorted(data.split(separator), key=str.casefold, reverse=reverse))
 
 
@@ -638,6 +734,8 @@ class ReverseFilter(FilterBase):
         'separator': 'Item separator (default: newline)',
     }
 
-    def filter(self, data, subfilter=None):
-        separator = separator_from_subfilter(subfilter)
+    __default_subfilter__ = 'separator'
+
+    def filter(self, data, subfilter):
+        separator = subfilter.get('separator', '\n')
         return separator.join(reversed(data.split(separator)))
