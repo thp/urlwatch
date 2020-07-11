@@ -2,7 +2,8 @@ import os
 import logging
 import yaml
 from urlwatch.filters import FilterBase
-from nose.tools import eq_
+from nose.tools import eq_, raises
+
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +12,7 @@ def test_normalize_filter_list():
     testdata = [
         ('grep', [('grep', {})]),
         ('grep:foo', [('grep', {'re': 'foo'})]),
-        ('a,b:x,c', [('a', {}), ('b', 'x'), ('c', {})]),
+        ('beautify,grep:foo,html2text', [('beautify', {}), ('grep', {'re': 'foo'}), ('html2text', {})]),
         ([{'grep': None}], [('grep', {})]),
         ([{'grep': {'re': 'bla'}}], [('grep', {'re': 'bla'})]),
         ('re.sub:.*', [('re.sub', {'pattern': '.*'})]),
@@ -57,3 +58,18 @@ def test_filters():
         filter_tests = yaml.load(fp, Loader=yaml.SafeLoader)
     for test_name in filter_tests:
         yield check_filter, test_name
+
+
+@raises(ValueError)
+def test_invalid_filter_name_raises_valueerror():
+    list(FilterBase.normalize_filter_list(['afilternamethatdoesnotexist']))
+
+
+@raises(ValueError)
+def test_providing_subfilter_to_filter_without_subfilter_raises_valueerror():
+    list(FilterBase.normalize_filter_list([{'beautify': {'asubfilterthatdoesnotexist': True}}]))
+
+
+@raises(ValueError)
+def test_providing_unknown_subfilter_raises_valueerror():
+    list(FilterBase.normalize_filter_list([{'grep': {'re': 'Price: .*', 'anothersubfilter': '42'}}]))

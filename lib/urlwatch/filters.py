@@ -84,6 +84,28 @@ class FilterBase(object, metaclass=TrackSubClasses):
 
     @classmethod
     def normalize_filter_list(cls, filter_spec):
+        for filter_kind, subfilter in cls._internal_normalize_filter_list(filter_spec):
+            filtercls = cls.__subclasses__.get(filter_kind, None)
+
+            if filtercls is None:
+                raise ValueError('Unknown filter kind: {} (subfilter {})'.format(filter_kind, subfilter))
+
+            if getattr(filtercls, '__no_subfilter__', False) and subfilter:
+                raise ValueError('No subfilters supported for {}'.format(filter_kind))
+
+            if isinstance(subfilter, dict) and hasattr(filtercls, '__supported_subfilters__'):
+                provided_keys = set(subfilter.keys())
+                allowed_keys = set(filtercls.__supported_subfilters__.keys())
+                unknown_keys = provided_keys.difference(allowed_keys)
+                if unknown_keys and '<any>' not in allowed_keys:
+                    raise ValueError('Filter "{}" does not support subfilter(s): {} (supported: {})'.format(filter_kind,
+                                                                                                            unknown_keys,
+                                                                                                            allowed_keys))
+
+            yield filter_kind, subfilter
+
+    @classmethod
+    def _internal_normalize_filter_list(cls, filter_spec):
         if isinstance(filter_spec, str):
             # Legacy string-based filter list specification:
             # "filter1:param1,filter2,filter3,filter4:param4"
@@ -112,18 +134,6 @@ class FilterBase(object, metaclass=TrackSubClasses):
     def process(cls, filter_kind, subfilter, state, data):
         logger.info('Applying filter %r, subfilter %r to %s', filter_kind, subfilter, state.job.get_location())
         filtercls = cls.__subclasses__.get(filter_kind, None)
-        if filtercls is None:
-            raise ValueError('Unknown filter kind: %s:%s' % (filter_kind, subfilter))
-        if getattr(filtercls, '__no_subfilter__', False) and subfilter:
-            raise ValueError('No subfilters supported for {}'.format(filter_kind))
-        if isinstance(subfilter, dict) and hasattr(filtercls, '__supported_subfilters__'):
-            provided_keys = set(subfilter.keys())
-            allowed_keys = set(filtercls.__supported_subfilters__.keys())
-            unknown_keys = provided_keys.difference(allowed_keys)
-            if unknown_keys and '<any>' not in allowed_keys:
-                raise ValueError('Filter "{}" does not support subfilter(s): {} (supported: {})'.format(filter_kind,
-                                                                                                        unknown_keys,
-                                                                                                        allowed_keys))
         return filtercls(state.job, state).filter(data, subfilter)
 
     @classmethod
