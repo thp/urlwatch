@@ -135,8 +135,8 @@ class ReporterBase(object, metaclass=TrackSubClasses):
                 else:
                     raise subprocess.CalledProcessError(proc.returncode, cmdline)
 
-        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
-        timestamp_new = email.utils.formatdate(time.time(), localtime=1)
+        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=True)
+        timestamp_new = email.utils.formatdate(time.time(), localtime=True)
         return ''.join(difflib.unified_diff(job_state.old_data.splitlines(keepends=True),
                                             job_state.new_data.splitlines(keepends=True),
                                             '@', '@', timestamp_old, timestamp_new))
@@ -232,8 +232,8 @@ class HtmlReporter(ReporterBase):
             return SafeHtml('...')
 
         if difftype == 'table':
-            timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
-            timestamp_new = email.utils.formatdate(time.time(), localtime=1)
+            timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=True)
+            timestamp_new = email.utils.formatdate(time.time(), localtime=True)
             html_diff = difflib.HtmlDiff()
             return SafeHtml(html_diff.make_table(job_state.old_data.splitlines(keepends=True),
                                                  job_state.new_data.splitlines(keepends=True),
