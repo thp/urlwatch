@@ -17,6 +17,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Support for a Redis cache backend via `--cache=redis://localhost:6379/`
 - New `pdf2text` filter (must be first filter in chain) to convert PDF files to plaintext
 - Job filter examples in the "Filters" documentation are now unit-tested
+- New `shellpipe` filter that can filter text with arbitrary command-line utilities / shell scripts
 
 ### Fixed
 
