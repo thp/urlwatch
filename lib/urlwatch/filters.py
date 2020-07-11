@@ -758,8 +758,6 @@ class ShellPipeFilter(FilterBase):
         if 'command' not in subfilter:
             raise ValueError('{} filter needs a command'.format(self.__kind__))
 
-        command = subfilter['command']
-
         encoding = sys.getdefaultencoding()
 
         env = {
