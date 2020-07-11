@@ -77,10 +77,32 @@ WDIFF_REMOVED_RE = r'[\[][-].*?[-][]]'
 
 
 @functools.lru_cache(maxsize=1)
-def cached_unified_diff(old_data, new_data, timestamp_old, timestamp_new):
-    return ''.join(difflib.unified_diff(old_data.splitlines(keepends=True),
-                                        new_data.splitlines(keepends=True),
-                                        '@', '@', timestamp_old, timestamp_new))
+def cached_unified_diff(old_data, new_data, timestamp_old, timestamp_new, comparison_filter):
+    contextlines = 0 if comparison_filter else 3
+    diff = difflib.unified_diff(old_data.splitlines(keepends=True), new_data.splitlines(keepends=True),
+                                '@', '@', timestamp_old, timestamp_new, contextlines)
+    if comparison_filter == 'additions':
+        before_len = len(diff) - 2
+        head = '...' + diff[0][3:]
+        diff = [dif for dif in diff if dif.startswith('+') or dif.startswith('@')]
+        diff = [dif for dif, dif2 in zip([''] + diff, diff + ['']) if
+                not (dif.startswith('@') and dif2.startswith('@'))][1:]
+        diff = diff[:-1] if diff[-1].startswith('@') else diff
+        diff = diff + ['.** No additions (only deletions)\n'] if len(diff) == 1 else diff
+        diff = (diff + [f'--- WARNING: {before_len - len(diff) - 2} lines deleted; suggest checking source']
+                if len(diff) / before_len < .25 else diff)
+        diff = [head, diff[0], '-**Comparison type: Additions only**\n'] + diff[1:]
+    elif comparison_filter == 'deletions':
+        head = '...' + diff[1][3:]
+        diff = [dif for dif in diff if dif.startswith('-') or dif.startswith('@')]
+        diff = [dif for dif, dif2 in zip([''] + diff, diff + ['']) if
+                not (dif.startswith('@') and dif2.startswith('@'))][1:]
+        diff = diff[:-1] if diff[-1].startswith('@') else diff
+        diff = diff + ['.** No deletions (only additions)\n'] if len(diff) == 1 else diff
+        diff = [diff[0], head, '+**Comparison type: Deletions only**\n'] + diff[1:]
+    elif comparison_filter is not None:
+        raise ValueError('Comparison type filter not supported: %r' % (comparison_filter,))
+    return ''.join(diff)
 
 
 class ReporterBase(object, metaclass=TrackSubClasses):
@@ -144,31 +166,9 @@ class ReporterBase(object, metaclass=TrackSubClasses):
 
         timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
         timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-        contextlines = 0 if job_state.job.comparison_filter else 3
-        diff = list(cached_unified_diff(job_state.old_data, job_state.new_data, timestamp_old, timestamp_new))
-        if job_state.job.comparison_filter == 'additions':
-            before_len = len(diff) - 2
-            head = '...' + diff[0][3:]
-            diff = [dif for dif in diff if dif.startswith('+') or dif.startswith('@')]
-            diff = [dif for dif, dif2 in zip([''] + diff, diff + ['']) if
-                    not (dif.startswith('@') and dif2.startswith('@'))][1:]
-            diff = diff[:-1] if diff[-1].startswith('@') else diff
-            diff = diff + ['.** No additions (only deletions)\n'] if len(diff) == 1 else diff
-            diff = (diff + [f'--- WARNING: {before_len - len(diff) - 2} lines deleted; suggest checking source']
-                    if len(diff) / before_len < .25 else diff)
-            diff = [head, diff[0], '-**Comparison type: Additions only**\n'] + diff[1:]
-        elif job_state.job.comparison_filter == 'deletions':
-            head = '...' + diff[1][3:]
-            diff = [dif for dif in diff if dif.startswith('-') or dif.startswith('@')]
-            diff = [dif for dif, dif2 in zip([''] + diff, diff + ['']) if
-                    not (dif.startswith('@') and dif2.startswith('@'))][1:]
-            diff = diff[:-1] if diff[-1].startswith('@') else diff
-            diff = diff + ['.** No deletions (only additions)\n'] if len(diff) == 1 else diff
-            diff = [diff[0], head, '+**Comparison type: Deletions only**\n'] + diff[1:]
-        elif job_state.job.comparison_filter is not None:
-            raise ValueError('Comparison type filter not supported: %r' % (job_state.job.comparison_filter,))
-
-        return ''.join(diff)
+        text = cached_unified_diff(job_state.old_data, job_state.new_data, timestamp_old, timestamp_new, job_state.job.comparison_filter)
+        print(cached_unified_diff.cache_info())
+        return text
 
 
 class SafeHtml(object):
