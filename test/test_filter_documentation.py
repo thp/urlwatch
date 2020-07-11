@@ -31,7 +31,7 @@ class YAMLCodeBlockVisitor(docutils.nodes.NodeVisitor):
 
     def visit_literal_block(self, node):
         if 'yaml' in node.attributes['classes']:
-            self.jobs.append(yaml.load(node.astext()))
+            self.jobs.append(yaml.safe_load(node.astext()))
 
     def unknown_visit(self, node: docutils.nodes.Node) -> None:
         ...
@@ -42,7 +42,7 @@ def test_url():
     visitor = YAMLCodeBlockVisitor(doc)
     doc.walk(visitor)
 
-    testdata = yaml.load(open(os.path.join(root, 'test/data/filter_documentation_testdata.yaml')).read())
+    testdata = yaml.safe_load(open(os.path.join(root, 'test/data/filter_documentation_testdata.yaml')).read())
 
     jobs = {job['url']: job for job in visitor.jobs}
 
