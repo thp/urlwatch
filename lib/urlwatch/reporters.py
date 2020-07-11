@@ -235,11 +235,11 @@ class HtmlReporter(ReporterBase):
 
             for line in unified_diff.splitlines():
                 if line[0] == '+':
-                    yield '<span style="color:green">' + '+' + mark_to_html(line[1:]) + '</span>'
+                    yield '<span style="color:green">+{html}</span>'.format(html=mark_to_html(line[1:]))
                 elif line[0] == '-':
-                    yield '<span style="color:red">' + '-' + mark_to_html(line[1:]) + '</span>'
+                    yield '<span style="color:red">+{html}</span>'.format(html=mark_to_html(line[1:]))
                 elif line[0] == '@':
-                    yield '<span style="background-color:whitesmoke">' + line + '</span>'
+                    yield '<span style="background-color:whitesmoke">+{line}</span>'.format(line=line)
                 else:
                     yield line[0] + mark_to_html(line[1:])
         else:
@@ -269,8 +269,8 @@ class HtmlReporter(ReporterBase):
             return ''.join(('<pre style="white-space:pre-wrap">', '\n'.join(self._diff_to_html(
                 self.unified_diff(job_state), getattr(job_state.job, 'is_markdown', False))), '</pre>'))
         elif difftype == 'table':
-            timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=True)
-            timestamp_new = email.utils.formatdate(time.time(), localtime=True)
+            timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
+            timestamp_new = email.utils.formatdate(time.time(), localtime=1)
             html_diff = difflib.HtmlDiff()
             table = html_diff.make_table(job_state.old_data.splitlines(keepends=True),
                                          job_state.new_data.splitlines(keepends=True),
