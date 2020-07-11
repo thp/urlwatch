@@ -76,6 +76,13 @@ WDIFF_ADDED_RE = r'[{][+].*?[+][}]'
 WDIFF_REMOVED_RE = r'[\[][-].*?[-][]]'
 
 
+@functools.lru_cache(maxsize=1)
+def cached_unified_diff(old_data, new_data, timestamp_old, timestamp_new):
+    return ''.join(difflib.unified_diff(old_data.splitlines(keepends=True),
+                                        new_data.splitlines(keepends=True),
+                                        '@', '@', timestamp_old, timestamp_new))
+
+
 class ReporterBase(object, metaclass=TrackSubClasses):
     __subclasses__ = {}
 
@@ -118,7 +125,6 @@ class ReporterBase(object, metaclass=TrackSubClasses):
     def submit(self):
         raise NotImplementedError()
 
-    @functools.lru_cache(maxsize=1)
     def unified_diff(self, job_state):
         if job_state.job.diff_tool is not None:
             with tempfile.TemporaryDirectory() as tmpdir:
@@ -138,9 +144,9 @@ class ReporterBase(object, metaclass=TrackSubClasses):
 
         timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
         timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-        return ''.join(difflib.unified_diff(job_state.old_data.splitlines(keepends=True),
-                                            job_state.new_data.splitlines(keepends=True),
-                                            '@', '@', timestamp_old, timestamp_new))
+        text = cached_unified_diff(job_state.old_data, job_state.new_data, timestamp_old, timestamp_new)
+        print(cached_unified_diff.cache_info())
+        return text
 
 
 class SafeHtml(object):
