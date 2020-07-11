@@ -1,0 +1,311 @@
+http://example.org/idtest.html:
+  input: |-
+    <html>
+    <body>
+      <h1>ID Test</h1>
+      <p>Foo.</p>
+      <div id="something">Only this element.</div>
+      <p>And no other element.</p>
+    </body>
+    </html>
+  output: |-
+    <div id="something">Only this element.</div>
+http://example.net/id2text.html:
+  input: |-
+    <html>
+    <body>
+      <h1>ID Test</h1>
+      <p>Foo.</p>
+      <div id="something">Only this element, only the text.</div>
+      <p>And no other element.</p>
+    </body>
+    </html>
+  output: |-
+    Only this element, only the text.
+https://example.net/version.html:
+  input: |-
+    <html>
+    <body>
+      <h1>Software Release Page</h1>
+      <p>This is the software page of the bar tool.</p>
+      <p>Current version: 1.2.3</p>
+      <p>There might be some other information here, too.</p>
+    </body>
+    </html>
+  output: "Current version: 1.2.3"
+https://example.org/bodytag.html:
+  input: |-
+    <html>
+    <head>
+    <title>I Sing The Body Electric</title>
+    </head>
+    <body>
+      <marquee>The Body Tag</marquee>
+      <p>Indeed, just the body tag.</p>
+    </body>
+    </html>
+  output: |-
+    <body>
+      <marquee>The Body Tag</marquee>
+      <p>Indeed, just the body tag.</p>
+    </body>
+https://example.net/xpath.html:
+  input: |-
+    <html>
+    <head>
+    <title>Oh My HTML4</title>
+    </head>
+    <body>
+      <marquee>Just Below The Body Tag</marquee>
+      <p>Indeed, just BELOW the body tag. <marquee>Not this one.</marquee></p>
+      <marquee>But there is more</marquee>
+    </body>
+    </html>
+  output: |
+    <marquee>Just Below The Body Tag</marquee>
+
+    <marquee>But there is more</marquee>
+https://example.net/css.html:
+  input: |-
+    <html>
+    <body>
+      <h1>Some</h1>
+      <ul id="fancy">
+        <li class="unchecked">Foo</li>
+        <li>Bar</li>
+        <li>Baz</li>
+      </ul>
+      <h2>More</h2>
+      <ul id="groceries">
+        <li class="unchecked">Milk</li>
+        <li>Honey</li>
+        <li class="unchecked">Bread</li>
+        <li>Butter</li>
+      </ul>
+    </body>
+    </html>
+  output: |
+    <li class="unchecked">Milk</li>
+
+    <li class="unchecked">Bread</li>
+https://example.com/blog/xpath-index.rss:
+  input: |-
+    <rss>
+      <item>
+        <title>Fancy</title>
+        <pubDate>2020-07-11</pubDate>
+        <description>Bla bla bla</description>
+      </item>
+
+      <item>
+        <title>Pants</title>
+        <pubDate>2020-07-12</pubDate>
+        <description>Hey Ho Lets Go</description>
+      </item>
+    </rss>
+  output: |-
+    Fancy
+    2020-07-11
+    Pants
+    2020-07-12
+http://example.com/blog/css-index.rss:
+  input: |-
+    <rss>
+      <item>
+        <title>Fancy</title>
+        <pubDate>2020-07-11</pubDate>
+        <description>Bla bla bla</description>
+      </item>
+
+      <item>
+        <title>Pants</title>
+        <pubDate>2020-07-12</pubDate>
+        <description>Hey Ho Lets Go</description>
+      </item>
+    </rss>
+  output: |-
+    Fancy
+    2020-07-11
+    Pants
+    2020-07-12
+https://example.net/feed/xpath-namespace.xml:
+  input: |-
+    <?xml version="1.0"?>
+    <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+      <channel>
+        <title>Weird</title>
+        <description>The latest from some page</description>
+        <language>en</language>
+        <item>
+          <title>How Mysterious Protest Messages Have Filled the Skies</title>
+          <pubDate>Fri, 10 Jul 2020 20:37:00 +0000</pubDate>
+          <description>Hello World From Testing Data</description>
+          <media:keywords>protests</media:keywords>
+        </item>
+      </channel>
+    </rss>
+  output: |-
+    protests
+http://example.org/feed/css-namespace.xml:
+  input: |-
+    <?xml version="1.0"?>
+    <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+      <channel>
+        <title>Weird</title>
+        <description>The latest from some page</description>
+        <language>en</language>
+        <item>
+          <title>How Mysterious Protest Messages Have Filled the Skies</title>
+          <pubDate>Fri, 10 Jul 2020 20:37:00 +0000</pubDate>
+          <description>Hello World From Testing Data</description>
+          <media:keywords>stylesheets</media:keywords>
+        </item>
+      </channel>
+    </rss>
+  output: |-
+    stylesheets
+https://example.org/css-exclude.html:
+  input: |-
+    <html>
+    <body>
+      <h1>A page in a book</h1>
+      <p>And some paragraph, too. <a href="http://example.net/">Also check out example.net!</a></p>
+    </body>
+    </html>
+  output: |
+    <body>
+      <h1>A page in a book</h1>
+      <p>And some paragraph, too. </p>
+    </body>
+https://example.net/pdf-test.pdf:
+  filename: pdf-test.pdf
+  output: "A PDF Document that can be turned into plain text."
+https://example.net/pdf-test-password.pdf:
+  filename: pdf-test-password.pdf
+  output: "A password-protected PDF Document that can be turned into plain text."
+https://example.net/sorting.txt:
+  input: |-
+    A
+    B
+    D
+    E
+    C
+  output: |-
+    A
+    B
+    C
+    D
+    E
+http://example.org/paragraphs.txt:
+  input: |-
+    A sometimes sortable
+    paragraph document.
+
+    Could be the thing
+    we use for testing.
+
+    But does it get
+    sorted correctly?
+  output: |-
+    A sometimes sortable
+    paragraph document.
+
+    But does it get
+    sorted correctly?
+
+    Could be the thing
+    we use for testing.
+http://example.org/sort-reverse-percent.txt:
+  input: 'C%B%A%D%E%F'
+  output: 'F%E%D%C%B%A'
+http://example.com/reverse-lines.txt:
+  input: |-
+    Mercury
+    Venus
+    Earth
+    Mars
+  output: |-
+    Mars
+    Earth
+    Venus
+    Mercury
+http://example.net/reverse-separator.txt:
+  input: "1|4|2|3"
+  output: "3|2|4|1"
+http://example.org/reverse-paragraphs.txt:
+  input: |-
+    When there are multiple
+    paragraphs like this.
+
+    And we reverse their
+    ordering in a test.
+
+    What do you think would
+    the result look like?
+  output: |-
+    What do you think would
+    the result look like?
+
+    And we reverse their
+    ordering in a test.
+
+    When there are multiple
+    paragraphs like this.
+https://github.com/thp/urlwatch/releases:
+  input: |-
+    <div class="release-timeline-tags release-entry">
+      <h4 class="flex-auto min-width-0 pr-2 pb-1 commit-title">
+        <a href="/thp/urlwatch/releases/tag/2.18">
+          2.18
+        </a>
+      </h4>
+    </div>
+  output: |-
+    2.18
+https://example.com/regex-substitute.html:
+  input: |-
+    <div>
+      <h1>Welcome to this webpage</h1>
+      <a href="http://example.com/">Some Link</a>
+    </div>
+  output: |-
+    <div>
+      HEADING 1: Welcome to this webpage<END OF TAG h1>
+      <a>Some Link<END OF TAG a>
+    <END OF TAG div>
+https://example.net/shellpipe-grep.txt:
+  input: |-
+    <h1>Welcome to our price watching page!</h1>
+    <p>Hello.</p> The current Price: <SPAN>42 USD</SPAN> is this.
+    <em>Can the shellpipe filter deal with this properly?
+  output: |
+    Price: <SPAN>42 USD</SPAN>
+https://example.org/shellpipe-multiline.txt:
+  input: |
+    Welcome to the lottery webpage.
+    The numbers for 2020-07-11 are:
+
+       4, 8, 15, 16, 23 and 42
+
+    The next draw is on 2020-07-13.
+    Thank you for visiting the lottery webpage.
+  output: |
+    The numbers for 2020-07-11 are:
+
+       4, 8, 15, 16, 23 and 42
+
+    The next draw is on 2020-07-13.
+    Input lines: 7
+https://example.net/shellpipe-awk-oneliner.txt:
+  input: |
+    Hello
+    World
+    How
+    Are
+    You
+  output: |
+    1 Hello
+    2 World
+    3 How
+    4 Are
+    5 You

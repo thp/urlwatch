@@ -12,6 +12,12 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Sphinx-based documentation
 - `reverse` filter: Reverse input items (default: line-based) with optional `separator`
 - Add `__supported_subfilters__` to `FilterBase` for sub filter checking and `--features` output
+- Add `__default_subfilter__` to `FilterBase` to map value-only parameters to dict parameters,
+  for example the `grep` filter now has a default subfilter named `re`
+- Support for a Redis cache backend via `--cache=redis://localhost:6379/`
+- New `pdf2text` filter (must be first filter in chain) to convert PDF files to plaintext
+- Job filter examples in the "Filters" documentation are now unit-tested
+- New `shellpipe` filter that can filter text with arbitrary command-line utilities / shell scripts
 
 ### Fixed
 
@@ -22,7 +28,14 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - `sort` filter: Add `reverse` option to reverse the sorting order
 - `sort` filter: Add `separator` option to specify item separator (default is still line-based)
 - Travis CI: Set `pycodestyle` version to 2.6.0 to avoid CI breakage when new style checks are added
+- Most filters that only had unnamed subfilters (e.g. `grep`) now have a named default subfilter
 - The ``pushover`` reporter can now have the message ``priority`` configured
+
+### Deprecated
+
+- String-based filter definitions (e.g. `html2text,grep:Current.*version,strip`) are now
+  deprecated, it is recommended to use YAML-based dictionary-style listing of filters,
+  which is more flexible, easier to read and write and more structured
 
 
 ## [2.18] -- 2020-05-03
@@ -32,6 +45,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Support `ignore_timeout_errors` and `ignore_too_many_redirects` for URL jobs (#423, by Josh aka Zevlag)
 - HTML reporter: Add `viewport` meta tag for improved viewing on mobile devices (#432, by Mike Borsetti)
 - Optional support for insecure SMTP password storage in the config; use with caution (#431)
+- Add `matrix` reporter
 
 ### Fixed
 - Fix `--test-filter` when the specified job is not found
