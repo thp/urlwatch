@@ -76,6 +76,13 @@ WDIFF_ADDED_RE = r'[{][+].*?[+][}]'
 WDIFF_REMOVED_RE = r'[\[][-].*?[-][]]'
 
 
+@functools.lru_cache(maxsize=1)
+def cached_unified_diff(old_data, new_data, timestamp_old, timestamp_new):
+    return ''.join(difflib.unified_diff(old_data.splitlines(keepends=True),
+                                        new_data.splitlines(keepends=True),
+                                        '@', '@', timestamp_old, timestamp_new))
+
+
 class ReporterBase(object, metaclass=TrackSubClasses):
     __subclasses__ = {}
 
@@ -135,12 +142,10 @@ class ReporterBase(object, metaclass=TrackSubClasses):
                 else:
                     raise subprocess.CalledProcessError(proc.returncode, cmdline)
 
-        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=True)
-        timestamp_new = email.utils.formatdate(time.time(), localtime=True)
+        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
+        timestamp_new = email.utils.formatdate(time.time(), localtime=1)
         contextlines = 0 if job_state.job.comparison_filter else 3
-        diff = list(difflib.unified_diff(job_state.old_data.splitlines(keepends=True),
-                                         job_state.new_data.splitlines(keepends=True),
-                                         '@', '@', timestamp_old, timestamp_new, n=contextlines))
+        diff = list(cached_unified_diff(job_state.old_data, job_state.new_data, timestamp_old, timestamp_new))
         if job_state.job.comparison_filter == 'additions':
             before_len = len(diff) - 2
             head = '...' + diff[0][3:]
