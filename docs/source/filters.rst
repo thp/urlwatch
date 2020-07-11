@@ -25,6 +25,8 @@ The list of built-in filters can be retrieved using::
 .. To convert the "urlwatch --features" output, use:
    sed -e 's/^  \* \(.*\) - \(.*\)$/- **\1**: \2/'
 
+.. _iCalendar: https://en.wikipedia.org/wiki/ICalendar
+
 
 The following filters are available:
 
