@@ -109,11 +109,83 @@ Job-specific optional keys:
 
 Optional keys for all job types
 -------------------------------
-
+- :ref:`comparison_filter`: fiter unified diff output to keep only addition lines or deleted lines
 - ``name``: Human-readable name/label of the job
 - ``filter``: :ref:`filters` (if any) to apply to the output
 - ``max_tries``: Number of times to retry fetching the resource
 - ``diff_tool``: Command to a custom tool for generating diff text
 - ``compared_versions``: Number of versions to compare for similarity
 - ``kind`` (redundant): Either ``url``, ``shell`` or ``browser``.  Automatically derived from the unique key (``url``, ``command`` or ``navigate``) of the job type
+
+
+.. _comparison_filter:
+
+``comparison_filter``
+^^^^^^^^^^^^^^^^^^^^^
+
+The ``comparison_filter`` filters the output of the unified diff to keep only addition or deleted lines
+ - A value of `additions` will cause reports to contain only lines that are added by the diff (no deletions).
+ - A value of `deleted` key will cause reports to contain only lines that are deleted by the diff (no additions).
+
+`comparison_filter: additions` is extremely useful for monitoring new content on sites where content gets added while old content "scrolls" away.
+
+Because lines that are modified generate both a deleted and an added line by the diff, this filters always displays modified lines.
+
+As a safeguard, `additions` will warn when 75% of more of the change consists of deletions.
+
+
+Sample output for `additions`:
+
+.. code-block:: none
+
+   ---------------------------------------------------------------------------
+   CHANGED: https://example.com
+   ---------------------------------------------------------------------------
+   ... @   Sat, 23 May 2020 00:00:00 +0000
+   +++ @   Sat, 23 May 2020 01:00:00 +0000
+   -**Comparison type: Additions only**
+   @@ -1,2 +1,2 @@
+   +This is a line that has been added or changed
+
+Sample output for `deletions`:
+
+.. code-block:: none
+
+   ---------------------------------------------------------------------------
+   CHANGED: https://example.com
+   ---------------------------------------------------------------------------
+   --- @   Sat, 23 May 2020 00:00:00 +0000
+   ... @   Sat, 23 May 2020 01:00:00 +0000
+   +**Comparison type: Deletions only**
+   @@ -1,2 +1,2 @@
+   -This is a line that has been deleted or changed
+
+Sample output for `additions` when the 75% deletions safeguard is triggered:
+
+.. code-block:: none
+
+   ---------------------------------------------------------------------------
+   CHANGED: https://example.com
+   ---------------------------------------------------------------------------
+   ... @   Sat, 23 May 2020 00:00:00 +0000
+   +++ @   Sat, 23 May 2020 01:00:00 +0000
+   -**Comparison type: Additions only**
+   .** No additions (only deletions)
+   --- WARNING: 39 lines deleted; suggest checking source
+   ---------------------------------------------------------------------------
+
+
+Workaround: due to legacy logic in urlwatch, we are unable to suppress reporting when all changes are filtered out, so a message is added instead:
+
+.. code-block:: none
+
+
+   ---------------------------------------------------------------------------
+   CHANGED: https://example.com
+   ---------------------------------------------------------------------------
+   ... @   Sat, 23 May 2020 00:00:00 +0000
+   +++ @   Sat, 23 May 2020 01:00:00 +0000
+   -**Comparison type: Additions only**
+   .** No additions (only deletions)
+   ---------------------------------------------------------------------------
 
