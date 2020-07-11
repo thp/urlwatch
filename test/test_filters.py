@@ -10,14 +10,17 @@ logger = logging.getLogger(__name__)
 
 def test_normalize_filter_list():
     testdata = [
+        # Legacy string-style filter definition conversion
         ('grep', [('grep', {})]),
         ('grep:foo', [('grep', {'re': 'foo'})]),
         ('beautify,grep:foo,html2text', [('beautify', {}), ('grep', {'re': 'foo'}), ('html2text', {})]),
+        ('re.sub:.*', [('re.sub', {'pattern': '.*'})]),
+        ('re.sub', [('re.sub', {})]),
+
+        # New dict-style filter definition normalization/mapping
         ([{'grep': None}], [('grep', {})]),
         ([{'grep': {'re': 'bla'}}], [('grep', {'re': 'bla'})]),
-        ('re.sub:.*', [('re.sub', {'pattern': '.*'})]),
         ([{'reverse': '\n\n'}], [('reverse', {'separator': '\n\n'})]),
-        ('re.sub', [('re.sub', {})]),
         (['html2text', {'grep': 'Current.*version'}, 'strip'], [
             ('html2text', {}),
             ('grep', {'re': 'Current.*version'}),

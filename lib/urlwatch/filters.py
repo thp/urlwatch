@@ -35,6 +35,7 @@ import os
 import html.parser
 import hashlib
 import json
+import yaml
 
 from enum import Enum
 from lxml import etree
@@ -107,10 +108,15 @@ class FilterBase(object, metaclass=TrackSubClasses):
     @classmethod
     def _internal_normalize_filter_list(cls, filter_spec):
         if isinstance(filter_spec, str):
+            old_filter_spec = filter_spec
+
             # Legacy string-based filter list specification:
             # "filter1:param1,filter2,filter3,filter4:param4"
             filter_spec = [dict([filter_kind.split(':', 1)]) if ':' in filter_kind else filter_kind
                            for filter_kind in filter_spec.split(',')]
+
+            logger.warn('String-based filter definitions (%s) are deprecated, please convert to dict-style:\n\n%s',
+                        old_filter_spec, yaml.dump(filter_spec, default_flow_style=False))
 
         if isinstance(filter_spec, list):
             for item in filter_spec:
