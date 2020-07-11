@@ -31,6 +31,7 @@
 import logging
 import os
 
+from .storage import YamlConfigStorage, CacheMiniDBStorage, CacheRedisStorage, UrlsYaml
 from .handler import Report
 from .worker import run_jobs
 from .util import import_module_from_source
@@ -39,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 
 class Urlwatch(object):
-    def __init__(self, urlwatch_config, config_storage, cache_storage, urls_storage):
+    def __init__(self, urlwatch_config):
 
         self.urlwatch_config = urlwatch_config
 
@@ -47,9 +48,12 @@ class Urlwatch(object):
         logger.info('Using %s for hooks', self.urlwatch_config.hooks)
         logger.info('Using %s as cache database', self.urlwatch_config.cache)
 
-        self.config_storage = config_storage
-        self.cache_storage = cache_storage
-        self.urls_storage = urls_storage
+        self.config_storage = YamlConfigStorage(self.urlwatch_config.config)
+        if any(self.urlwatch_config.cache.startswith(prefix) for prefix in ('redis://', 'rediss://')):
+            self.cache_storage = CacheRedisStorage(self.urlwatch_config.cache)
+        else:
+            self.cache_storage = CacheMiniDBStorage(self.urlwatch_config.cache)
+        self.urls_storage = UrlsYaml(self.urlwatch_config.urls)
 
         self.report = Report(self)
         self.jobs = None

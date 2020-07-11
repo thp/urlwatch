@@ -53,7 +53,6 @@ if bindir != 'bin':
 from urlwatch.command import UrlwatchCommand
 from urlwatch.config import CommandConfig
 from urlwatch.main import Urlwatch
-from urlwatch.storage import YamlConfigStorage, CacheMiniDBStorage, CacheRedisStorage, UrlsYaml
 
 # Ignore SIGPIPE for stdout (see https://github.com/thp/urlwatch/issues/77)
 try:
@@ -94,18 +93,8 @@ def main():
                                    config_file, urls_file, hooks_file, cache_file, False)
     setup_logger(command_config.verbose)
 
-    # setup storage API
-    config_storage = YamlConfigStorage(command_config.config)
-
-    if any(command_config.cache.startswith(prefix) for prefix in ('redis://', 'rediss://')):
-        cache_storage = CacheRedisStorage(command_config.cache)
-    else:
-        cache_storage = CacheMiniDBStorage(command_config.cache)
-
-    urls_storage = UrlsYaml(command_config.urls)
-
     # setup urlwatcher
-    urlwatch = Urlwatch(command_config, config_storage, cache_storage, urls_storage)
+    urlwatch = Urlwatch(command_config)
     urlwatch_command = UrlwatchCommand(urlwatch)
 
     # run urlwatcher
