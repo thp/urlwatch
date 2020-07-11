@@ -273,3 +273,39 @@ https://example.com/regex-substitute.html:
       HEADING 1: Welcome to this webpage<END OF TAG h1>
       <a>Some Link<END OF TAG a>
     <END OF TAG div>
+https://example.net/shellpipe-grep.txt:
+  input: |-
+    <h1>Welcome to our price watching page!</h1>
+    <p>Hello.</p> The current Price: <SPAN>42 USD</SPAN> is this.
+    <em>Can the shellpipe filter deal with this properly?
+  output: |
+    Price: <SPAN>42 USD</SPAN>
+https://example.org/shellpipe-multiline.txt:
+  input: |
+    Welcome to the lottery webpage.
+    The numbers for 2020-07-11 are:
+
+       4, 8, 15, 16, 23 and 42
+
+    The next draw is on 2020-07-13.
+    Thank you for visiting the lottery webpage.
+  output: |
+    The numbers for 2020-07-11 are:
+
+       4, 8, 15, 16, 23 and 42
+
+    The next draw is on 2020-07-13.
+    Input lines: 7
+https://example.net/shellpipe-awk-oneliner.txt:
+  input: |
+    Hello
+    World
+    How
+    Are
+    You
+  output: |
+    1 Hello
+    2 World
+    3 How
+    4 Are
+    5 You
