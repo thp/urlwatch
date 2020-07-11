@@ -64,6 +64,10 @@ class FilterBase(object, metaclass=TrackSubClasses):
             result.extend((
                 '  * %s - %s' % (sc.__kind__, sc.__doc__),
             ))
+            if hasattr(sc, '__supported_subfilters__'):
+                result.append('    Optional parameters:')
+                for key, doc in sc.__supported_subfilters__.items():
+                    result.append('      %s ... %s' % (key, doc))
         return '\n'.join(result)
 
     @classmethod
@@ -86,6 +90,14 @@ class FilterBase(object, metaclass=TrackSubClasses):
         filtercls = cls.__subclasses__.get(filter_kind, None)
         if filtercls is None:
             raise ValueError('Unknown filter kind: %s:%s' % (filter_kind, subfilter))
+        if isinstance(subfilter, dict) and hasattr(filtercls, '__supported_subfilters__'):
+            provided_keys = set(subfilter.keys())
+            allowed_keys = set(filtercls.__supported_subfilters__.keys())
+            unknown_keys = provided_keys.difference(allowed_keys)
+            if unknown_keys:
+                raise ValueError('Filter "{}" does not support subfilter(s): {} (supported: {})'.format(filter_kind,
+                                                                                                        unknown_keys,
+                                                                                                        allowed_keys))
         return filtercls(state.job, state).filter(data, subfilter)
 
     @classmethod
@@ -213,6 +225,10 @@ class Pdf2TextFilter(FilterBase):
     __kind__ = 'pdf2text'
     __uses_bytes__ = True
 
+    __supported_subfilters__ = {
+        'password': 'PDF password for decryption',
+    }
+
     def filter(self, data, subfilter=None):
         # data must be bytes
         if not isinstance(data, bytes):
@@ -265,7 +281,7 @@ class GrepFilter(FilterBase):
 
 
 class InverseGrepFilter(FilterBase):
-    """Filter which removes lines matching a regular expression"""
+    """Remove lines matching a regular expression"""
 
     __kind__ = 'grepi'
 
@@ -569,6 +585,11 @@ class RegexSub(FilterBase):
 
     __kind__ = 're.sub'
 
+    __supported_subfilters__ = {
+        'pattern': 'Regular expression to search for',
+        'repl': 'Replacement string (default: empty string)',
+    }
+
     def filter(self, data, subfilter=None):
         if subfilter is None:
             raise ValueError('{} needs a subfilter'.format(self.__kind__))
@@ -581,16 +602,42 @@ class RegexSub(FilterBase):
         return re.sub(subfilter.get('pattern'), subfilter.get('repl', ''), data)
 
 
+def separator_from_subfilter(subfilter):
+    if subfilter is None:
+        return '\n'
+    elif isinstance(subfilter, dict):
+        return subfilter.get('separator', '\n')
+    elif isinstance(subfilter, str):
+        return subfilter
+    else:
+        raise ValueError('Subfilter needs to be a dict or str, got: {}'.format(subfilter))
+
+
 class SortFilter(FilterBase):
-    """Sort the results before comparison"""
+    """Sort input items"""
 
     __kind__ = 'sort'
 
+    __supported_subfilters__ = {
+        'reverse': 'Set to true to reverse sorting order',
+        'separator': 'Item separator (default: newline)',
+    }
+
     def filter(self, data, subfilter=None):
-        reverse = ((isinstance(subfilter, dict) and subfilter.get('reverse', False) is True)
-                   or (isinstance(subfilter, str) and subfilter == 'reverse'))
+        reverse = (isinstance(subfilter, dict) and subfilter.get('reverse', False) is True)
+        separator = separator_from_subfilter(subfilter)
+        return separator.join(sorted(data.split(separator), key=str.casefold, reverse=reverse))
 
-        data_list = data.splitlines()
-        data_list = sorted(data_list, key=str.casefold, reverse=reverse)
 
-        return '\n'.join(data_list)
+class ReverseFilter(FilterBase):
+    """Reverse input items"""
+
+    __kind__ = 'reverse'
+
+    __supported_subfilters__ = {
+        'separator': 'Item separator (default: newline)',
+    }
+
+    def filter(self, data, subfilter=None):
+        separator = separator_from_subfilter(subfilter)
+        return separator.join(reversed(data.split(separator)))

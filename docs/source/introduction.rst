@@ -15,7 +15,11 @@ Every time you run `urlwatch`, it:
 -----------
 Each website or shell command to be monitored consitutes a "job".
 
-The instructions for each such job are contained in a config file in the `YAML format <https://yaml.org/spec/>`__, accessible with the ``urlwatch --edit`` command (if you get an error, define an editor such as with ``$ export EDITOR=/bin/nano``).
+The instructions for each such job are contained in a config file in the `YAML format`_, accessible with the ``urlwatch --edit`` command.
+If you get an error, set your ``$EDITOR`` (or ``$VISUAL``) environment
+variable in your shell with a command such as ``export EDITOR=/bin/nano``.
+
+.. _YAML format: https://yaml.org/spec/
 
 Typically, the first entry ("key") in a job is a ``name``, which can be anything you want and helps you identify what you're monitoring.
 
