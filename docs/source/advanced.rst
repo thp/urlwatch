@@ -1,7 +1,7 @@
 .. _advanced_topics:
 
-Advanced Topics
-===============
+Examples and advanced topics
+============================
 
 If you want to change some settings for all your jobs, edit the
 ``job_defaults`` section in your config file:
@@ -146,3 +146,36 @@ of the ``date`` command, for example:
 
 Since the output of ``date`` changes every second, this job should produce a
 report every time urlwatch is run.
+
+Watching Github releases
+------------------------
+
+This is an example how to watch the GitHub “releases” page for a given
+project for the latest release version, to be notified of new releases:
+
+.. code-block:: yaml
+
+   url: "https://github.com/thp/urlwatch/releases/latest"
+   filter:
+     - xpath: '(//div[contains(@class,"release-timeline-tags")]//h4)[1]/a'
+     - html2text: re
+
+
+Chaining multiple filters
+-------------------------
+
+The example urls.yaml file also demonstrates the use of built-in
+filters, here 3 filters are used: html2text, line-grep and whitespace
+removal to get just a certain info field from a webpage:
+
+.. code-block:: yaml
+
+   url: https://thp.io/2008/urlwatch/
+   filter: 
+     - html2text:
+     - grep: Current.*version
+     - strip:
+
+For most cases, this means that you can specify a filter chain in your
+urls.yaml page without requiring a custom hook where previously you
+would have needed to write custom filtering code in Python.

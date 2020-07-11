@@ -25,6 +25,10 @@ This is the main job type -- it retrieves a document from a web server:
 
     name: "urlwatch homepage"
     url: "https://thp.io/2008/urlwatch/"
+    headers:
+        accept: 'text/html'
+    ignore_connection_errors: true
+ 
 
 Required keys:
 
@@ -39,7 +43,7 @@ Job-specific optional keys:
 - ``ignore_cached``: Do not use cache control (ETag/Last-Modified) values (true/false)
 - ``http_proxy``: Proxy server to use for HTTP requests
 - ``https_proxy``: Proxy server to use for HTTPS requests
-- ``headers``: HTTP header to send along with the request
+- ``headers``: HTTP headers to send along with the request
 - ``encoding``: Override the character encoding from the server (see :ref:`advanced_topics`)
 - ``timeout``: Override the default socket timeout (see :ref:`advanced_topics`)
 - ``ignore_connection_errors``: Ignore (temporary) connection errors (see :ref:`advanced_topics`)
@@ -53,35 +57,42 @@ Job-specific optional keys:
 Navigate
 --------
 
-This job type is a resource-intensive variant of "URL" to handle web pages
-requiring JavaScript in order to render the content to be monitored.
+The Navigate jobs are currently not working.
 
-The optional ``requests-html`` package must be installed to run "Navigate" jobs
-(see :ref:`dependencies`).
+They are intended to handle web pages requiring JavaScript in order to render
+the content to be monitored.
 
-.. code-block:: yaml
-
+..
+  .
+  This job type is a resource-intensive variant of "URL" to handle web pages
+  requiring JavaScript in order to render the content to be monitored.
+  .
+  The optional ``requests-html`` package must be installed to run "Navigate" jobs
+  (see :ref:`dependencies`).
+  .
+  .. code-block:: yaml
+  .
    name: "A page with JavaScript"
    navigate: "https://example.org/"
-
-Required keys:
-
-- ``navigate``: URL to navigate to with the browser
-
-Job-specific optional keys:
-
-- none
-
-As this job uses `Requests-HTML <http://html.python-requests.org>`__
-to render the page in a headless Chromium instance, it requires massively
-more resources than a "URL" job. Use it only on pages where ``url`` does not
-give the right results.
-
-Hint: in many instances instead of using "Navigate" you can 
-monitor the output of an API called by the site during page loading
-containing the information you're after using the much faster "URL" job type.
-
-(Note: ``navigate`` implies ``kind: browser``)
+  .
+  Required keys:
+  .
+  - ``navigate``: URL to navigate to with the browser
+  . 
+  Job-specific optional keys:
+  .
+  - none
+  .
+  As this job uses `Requests-HTML <http://html.python-requests.org>`__
+  to render the page in a headless Chromium instance, it requires massively
+  more resources than a "URL" job. Use it only on pages where ``url`` does not
+  give the right results.
+ .
+  Hint: in many instances instead of using "Navigate" you can 
+  monitor the output of an API called by the site during page loading
+  containing the information you're after using the much faster "URL" job type.
+  .
+  (Note: ``navigate`` implies ``kind: browser``)
 
 
 Command
@@ -93,8 +104,8 @@ scripts that query external devices (RPi GPIO), etc...
 
 .. code-block:: yaml
 
-   name: "What is in my Home Directory?"
-   command: "ls -al ~"
+    name: "What is in my Home Directory?"
+    command: "ls -al ~"
 
 Required keys:
 

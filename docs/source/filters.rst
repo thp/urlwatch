@@ -3,199 +3,163 @@
 Filters
 =======
 
-Filters are applied to the downloaded page before diffing the changes.
+Filters are applied to the data downloaded to transform it before the 
+end result is compared with the previous version, i.e. "diffing".
 
-While creating your filter pipeline, you might want to preview what the
-filtered output looks like. You can do so by first configuring your job
-and then running urlwatch with the ``--test-filter`` command, passing in
-the index (from ``--list``) or the URL/location of the job to be tested:
+Tip: you can try filters by saving your job configuration and running
+`urlwatch` with the ``--test-filter`` command, passing in the index (from 
+``--list``) or the URL/location of the job to be tested:
 
-::
+.. code-block:: bash
 
    urlwatch --test-filter 1   # Test the first job in the list
-   urlwatch --test-filter https://example.net/  # Test the job with the given URL
+   urlwatch --test-filter https://example.net/  # Test the first job with the given URL
 
-The output of this command will be the filtered plaintext of the job,
-this is the output that will (in a real urlwatch run) be the input to
-the diff algorithm.
-
-Built-in filters
-----------------
+The output of this command will be the text fed to the diff algorithm when you
+run `urlwatch`.
 
 The list of built-in filters can be retrieved using::
 
     urlwatch --features
 
-At the moment, the following filters are built-in:
-
-- **beautify**: Beautify HTML
-- **css**: Filter XML/HTML using CSS selectors
-- **element-by-class**: Get all HTML elements by class
-- **element-by-id**: Get an HTML element by its ID
-- **element-by-style**: Get all HTML elements by style
-- **element-by-tag**: Get an HTML element by its tag
-- **format-json**: Convert to formatted json
-- **grep**: Filter only lines matching a regular expression
-- **grepi**: Filter which removes lines matching a regular expression
-- **hexdump**: Convert binary data to hex dump format
-- **html2text**: Convert HTML to plaintext
-- **pdf2text**: Convert PDF to plaintext
-- **ical2text**: Convert iCalendar to plaintext
-- **re.sub**: Replace text with regular expressions using Python's re.sub
-- **sha1sum**: Calculate the SHA-1 checksum of the content
-- **sort**: Sort the results before comparison
-- **strip**: Strip leading and trailing whitespace
-- **xpath**: Filter XML/HTML using XPath expressions
-
 .. To convert the "urlwatch --features" output, use:
    sed -e 's/^  \* \(.*\) - \(.*\)$/- **\1**: \2/'
 
 
-Picking out elements from a webpage
------------------------------------
+The following filters are available:
 
-You can pick only a given HTML element with the built-in filter, for
-example to extract ``<div id="something">.../<div>`` from a page, you
-can use the following in your ``urls.yaml``:
+To select HTML (or XML) elements:
 
-.. code:: yaml
+- :ref:`css <css-and-xpath>`: Filter XML/HTML using CSS selectors
+- :ref:`xpath <css-and-xpath>`: Filter XML/HTML using XPath expressions
+- :ref:`element-by-class <element-by->`: Get all HTML elements by class
+- :ref:`element-by-id <element-by->`: Get an HTML element by its ID
+- :ref:`element-by-style <element-by->`: Get all HTML elements by style
+- :ref:`element-by-tag <element-by->`: Get an HTML element by its tag
 
-   url: http://example.org/
-   filter: element-by-id:something
+To make HTML more readable:
 
-Also, you can chain filters, so you can run html2text on the result:
+- :ref:`html2text`: Convert HTML to plaintext
+- :ref:`beautify`: Beautify HTML
 
-.. code:: yaml
+To make PDFs readable:
 
-   url: http://example.net/
-   filter: element-by-id:something,html2text
+- :ref:`pdf2text`: Convert PDF to plaintext
 
+To make JSON more readable:
 
-Chaining multiple filters
--------------------------
+- :ref:`format-json`: Reformat (pretty-print) JSON
 
-The example urls.yaml file also demonstrates the use of built-in
-filters, here 3 filters are used: html2text, line-grep and whitespace
-removal to get just a certain info field from a webpage:
+To make iCal more readable:
 
-.. code:: yaml
+- :ref:`ical2text`: Convert iCalendar to plaintext
 
-   url: https://thp.io/2008/urlwatch/
-   filter: html2text,grep:Current.*version,strip
+To make binary readable:
 
-For most cases, this means that you can specify a filter chain in your
-urls.yaml page without requiring a custom hook where previously you
-would have needed to write custom filtering code in Python.
+- :ref:`hexdump`: Display data in hex dump format
 
+To just detect changes:
 
-Using the ``grep`` filter with `,`
-----------------------------------
+- :ref:`sha1sum`: Calculate the SHA-1 checksum of the data
 
-If you are using the ``grep`` filter, you can grep for a comma (``,``)
-by using ``\054`` (``:`` does not need to be escaped separately and can
-be used as-is), for example to convert HTML to text, then grep for
-``a,b:``, and then strip whitespace, use this:
+To edit/filter text:
 
-.. code:: yaml
-
-   url: https://example.org/
-   filter: html2text,grep:a\054b:,strip
+- :ref:`grep`: Keep only lines matching a regular expression
+- :ref:`grepi`: Delete lines matching a regular expression
+- :ref:`re.sub`: Replace or remove text matching a regular expression
+- :ref:`strip`: Strip leading and trailing whitespace
+- :ref:`sort`: Sort lines
 
 
-Extracting only the ``<body>`` tag of a page
---------------------------------------------
 
-If you want to extract only the body tag you can use this filter:
+.. _css-and-xpath:
 
-.. code:: yaml
+``css`` and ``xpath``
+---------------------
 
-   url: https://thp.io/2008/urlwatch/
-   filter: element-by-tag:body
+The ``css`` filter extracts content based on a `CSS selector 
+<https://www.w3.org/TR/selectors/>`__,. It uses the `cssselect 
+<https://pypi.org/project/cssselect/>`__ Python package, which 
+has limitations and extensions as explained in its `documentation 
+<https://cssselect.readthedocs.io/en/latest/#supported-selectors>`__.
 
+The ``xpath`` filter extracts content based on a `XPath 
+<https://www.w3.org/TR/xpath>`__ expression.
 
-Filtering based on an XPath expression
---------------------------------------
+Examples: to filter only the ``<body>`` element of the HTML document, stripping
+out everything else:
 
-To filter based on an
-`XPath <https://www.w3.org/TR/1999/REC-xpath-19991116/>`__ expression,
-you can use the ``xpath`` filter like so (see Microsoft’s `XPath
-Examples <https://msdn.microsoft.com/en-us/library/ms256086(v=vs.110).aspx>`__
-page for some other examples):
-
-.. code:: yaml
+.. code-block:: yaml
 
    url: https://example.net/
-   filter: xpath:/body
-
-This filters only the ``<body>`` element of the HTML document, stripping
-out everything else.
-
-
-Filtering based on CSS selectors
---------------------------------
-
-To filter based on a `CSS
-selector <https://www.w3.org/TR/2011/REC-css3-selectors-20110929/>`__,
-you can use the ``css`` filter like so:
-
-.. code:: yaml
-
-   url: https://example.net/
-   filter: css:body
-
-Some limitations and extensions exist as explained in `cssselect’s
-documentation <https://cssselect.readthedocs.io/en/latest/#supported-selectors>`__.
-
-
-Using XPath and CSS filters with XML and exclusions
----------------------------------------------------
-
-By default, XPath and CSS filters are set up for HTML documents.
-However, it is possible to use them for XML documents as well (these
-examples parse an RSS feed and filter only the titles and publication
-dates):
-
-.. code:: yaml
-
-   url: 'https://heronebag.com/blog/index.xml'
    filter:
-     - xpath:
-         path: '//item/title/text()|//item/pubDate/text()'
-         method: xml
+     - css: body
 
-.. code:: yaml
+.. code-block:: yaml
+
+   url: https://example.net/
+   filter: 
+     - xpath: '/body'
+
+**Optional keys**
+"""""""""""""""""
+
+* ``selector``
+* ``path``
+* ``method``: either of ``html`` (default) or ``xml``
+* ``exclude`` 
+* ``namespaces``
+
+Using CSS and XPath filters with XML and exclusions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, CSS and XPath filters are set up for HTML documents, but it is 
+possible to use them for XML documents as well.
+
+Example to parse an RSS feed and filter only the titles and publication dates:
+
+.. code-block:: yaml
 
    url: 'https://heronebag.com/blog/index.xml'
    filter:
      - css:
-         selector: 'item > title, item > pubDate'
          method: xml
+         selector: 'item > title, item > pubDate'
      - html2text: re
 
-To match an element in an `XML
-namespace <https://www.w3.org/TR/xml-names/>`__, use a namespace prefix
-before the tag name. Use a ``:`` to seperate the namespace prefix and
-the tag name in an XPath expression, and use a ``|`` in a CSS selector.
+.. code-block:: yaml
 
-.. code:: yaml
-
-   url: 'https://www.wired.com/feed/rss'
+   url: 'https://heronebag.com/blog/index.xml'
    filter:
      - xpath:
-         path: '//item/media:keywords'
          method: xml
-         namespaces:
-           media: http://search.yahoo.com/mrss/
+         path: '//item/title/text()|//item/pubDate/text()'
 
-.. code:: yaml
+To match an element in an `XML namespace 
+<https://www.w3.org/TR/xml-names/>`__, use a namespace prefix
+before the tag name. Use a ``|`` to seperate the namespace prefix and
+the tag name in a CSS selector, and use a ``:`` in an XPath expression.
+
+.. code-block:: yaml
 
    url: 'https://www.wired.com/feed/rss'
    filter:
      - css:
-         selector: 'item > media|keywords'
          method: xml
+         selector: 'item > media|keywords'
          namespaces:
-           media: http://search.yahoo.com/mrss/
+           media: 'http://search.yahoo.com/mrss/'
+
+.. code-block:: yaml
+
+   url: 'https://www.wired.com/feed/rss'
+   filter:
+     - xpath:
+         method: xml
+         path: '//item/media:keywords'
+         namespaces:
+           media: 'http://search.yahoo.com/mrss/'
+
 
 Alternatively, use the XPath expression ``//*[name()='<tag_name>']`` to
 bypass the namespace entirely.
@@ -205,7 +169,7 @@ Elements selected by this ``exclude`` expression are removed from the
 final result. For example, the following job will not have any ``<a>``
 tag in its results:
 
-.. code:: yaml
+.. code-block:: yaml
 
    url: https://example.org/
    filter:
@@ -213,98 +177,452 @@ tag in its results:
          selector: 'body'
          exclude: 'a'
 
+.. _element-by-:
 
-Filtering PDF documents
------------------------
+``element-by-``
+---------------
 
-To monitor the text of a PDF file, you use the `pdf2text` filter. It requires 
-the installation of the `pdftotext <https://github.com/jalan/pdftotext/blob/master/README.md#pdftotext>`__
-library and any of its OS-specific dependencies (see 
-`website <https://github.com/jalan/pdftotext/blob/master/README.md#os-dependencies>`__.
+The filters **element-by-class**, **element-by-id**, **element-by-style**,
+and **element-by-tag** allow you to select all matching instances of a given
+HTML element. 
+
+Examples:
+
+To extract only the ``<body>`` of a page: 
+
+.. code-block:: yaml
+
+   url: https://thp.io/2008/urlwatch/
+   filter:
+     - element-by-tag: body
+
+
+To extract ``<div id="something">.../<div>`` from a page:
+
+.. code-block:: yaml
+
+   url: http://example.org/
+   filter:
+     - element-by-id: something
+
+Since you can chain filters, use this to extract an element within another
+element:
+
+.. code-block:: yaml
+
+   url: http://example.org/
+   filter:
+     - element-by-id: container_1
+     - element-by-id: something_inside
+
+To make the output human-friendly you can chain html2text on the result:
+
+.. code-block:: yaml
+
+   url: http://example.net/
+   filter: 
+     - element-by-id: container_1
+     - element-by-id: something_inside
+     - html2text: pyhtml2text
+
+.. _html2text:
+
+``html2text``
+-------------
+
+This filter converts HTML (or XML) to plaintext
+
+**Optional keys**
+"""""""""""""""""
+
+* ``method``: One of:
+   * ``pyhtml2text``: Uses the `html2text <https://pypi.org/project/html2text/>`__ Python package
+   * ``lynx``: Calls the ``lynx`` program
+   * ``html2text``: Calls the ``html2text`` program
+   * ``bs4``: Uses the `BeautifulSoup <https://pypi.org/project/beautifulsoup4/>`__ Python package
+   * ``re``: a simple regex-based tag stripper
+ 
+
+``pyhtml2text``
+^^^^^^^^^^^^^^^
+This filter converts HTML into `Markdown <https://www.markdownguide.org/>`__.
+using the `html2text <https://pypi.org/project/html2text/>`__ Python package.
+
+It is the recommended option to convert all types of HTML into readable text.
+
+**Optional sub-keys**
+~~~~~~~~~~~~~~~~~~~~~
+
+* See `documentation <https://github.com/Alir3z4/html2text/blob/master/docs/usage.md#available-options>`__
+
+**Example configuration**
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The configuration below overrides the defauts to ensure that accented
+characters are kept as they are (`unicode_snob: true`), lines aren't chopped up
+(`body_width: 0`), additional empty lines aren't added between sections 
+(`single_line_break: true`), and images are ignored (`ignore_images: true`).
+If the content has tables, adding `pad_tables: true` *may* improve readability.
+
+.. code-block:: yaml
+
+    filter:
+      - xpath: '//section[@role="main"]'
+      - html2text:
+          method: pyhtml2text
+          unicode_snob: true
+          body_width: 0
+          single_line_break: true
+          ignore_images: true
+          pad_tables: true
+
+
+**Required packages**
+"""""""""""""""""""""
+
+To run jobs with this filter, you need to install the
+`html2text <https://pypi.org/project/html2text/>`__ Python package:
+
+
+.. code-block:: bash
+
+   pip install --upgrade html2text
+
+
+
+``lynx``
+^^^^^^^^
+
+This filter calls the `lynx <https://lynx.invisible-island.net/>`__ program (a
+text web browser) with the command 
+``lynx -nonumbers -dump -assume_charset UTF-8 -display_charset UTF-8``.
+
+**Optional sub-keys**
+~~~~~~~~~~~~~~~~~~~~~
+
+* See the ``lynx -help`` output or the `documenation <https://linux.die.net/man/1/lynx>`__  for options that work with ``-dump``
+
+**Required packages**
+"""""""""""""""""""""
+
+To run jobs with this filter, you need to have the
+`lynx <https://lynx.invisible-island.net/>`__ executable installed.
+Please refer to your OS' package installer for instructions.
+
+
+``html2text``
+^^^^^^^^^^^^^
+
+This filter calls the `html2text <https://github.com/grobian/html2text>`__
+(HTML to text rendering aimed for E-mail) program with the command
+``html2text -nobs -utf8``.
+
+For historical reasons it's the default ``method`` if none is specified.
+
+**Optional sub-keys**
+~~~~~~~~~~~~~~~~~~~~~
+
+* See https://linux.die.net/man/1/html2text
+
+
+**Required packages**
+"""""""""""""""""""""
+
+To run jobs with this filter, you need to have the
+`html2text <https://github.com/grobian/html2text>`__ executable installed.
+Please refer to your OS' package installer for instructions.
+
+
+``bs4``
+^^^^^^^
+
+This filter extract unfromatted text from HTML using the `BeautifulSoup 
+<https://pypi.org/project/beautifulsoup4/>`__, specifically its
+`get_text(strip=True) 
+<https://www.crummy.com/software/BeautifulSoup/bs4/doc/#get-text>`__ method.
+
+Note that as of Beautiful Soup version 4.9.0, when lxml or html.parser are in 
+use, the contents of <script>, <style>, and <template> tags are not considered
+to be ‘text’, since those tags are not part of the human-visible content of the
+page.
+
+**Optional sub-keys**
+~~~~~~~~~~~~~~~~~~~~~
+
+* ``parser`` (defaults to ``lxml``): as per `documentation <https://www.crummy.com/software/BeautifulSoup/bs4/doc/#specifying-the-parser-to-use>`__ 
+
+``re``
+^^^^^^
+
+A simple HTML/XML tag stripper based on applying a regex.  Very fast but may
+not yield the prettiest results.
+
+
+.. _beautify:
+
+``beautify``
+------------
+
+This filter uses the `BeautifulSoup 
+<https://pypi.org/project/beautifulsoup4/>`__, `jsbeautifier
+<https://pypi.org/project/jsbeautifier/>`__ and `cssbeautifier
+<https://pypi.org/project/cssbeautifier/>`__ Python packages to reformat an
+HTML document to make it more readable.
+
+**Required packages**
+"""""""""""""""""""""
+
+To run jobs with this filter, you need to install the `BeautifulSoup 
+<https://pypi.org/project/beautifulsoup4/>`__, `jsbeautifier
+<https://pypi.org/project/jsbeautifier/>`__ and `cssbeautifier
+<https://pypi.org/project/cssbeautifier/>`__ Python packages:
+
+.. code-block:: bash
+
+   pip install --upgrade beautifulsoup4 jsbeautifier cssbeautifier
+
+
+.. _pdf2text:
+
+``pdf2text``
+------------
+
+This filter converts a PDF file to plaintext using the `pdftotext 
+<https://github.com/jalan/pdftotext/blob/master/README.md#pdftotext>`__ Python
+library, itself based on the `Poppler <https://poppler.freedesktop.org/>`__ 
+library.
 
 This filter *must* be the first filter in a chain of filters.
 
+**Optional sub-keys**
+"""""""""""""""""""""
+
+* ``password``: password for a password-protected PDF file
+
+**Required packages**
+"""""""""""""""""""""
+
+To run jobs with this filter, you need to install the
+`pdftotext <https://pypi.org/project/pdftotext/>`__
+Python library and any of its OS-specific Poppler dependencies (see 
+`website <https://github.com/jalan/pdftotext/blob/master/README.md#os-dependencies>`__).
+
+.. code-block:: bash
+
+   pip install --upgrade pdftotext
+   # additional OS-specific commands as per documentation
+
+
+Example:
+
 .. code-block:: yaml
 
-   url: https://example.net/sample.pdf
-   filter: pdf2text
-
-
-If the PDF file is password protected, you can specify its password:
-
-.. code-block:: yaml
-
+   name: "Convert PDF to text"
    url: https://example.net/sample.pdf
    filter: 
-    - pdf2text:
-        password: pdfpassword
+     - pdf2text:
+         password: pdfpassword
 
 
-Line-based sorting of webpage content
--------------------------------------
+.. _format-json:
 
-Sometimes a web page can have the same data between comparisons but it
-appears in random order. If that happens, you can choose to sort before
-the comparison.
+``format-json``
+---------------
 
-.. code:: yaml
+This filter deserializes a JSON object and reformats it using Python's 
+`json.dumps <https://docs.python.org/3/library/json.html#json.dumps>`__
+with indentations.
 
-   url: https://example.net/
-   filter: sort
+**Optional sub-keys**
+"""""""""""""""""""""
+
+* ``indentation`` (defaults to 4): indent to pretty-print JSON array elements. ``None`` selects the most compact representation.
 
 
-If you want to sort the content in reversed order, you can use:
+.. _ical2text:
 
-.. code:: yaml
+``ical2text``
+-------------
 
-   url: http://example.com/
+This filter reads an iCalendar document and converts them to easy-to read text
+
+.. code-block:: yaml
+
+   name: "Make iCal file readable test"
+   url: https://example.com/cal.ics
    filter:
-     - sort:
-         reverse: true
+     - ical2text:
 
-Watching Github releases
-------------------------
 
-This is an example how to watch the GitHub “releases” page for a given
-project for the latest release version, to be notified of new releases:
 
-.. code:: yaml
+**Required packages**
+"""""""""""""""""""""
 
-   url: "https://github.com/thp/urlwatch/releases/latest"
+To run jobs with this filter, you need to install the
+`vobject <https://pypi.org/project/vobject/>`__
+Python library.
+
+
+.. _hexdump:
+
+``hexdump``
+-----------
+
+This filter display the contents both in binary and ASCII (hex dump format).
+
+.. code-block:: yaml
+
+   name: "Display binary and ASCII test"
+   command: 'cat testfile'
    filter:
-     - xpath: '(//div[contains(@class,"release-timeline-tags")]//h4)[1]/a'
-     - html2text: re
+     - hexdump:
 
 
-Remove or replace text using regular expressions
-------------------------------------------------
 
-Just like Python’s ``re.sub`` function, there’s the possibility to apply
-a regular expression and either remove of replace the matched text. The
-following example applies the filter 3 times:
+.. _sha1sum:
 
-1. Just specifying a string as the value will replace the matches with
-   the empty string.
-2. Simple patterns can be replaced with another string using “pattern”
-   as the expression and “repl” as the replacement.
-3. You can use groups (``()``) and back-reference them with ``\1``
-   (etc..) to put groups into the replacement string.
+``sha1sum``
+-----------
 
-All features are described in Python’s
-`re.sub <https://docs.python.org/3/library/re.html#re.sub>`__
-documentation (the ``pattern`` and ``repl`` values are passed to this
-function as-is, with the value of ``repl`` defaulting to the empty
-string).
+This filter calculates a SHA-1 hash for the document,
 
-.. code:: yaml
+.. code-block:: yaml
 
-   kind: url
+   name: "Calculate SHA-1 hash test"
    url: https://example.com/
    filter:
-       - re.sub: '\s*href="[^"]*"'
-       - re.sub:
-           pattern: '<h1>'
-           repl: 'HEADING 1: '
-       - re.sub:
-           pattern: '</([^>]*)>'
-           repl: '<END OF TAG \1>'
+     - sha1sum:
+
+
+.. _grep:
+
+``grep`` 
+--------
+
+This filter emulates Linux's `grep` using Pyton's 
+`regular expression matching <https://docs.python.org/3/library/re.html>`__
+(regex) and keeps only lines that match the pattern, discarding the others.
+Note that mothwistanding its name, this filter does **not** use the executable
+`grep`.
+
+Example: convert HTML to text, strip whitespace, and only keep lines that have
+the sequence ``a,b:`` in them:
+
+.. code-block:: yaml
+
+   name: "Grep line matching test"
+   url: https://example.org/
+   filter:
+     - html2text:
+     - strip:
+     - grep: 'a,b:'
+
+Example: keep only lines that contain "error" irrespective of its case
+(e.g. Error, ERROR, etc.):
+
+.. code-block:: yaml
+
+   name: "Lines with error in them, case insensitive"
+   url: https://example.org/
+   filter:
+     - grep: '(?i)error'
+
+
+.. _grepi:
+
+``grepi`` 
+---------
+
+This filter is the inverse of ``grep``  above and keeps only lines that do
+not match the `regular expression
+<https://docs.python.org/3/library/re.html#regular-expression-syntax>`__,
+discarding the others.
+
+Example: eliminate lines that contain "xyz":
+
+.. code-block:: yaml
+
+   name: "Lines with error in them, case insensitive"
+   url: https://example.org/
+   filter:
+     - grepi: 'xyz'
+
+
+.. _re.sub:
+
+``re.sub``
+----------
+
+This filter removes or replaces text using `regular expressions
+<https://docs.python.org/3/library/re.html#regular-expression-syntax>`__.
+
+Just like Python’s `re.sub <https://docs.python.org/3/library/re.html#re.sub>`__
+function, there’s the possibility to apply a regular expression and either 
+remove of replace the matched text. The following example applies the filter
+3 times:
+
+1. Just specifying a string as the value will remove the matches.
+2. Simple patterns can be replaced with another string using ``pattern``
+   as the expression and ``repl`` as the replacement.
+3. You can use regex groups (``()``) and back-reference them with ``\1``
+   (etc..) to put groups into the replacement string.
+
+All features are described in Python’s re.sub
+`documentation <https://docs.python.org/3/library/re.html#re.sub>`__.
+The ``pattern`` and ``repl`` values are passed to this
+function as-is.
+
+.. code-block:: yaml
+
+   name: "re.sub test"
+   url: https://example.com/
+   filter:
+     - re.sub: '\s*href="[^"]*"'
+     - re.sub:
+         pattern: '<h1>'
+         repl: 'HEADING 1: '
+     - re.sub:
+         pattern: '</([^>]*)>'
+         repl: '<END OF TAG \1>'
+
+
+**Optional sub-keys**
+"""""""""""""""""""""
+
+* ``pattern``: pattern to be replaced. This sub-key must be specified if also using the ``repl`` sub-key. Otherwise the pattern can be specified as the value of ``re.sub``.
+* ``repl``: the string for replacement. If this sub-key is missing, defaults to empty string (i.e. deletes the string matched in ``pattern``)
+
+
+.. _strip:
+
+``strip``
+---------
+
+This filter removes leading and trailing whitespace.  It applies to the entire
+document: it is **not** applied line-by line.
+
+.. code-block:: yaml
+
+   name: "Stripping leading and trailing whitespace test"
+   url: https://example.com/
+   filter:
+     - strip:
+
+
+.. _sort:
+
+``sort``
+--------
+
+This filter performs a line-based sorting, ignoring cases (case folding as per
+Python's `implementation <https://docs.python.org/3/library/stdtypes.html#str.casefold>`__
+
+If the source provides data in random order, you should sort it before
+the comparison in order to avoid diffing based only on changes in the sequence.
+
+.. code-block:: yaml
+
+   name: "Sorting lines test"
+   url: https://example.net/
+   filter:
+     - sort:
