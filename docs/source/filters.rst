@@ -280,7 +280,7 @@ separator, this would turn ``3%2%4%1`` into ``4%3%2%1``):
 
 .. code:: yaml
 
-   url: http://example.org/reverse-percent.txt
+   url: http://example.org/sort-reverse-percent.txt
    filter:
      - sort:
          separator: '%'

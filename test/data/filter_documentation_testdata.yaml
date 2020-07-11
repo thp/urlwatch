@@ -215,7 +215,7 @@ http://example.org/paragraphs.txt:
 
     Could be the thing
     we use for testing.
-http://example.org/reverse-percent.txt:
+http://example.org/sort-reverse-percent.txt:
   input: 'C%B%A%D%E%F'
   output: 'F%E%D%C%B%A'
 http://example.com/reverse-lines.txt:
