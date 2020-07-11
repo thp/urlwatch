@@ -222,7 +222,7 @@ hexdump:
         e5 a5 bd ef bc 8c e4 b8 96 e7 95 8c ef bc 81 0a  ................
 sort:
     filter: sort
-    data: |
+    data: |-
         The rose is red;
         the violet's blue.
         Sugar is sweet,
@@ -232,3 +232,86 @@ sort:
         Sugar is sweet,
         The rose is red;
         the violet's blue.
+sort_paragraphs:
+    filter:
+      sort:
+        separator: "\n\n"
+    data: |-
+        Chimpanzee is a species of great ape native
+        to the forest and savannah of tropical Africa.
+
+        Aardvark is a medium-sized, burrowing,
+        nocturnal mammal native to Africa.
+
+        Bandicoots are a group of more than 20
+        species of small to medium-sized,
+        terrestrial marsupial omnivores in
+        the order Peramelemorphia.
+    expected_result: |-
+        Aardvark is a medium-sized, burrowing,
+        nocturnal mammal native to Africa.
+
+        Bandicoots are a group of more than 20
+        species of small to medium-sized,
+        terrestrial marsupial omnivores in
+        the order Peramelemorphia.
+
+        Chimpanzee is a species of great ape native
+        to the forest and savannah of tropical Africa.
+sort_separator_reverse:
+  filter:
+    sort:
+      separator: '%'
+      reverse: true
+  data: '3%2%4%1'
+  expected_result: '4%3%2%1'
+sort_reverse:
+  filter:
+    sort:
+      reverse: true
+  data: "a\nc\nb"
+  expected_result: "c\nb\na"
+reverse_lines:
+    filter: reverse
+    data: |-
+        A
+        C
+        B
+        D
+    expected_result: |-
+        D
+        B
+        C
+        A
+reverse_separator_dict:
+  filter:
+    reverse:
+      separator: '|'
+  data: '1|5|3|4|2'
+  expected_result: '2|4|3|5|1'
+reverse_separator_str:
+  filter:
+    reverse: '%'
+  data: 'Hello%World'
+  expected_result: 'World%Hello'
+reverse_separator_paragraph:
+  filter:
+    reverse: "\n\n"
+  data: |-
+    A paragraph.
+
+    Another paragraph that goes
+    over two lines.
+
+    And the third one that
+    incidentally goes over
+    three lines total.
+  expected_result: |-
+    And the third one that
+    incidentally goes over
+    three lines total.
+
+    Another paragraph that goes
+    over two lines.
+
+    A paragraph.

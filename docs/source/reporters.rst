@@ -38,12 +38,14 @@ Pushover
 --------
 
 You can configure urlwatch to send real time notifications about changes
-via Pushover(https://pushover.net/). To enable this, ensure you have the
-chump python package installed (see DEPENDENCIES). Then edit your config
+via `Pushover`_. To enable this, ensure you have the
+``chump`` python package installed (see :doc:`dependencies`). Then edit your config
 (``urlwatch --edit-config``) and enable pushover. You will also need to
 add to the config your Pushover user key and a unique app key (generated
-by registering urlwatch as an application on your Pushover
-account(https://pushover.net/apps/build).
+by registering urlwatch as an application on your `Pushover account`_.
+
+.. _Pushover: https://pushover.net/
+.. _Pushover account: https://pushover.net/apps/build
 
 You can send to a specific device by using the device name, as indicated
 when you add or view your list of devices in the Pushover console. For
@@ -118,7 +120,9 @@ integration works.
 Matrix
 ------
 
-You can have notifications sent to you through the Matrix protocol.
+You can have notifications sent to you through the `Matrix protocol`_.
+
+.. _Matrix protocol: https://matrix.org
 
 To achieve this, you first need to register a Matrix account for the bot
 on any homeserver.
@@ -130,7 +134,7 @@ guide <https://t2bot.io/docs/access_tokens/>`__:
 1. Open `Riot.im <https://riot.im/app/>`__ in a private browsing window
 2. Register/Log in as your bot, using its user ID and password.
 3. Set the display name and avatar, if desired.
-4. In the settings page, scroll down to the bottom and click Access
+4. In the settings page, select the "Help & About" tab, scroll down to the bottom and click Access
    Token: <click to reveal>.
 5. Copy the highlighted text to your configuration.
 6. Join the room that you wish to send notifications to.
@@ -171,9 +175,15 @@ You need to configure your GMail account to allow for “less secure”
 2. Click on “Sign-in & security”
 3. Scroll all the way down to “Allow less secure apps” and enable it
 
+You do not want to do this with your primary GMail account, but
+rather on a separate account that you create just for sending mails
+via urlwatch. Allowing less secure apps and storing the password
+(even if it's in the keychain) is not good security practice for your
+primary account.
+
 Now, start the configuration editor: ``urlwatch --edit-config``
 
-These are the keys you need to configure (see #158):
+These are the keys you need to configure:
 
 -  ``report/email/enabled``: ``true``
 -  ``report/email/from``: ``your.username@gmail.com`` (edit accordingly)
