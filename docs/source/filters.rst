@@ -236,6 +236,7 @@ consumes binary data and outputs text data.
    url: https://example.net/pdf-test.pdf
    filter:
      - pdf2text
+     - strip
 
 
 If the PDF file is password protected, you can specify its password:
@@ -246,6 +247,7 @@ If the PDF file is password protected, you can specify its password:
    filter:
      - pdf2text:
          password: urlwatchsecret
+     - strip
 
 
 Sorting of webpage content

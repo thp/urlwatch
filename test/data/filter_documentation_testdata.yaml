@@ -179,10 +179,10 @@ https://example.org/css-exclude.html:
     </body>
 https://example.net/pdf-test.pdf:
   filename: pdf-test.pdf
-  output: "A PDF Document that can be turned into plain text.\n\f"
+  output: "A PDF Document that can be turned into plain text."
 https://example.net/pdf-test-password.pdf:
   filename: pdf-test-password.pdf
-  output: "A password-protected PDF Document that can be turned into plain text.\n\f"
+  output: "A password-protected PDF Document that can be turned into plain text."
 https://example.net/sorting.txt:
   input: |-
     A
