@@ -49,6 +49,7 @@ At the moment, the following filters are built-in:
 - **re.sub**: Replace text with regular expressions using Python's re.sub
 - **reverse**: Reverse input items
 - **sha1sum**: Calculate the SHA-1 checksum of the content
+- **shellpipe**: Filter using a shell command
 - **sort**: Sort input items
 - **strip**: Strip leading and trailing whitespace
 - **xpath**: Filter XML/HTML using XPath expressions
@@ -367,3 +368,67 @@ string).
        - re.sub:
            pattern: '</([^>]*)>'
            repl: '<END OF TAG \1>'
+
+
+Using a shell script as a filter
+--------------------------------
+
+While the built-in filters are powerful for processing markup such as
+HTML and XML, in some cases you might already know how you would filter
+your content using a shell command or shell script. The ``shellpipe``
+filter allows you to start a shell and run custom commands to filter
+the content.
+
+The text data to be filtered will be written to the standard input
+(``stdin``) of the shell process and the filter output will be taken
+from the shell's standard output (``stdout``).
+
+For example, if you want to use ``grep`` tool with the case insensitive
+matching option (``-i``) and printing only the matching part of
+the line (``-o``), you can specify this as ``shellpipe`` filter:
+
+.. code:: yaml
+
+   url: https://example.net/shellpipe-grep.txt
+   filter:
+     - shellpipe: "grep -i -o 'price: <span>.*</span>'"
+
+This feature also allows you to use ``sed``, ``awk`` and ``perl``
+one-liners for text processing (of course, any text tool that
+works in a shell can be used). For example, this ``awk`` one-liner
+prepends the line number to each line:
+
+.. code:: yaml
+
+   url: https://example.net/shellpipe-awk-oneliner.txt
+   filter:
+     - shellpipe: awk '{ print FNR " " $0 }'
+
+You can also use a multi-line command for a more sophisticated
+shell script (``|`` in YAML denotes the start of a text block):
+
+.. code:: yaml
+
+   url: https://example.org/shellpipe-multiline.txt
+   filter:
+     - shellpipe: |
+         FILENAME=`mktemp`
+         # Copy the input to a temporary file, then pipe through awk
+         tee $FILENAME | awk '/The numbers for (.*) are:/,/The next draw is on (.*)./'
+         # Analyze the input file in some other way
+         echo "Input lines: $(wc -l $FILENAME | awk '{ print $1 }')"
+         rm -f $FILENAME
+
+
+Within the ``shellpipe`` script, two environment variables will
+be set for further customization (this can be useful if you have
+a external shell script file that is used as filter for multiple
+jobs, but needs to treat each job in a slightly different way):
+
++----------------------------+------------------------------------------------------+
+| Environment variable       | Contents                                             |
++============================+======================================================+
+| ``$URLWATCH_JOB_NAME``     | The name of the job (``name`` key in jobs YAML)      |
++----------------------------+------------------------------------------------------+
+| ``$URLWATCH_JOB_LOCATION`` | The URL of the job, or command line (for shell jobs) |
++----------------------------+------------------------------------------------------+

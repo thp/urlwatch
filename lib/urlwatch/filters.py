@@ -36,6 +36,8 @@ import html.parser
 import hashlib
 import json
 import yaml
+import sys
+import subprocess
 
 from enum import Enum
 from lxml import etree
@@ -739,3 +741,29 @@ class ReverseFilter(FilterBase):
     def filter(self, data, subfilter):
         separator = subfilter.get('separator', '\n')
         return separator.join(reversed(data.split(separator)))
+
+
+class ShellPipeFilter(FilterBase):
+    """Filter using a shell command"""
+
+    __kind__ = 'shellpipe'
+
+    __supported_subfilters__ = {
+        'command': 'Shell command to execute for filtering (required)',
+    }
+
+    __default_subfilter__ = 'command'
+
+    def filter(self, data, subfilter=None):
+        if 'command' not in subfilter:
+            raise ValueError('{} filter needs a command'.format(self.__kind__))
+
+        encoding = sys.getdefaultencoding()
+
+        env = {
+            'URLWATCH_JOB_NAME': self.job.pretty_name() if self.job else '',
+            'URLWATCH_JOB_LOCATION': self.job.get_location() if self.job else '',
+        }
+
+        return subprocess.check_output(subfilter['command'], shell=True,
+                                       input=data.encode(encoding), env=env).decode(encoding)
