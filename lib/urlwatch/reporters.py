@@ -166,9 +166,7 @@ class ReporterBase(object, metaclass=TrackSubClasses):
 
         timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
         timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-        text = cached_unified_diff(job_state.old_data, job_state.new_data, timestamp_old, timestamp_new, job_state.job.comparison_filter)
-        print(cached_unified_diff.cache_info())
-        return text
+        return cached_unified_diff(job_state.old_data, job_state.new_data, timestamp_old, timestamp_new, job_state.job.comparison_filter)
 
 
 class SafeHtml(object):
