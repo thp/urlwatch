@@ -10,6 +10,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - Project URLs added to `setup.py`
 - Sphinx-based documentation
+- `reverse` filter: Reverse input items (default: line-based) with optional `separator`
+- Add `__supported_subfilters__` to `FilterBase` for sub filter checking and `--features` output
+- Support for a Redis cache backend via `--cache=redis://localhost:6379/`
+- New `pdf2text` filter (must be first filter in chain) to convert PDF files to plaintext
 
 ### Fixed
 
@@ -18,6 +22,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Changed
 
 - `sort` filter: Add `reverse` option to reverse the sorting order
+- `sort` filter: Add `separator` option to specify item separator (default is still line-based)
 - Travis CI: Set `pycodestyle` version to 2.6.0 to avoid CI breakage when new style checks are added
 
 
@@ -28,6 +33,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Support `ignore_timeout_errors` and `ignore_too_many_redirects` for URL jobs (#423, by Josh aka Zevlag)
 - HTML reporter: Add `viewport` meta tag for improved viewing on mobile devices (#432, by Mike Borsetti)
 - Optional support for insecure SMTP password storage in the config; use with caution (#431)
+- Add `matrix` reporter
 
 ### Fixed
 - Fix `--test-filter` when the specified job is not found
