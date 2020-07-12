@@ -92,7 +92,6 @@ def cached_unified_diff(old_data, new_data, timestamp_old, timestamp_new, compar
         diff = diff[:-1] if diff[-1].startswith('@') else diff
         del_only = len(diff) == 1
         diff = diff + ['.** No additions (only deletions)\n'] if del_only else diff
-        print(len_after, len_before)
         if (len_after / len_before) < .25:
             diff = (before_diff[:2]
                     + ['-**Comparison type: Additions only**\n'])
