@@ -109,7 +109,7 @@ Job-specific optional keys:
 
 Optional keys for all job types
 -------------------------------
-- :ref:`comparison_filter`: fiter unified diff output to keep only addition lines or deleted lines
+- :ref:`comparison_filter`: filter unified diff output to keep only addition lines or deleted lines
 - ``name``: Human-readable name/label of the job
 - ``filter``: :ref:`filters` (if any) to apply to the output
 - ``max_tries``: Number of times to retry fetching the resource
@@ -131,7 +131,7 @@ The ``comparison_filter`` filters the output of the unified diff to keep only ad
 
 Because lines that are modified generate both a deleted and an added line by the diff, this filters always displays modified lines.
 
-As a safeguard, `additions` will warn when 75% of more of the change consists of deletions.
+As a safeguard, `additions` will display a warning and deleted lines when 75% of more of the diff consists of deletions.
 
 
 Sample output for `additions`:
@@ -141,8 +141,8 @@ Sample output for `additions`:
    ---------------------------------------------------------------------------
    CHANGED: https://example.com
    ---------------------------------------------------------------------------
-   ... @   Sat, 23 May 2020 00:00:00 +0000
-   +++ @   Sat, 23 May 2020 01:00:00 +0000
+   ... @   Sat, 12 Jul 2020 00:00:00 +0000
+   +++ @   Sat, 12 Jul 2020 01:00:00 +0000
    -**Comparison type: Additions only**
    @@ -1,2 +1,2 @@
    +This is a line that has been added or changed
@@ -154,8 +154,8 @@ Sample output for `deletions`:
    ---------------------------------------------------------------------------
    CHANGED: https://example.com
    ---------------------------------------------------------------------------
-   --- @   Sat, 23 May 2020 00:00:00 +0000
-   ... @   Sat, 23 May 2020 01:00:00 +0000
+   --- @   Sat, 12 Jul 2020 00:00:00 +0000
+   ... @   Sat, 12 Jul 2020 01:00:00 +0000
    +**Comparison type: Deletions only**
    @@ -1,2 +1,2 @@
    -This is a line that has been deleted or changed
@@ -167,11 +167,15 @@ Sample output for `additions` when the 75% deletions safeguard is triggered:
    ---------------------------------------------------------------------------
    CHANGED: https://example.com
    ---------------------------------------------------------------------------
-   ... @   Sat, 23 May 2020 00:00:00 +0000
-   +++ @   Sat, 23 May 2020 01:00:00 +0000
+   ... @   Sat, 12 Jul 2020 00:00:00 +0000
+   +++ @   Sat, 12 Jul 2020 01:00:00 +0000
    -**Comparison type: Additions only**
    .** No additions (only deletions)
-   --- WARNING: 39 lines deleted; suggest checking source
+   -**Deletions are being shown as 75% or more of the diff is deletions**
+   @@ -1,3 +0,0 @@
+   -# Example Domain
+   -This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.
+   -[More information...](https://www.iana.org/domains/example)
    ---------------------------------------------------------------------------
 
 
@@ -183,8 +187,8 @@ Workaround: due to legacy logic in urlwatch, we are unable to suppress reporting
    ---------------------------------------------------------------------------
    CHANGED: https://example.com
    ---------------------------------------------------------------------------
-   ... @   Sat, 23 May 2020 00:00:00 +0000
-   +++ @   Sat, 23 May 2020 01:00:00 +0000
+   ... @   Sat, 12 Jul 2020 00:00:00 +0000
+   +++ @   Sat, 12 Jul 2020 01:00:00 +0000
    -**Comparison type: Additions only**
    .** No additions (only deletions)
    ---------------------------------------------------------------------------

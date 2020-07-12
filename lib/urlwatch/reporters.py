@@ -79,19 +79,29 @@ WDIFF_REMOVED_RE = r'[\[][-].*?[-][]]'
 @functools.lru_cache(maxsize=1)
 def cached_unified_diff(old_data, new_data, timestamp_old, timestamp_new, comparison_filter):
     contextlines = 0 if comparison_filter else 3
-    diff = difflib.unified_diff(old_data.splitlines(keepends=True), new_data.splitlines(keepends=True),
-                                '@', '@', timestamp_old, timestamp_new, contextlines)
+    diff = list(difflib.unified_diff(old_data.splitlines(keepends=True), new_data.splitlines(keepends=True),
+                                     '@', '@', timestamp_old, timestamp_new, contextlines))
     if comparison_filter == 'additions':
-        before_len = len(diff) - 2
+        len_before = len(diff) - 3
+        before_diff = diff
         head = '...' + diff[0][3:]
         diff = [dif for dif in diff if dif.startswith('+') or dif.startswith('@')]
+        len_after = len(diff) - 2
         diff = [dif for dif, dif2 in zip([''] + diff, diff + ['']) if
                 not (dif.startswith('@') and dif2.startswith('@'))][1:]
         diff = diff[:-1] if diff[-1].startswith('@') else diff
-        diff = diff + ['.** No additions (only deletions)\n'] if len(diff) == 1 else diff
-        diff = (diff + [f'--- WARNING: {before_len - len(diff) - 2} lines deleted; suggest checking source']
-                if len(diff) / before_len < .25 else diff)
-        diff = [head, diff[0], '-**Comparison type: Additions only**\n'] + diff[1:]
+        del_only = len(diff) == 1
+        diff = diff + ['.** No additions (only deletions)\n'] if del_only else diff
+        print(len_after, len_before)
+        if (len_after / len_before) < .25:
+            diff = (before_diff[:2]
+                    + ['-**Comparison type: Additions only**\n'])
+            if del_only:
+                diff.append('.** No additions (only deletions)\n')
+            diff.append('-**Deletions are being shown as 75% or more of the diff is deletions**\n')
+            diff.extend(before_diff[2:])
+        else:
+            diff = [head, diff[0], '-**Comparison type: Additions only**\n'] + diff[1:]
     elif comparison_filter == 'deletions':
         head = '...' + diff[1][3:]
         diff = [dif for dif in diff if dif.startswith('-') or dif.startswith('@')]
