@@ -29,6 +29,8 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - `sort` filter: Add `separator` option to specify item separator (default is still line-based)
 - Travis CI: Set `pycodestyle` version to 2.6.0 to avoid CI breakage when new style checks are added
 - Most filters that only had unnamed subfilters (e.g. `grep`) now have a named default subfilter
+- Diff results are now runtime cached on a per-job basis, which shouldn't affect behavior, but
+  could be observed by an external `diff_tool` running at most once per job instead of multiple times
 
 ### Deprecated
 
