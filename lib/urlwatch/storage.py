@@ -110,6 +110,7 @@ DEFAULT_CONFIG = {
             'device': None,
             'sound': 'spacealarm',
             'user': '',
+            'priority': 'normal',
         },
         'pushbullet': {
             'enabled': False,

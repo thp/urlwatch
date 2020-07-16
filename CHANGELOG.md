@@ -31,6 +31,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Most filters that only had unnamed subfilters (e.g. `grep`) now have a named default subfilter
 - Diff results are now runtime cached on a per-job basis, which shouldn't affect behavior, but
   could be observed by an external `diff_tool` running at most once per job instead of multiple times
+- The ``pushover`` reporter can now have the message ``priority`` configured
 
 ### Deprecated
 

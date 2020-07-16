@@ -54,6 +54,10 @@ example ``device:  'MyPhone'``, or ``device: 'MyLaptop'``. To send to
 (``urlwatch --edit-config``) or leave out the device configuration
 completely.
 
+Setting the priority is possible via the ``priority`` config option, which
+can be ``lowest``, ``low``, ``normal``, ``high`` or ``emergency``. Any
+other setting (including leaving the option unset) maps to ``normal``.
+
 Pushbullet
 ----------
 
