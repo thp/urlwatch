@@ -9,7 +9,7 @@ a quick rundown of changes in 2.0:
    filters, selecting the HTTP request method, specifying POST data as
    dictionary and much more
 -  The cache directory has been replaced with a SQLite 3 database file
-   “cache.db” in minidb format, storing all change history (use
+   “cache.db” in `minidb`_ format, storing all change history (use
    ``--gc-cache`` to remove old changes if you don’t need them anymore)
    for further analysis
 -  The hooks mechanism has been replaced with support for creating new
@@ -22,3 +22,5 @@ a quick rundown of changes in 2.0:
    user preferences instead of having to supply everything via the
    command line
 
+
+.. _minidb: http://thp.io/2010/minidb/

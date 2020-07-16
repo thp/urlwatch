@@ -39,6 +39,16 @@ import yaml
 import minidb
 import logging
 
+try:
+    import msgpack
+except ImportError:
+    msgpack = None
+
+try:
+    import redis
+except ImportError:
+    redis = None
+
 from .util import atomic_rename, edit_file
 from .jobs import JobBase, UrlJob, ShellJob
 
@@ -505,5 +515,74 @@ class CacheMiniDBStorage(CacheStorage):
             result = CacheEntry.delete_where(self.db, (CacheEntry.c.guid == guid) & (CacheEntry.c.id != keep_id))
             self.db.commit()
             return result
+
+        return 0
+
+
+class CacheRedisStorage(CacheStorage):
+    def __init__(self, filename):
+        super().__init__(filename)
+
+        if redis is None or msgpack is None:
+            raise ImportError('redis + msgpack are missing')
+
+        self.db = redis.from_url(filename)
+
+    def _make_key(self, guid):
+        return 'guid:' + guid
+
+    def close(self):
+        self.db.connection_pool.disconnect()
+        self.db = None
+
+    def get_guids(self):
+        guids = []
+        for guid in self.db.keys(b'guid:*'):
+            guids.append(str(guid[len('guid:'):]))
+        return guids
+
+    def load(self, job, guid):
+        key = self._make_key(guid)
+        data = self.db.lindex(key, 0)
+
+        if data:
+            r = msgpack.unpackb(data)
+            return r['data'], r['timestamp'], r['tries'], r['etag']
+
+        return None, None, 0, None
+
+    def get_history_data(self, guid, count=1):
+        history = {}
+        if count < 1:
+            return history
+
+        key = self._make_key(guid)
+        for i in range(0, self.db.llen(key)):
+            r = self.db.lindex(key, i)
+            c = msgpack.unpackb(r)
+            if (c['tries'] == 0 or c['tries'] is None):
+                if c['data'] not in history:
+                    history[c['data']] = c['timestamp']
+                    if len(history) >= count:
+                        break
+        return history
+
+    def save(self, job, guid, data, timestamp, tries, etag=None):
+        r = {
+            'data': data,
+            'timestamp': timestamp,
+            'tries': tries,
+            'etag': etag,
+        }
+        self.db.lpush(self._make_key(guid), msgpack.packb(r, use_bin_type=True))
+
+    def delete(self, guid):
+        self.db.delete(self._make_key(guid))
+
+    def clean(self, guid):
+        key = self._make_key(guid)
+        i = self.db.llen(key)
+        if self.db.ltrim(key, 0, 0):
+            return i - self.db.llen(key)
 
         return 0
