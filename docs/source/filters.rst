@@ -1,5 +1,10 @@
 .. _filters:
 
+.. All code examples here should have a unique URL that maps to
+   an entry in test/data/filter_documentation_testdata.yaml which
+   will be used to provide input/output data for the filter example
+   so that the examples can be verified to be correct automatically.
+
 Filters
 =======
 
@@ -44,6 +49,7 @@ At the moment, the following filters are built-in:
 - **re.sub**: Replace text with regular expressions using Python's re.sub
 - **reverse**: Reverse input items
 - **sha1sum**: Calculate the SHA-1 checksum of the content
+- **shellpipe**: Filter using a shell command
 - **sort**: Sort input items
 - **strip**: Strip leading and trailing whitespace
 - **xpath**: Filter XML/HTML using XPath expressions
@@ -63,15 +69,18 @@ can use the following in your ``urls.yaml``:
 
 .. code:: yaml
 
-   url: http://example.org/
-   filter: element-by-id:something
+   url: http://example.org/idtest.html
+   filter:
+     - element-by-id: something
 
 Also, you can chain filters, so you can run html2text on the result:
 
 .. code:: yaml
 
-   url: http://example.net/
-   filter: element-by-id:something,html2text
+   url: http://example.net/id2text.html
+   filter:
+     - element-by-id: something
+     - html2text
 
 
 Chaining multiple filters
@@ -83,26 +92,11 @@ removal to get just a certain info field from a webpage:
 
 .. code:: yaml
 
-   url: https://example.net/
-   filter: html2text,grep:Current.*version,strip
-
-For most cases, this means that you can specify a filter chain in your
-urls.yaml page without requiring a custom hook where previously you
-would have needed to write custom filtering code in Python.
-
-
-Using the ``grep`` filter with `,`
-----------------------------------
-
-If you are using the ``grep`` filter, you can grep for a comma (``,``)
-by using ``\054`` (``:`` does not need to be escaped separately and can
-be used as-is), for example to convert HTML to text, then grep for
-``a,b:``, and then strip whitespace, use this:
-
-.. code:: yaml
-
-   url: https://example.org/
-   filter: html2text,grep:a\054b:,strip
+   url: https://example.net/version.html
+   filter:
+     - html2text
+     - grep: "Current.*version"
+     - strip
 
 
 Extracting only the ``<body>`` tag of a page
@@ -112,8 +106,9 @@ If you want to extract only the body tag you can use this filter:
 
 .. code:: yaml
 
-   url: https://example.org/
-   filter: element-by-tag:body
+   url: https://example.org/bodytag.html
+   filter:
+     - element-by-tag: body
 
 
 Filtering based on an XPath expression
@@ -127,11 +122,13 @@ page for some other examples):
 
 .. code:: yaml
 
-   url: https://example.net/
-   filter: xpath:/body
+   url: https://example.net/xpath.html
+   filter:
+     - xpath: /html/body/marquee
 
-This filters only the ``<body>`` element of the HTML document, stripping
-out everything else.
+This filters only the ``<marquee>`` elements directly below the ``<body>``
+element, which in turn must be below the ``<html>`` element of the document,
+stripping out everything else.
 
 
 Filtering based on CSS selectors
@@ -143,8 +140,12 @@ you can use the ``css`` filter like so:
 
 .. code:: yaml
 
-   url: https://example.net/
-   filter: css:body
+   url: https://example.net/css.html
+   filter:
+     - css: ul#groceries > li.unchecked
+
+This would filter only ``<li class="unchecked">`` tags directly
+below ``<ul id="groceries">`` elements.
 
 Some limitations and extensions exist as explained in `cssselect’s
 documentation <https://cssselect.readthedocs.io/en/latest/#supported-selectors>`__.
@@ -160,7 +161,7 @@ dates):
 
 .. code:: yaml
 
-   url: 'https://heronebag.com/blog/index.xml'
+   url: https://example.com/blog/xpath-index.rss
    filter:
      - xpath:
          path: '//item/title/text()|//item/pubDate/text()'
@@ -168,7 +169,7 @@ dates):
 
 .. code:: yaml
 
-   url: 'https://heronebag.com/blog/index.xml'
+   url: http://example.com/blog/css-index.rss
    filter:
      - css:
          selector: 'item > title, item > pubDate'
@@ -182,23 +183,24 @@ the tag name in an XPath expression, and use a ``|`` in a CSS selector.
 
 .. code:: yaml
 
-   url: 'https://www.wired.com/feed/rss'
+   url: https://example.net/feed/xpath-namespace.xml
    filter:
      - xpath:
-         path: '//item/media:keywords'
+         path: '//item/media:keywords/text()'
          method: xml
          namespaces:
            media: http://search.yahoo.com/mrss/
 
 .. code:: yaml
 
-   url: 'https://www.wired.com/feed/rss'
+   url: http://example.org/feed/css-namespace.xml
    filter:
      - css:
          selector: 'item > media|keywords'
          method: xml
          namespaces:
            media: http://search.yahoo.com/mrss/
+     - html2text
 
 Alternatively, use the XPath expression ``//*[name()='<tag_name>']`` to
 bypass the namespace entirely.
@@ -210,11 +212,11 @@ tag in its results:
 
 .. code:: yaml
 
-   url: https://example.org/
+   url: https://example.org/css-exclude.html
    filter:
      - css:
-         selector: 'body'
-         exclude: 'a'
+         selector: body
+         exclude: a
 
 
 Filtering PDF documents
@@ -232,18 +234,21 @@ consumes binary data and outputs text data.
 
 .. code-block:: yaml
 
-   url: https://example.net/sample.pdf
-   filter: pdf2text
+   url: https://example.net/pdf-test.pdf
+   filter:
+     - pdf2text
+     - strip
 
 
 If the PDF file is password protected, you can specify its password:
 
 .. code-block:: yaml
 
-   url: https://example.net/sample.pdf
-   filter: 
-    - pdf2text:
-        password: pdfpassword
+   url: https://example.net/pdf-test-password.pdf
+   filter:
+     - pdf2text:
+         password: urlwatchsecret
+     - strip
 
 
 Sorting of webpage content
@@ -255,8 +260,9 @@ the comparison.
 
 .. code:: yaml
 
-   url: https://example.net/
-   filter: sort
+   url: https://example.net/sorting.txt
+   filter:
+     - sort
 
 The sort filter takes an optional ``separator`` parameter that defines
 the item separator (by default sorting is line-based), for example to
@@ -264,7 +270,7 @@ sort text paragraphs (text separated by an empty line):
 
 .. code:: yaml
 
-   url: http://example.org/
+   url: http://example.org/paragraphs.txt
    filter:
      - sort:
          separator: "\n\n"
@@ -275,7 +281,7 @@ separator, this would turn ``3%2%4%1`` into ``4%3%2%1``):
 
 .. code:: yaml
 
-   url: http://example.org/
+   url: http://example.org/sort-reverse-percent.txt
    filter:
      - sort:
          separator: '%'
@@ -290,8 +296,9 @@ can be used. By default it reverses lines:
 
 .. code:: yaml
 
-   url: http://example.com/
-   filter: reverse
+   url: http://example.com/reverse-lines.txt
+   filter:
+     - reverse
 
 This behavior can be changed by using an optional separator string
 argument (e.g. items separated by a pipe (``|``) symbol,
@@ -299,7 +306,7 @@ as in ``1|4|2|3``, which would be reversed to ``3|2|4|1``):
 
 .. code:: yaml
 
-   url: http://example.net/
+   url: http://example.net/reverse-separator.txt
    filter:
      - reverse: '|'
 
@@ -309,7 +316,7 @@ are separated by an empty line):
 
 .. code:: yaml
 
-   url: http://example.org/
+   url: http://example.org/reverse-paragraphs.txt
    filter:
      - reverse:
          separator: "\n\n"
@@ -323,10 +330,11 @@ project for the latest release version, to be notified of new releases:
 
 .. code:: yaml
 
-   url: "https://github.com/thp/urlwatch/releases/latest"
+   url: https://github.com/thp/urlwatch/releases
    filter:
      - xpath: '(//div[contains(@class,"release-timeline-tags")]//h4)[1]/a'
      - html2text: re
+     - strip
 
 
 Remove or replace text using regular expressions
@@ -351,8 +359,7 @@ string).
 
 .. code:: yaml
 
-   kind: url
-   url: https://example.com/
+   url: https://example.com/regex-substitute.html
    filter:
        - re.sub: '\s*href="[^"]*"'
        - re.sub:
@@ -361,3 +368,67 @@ string).
        - re.sub:
            pattern: '</([^>]*)>'
            repl: '<END OF TAG \1>'
+
+
+Using a shell script as a filter
+--------------------------------
+
+While the built-in filters are powerful for processing markup such as
+HTML and XML, in some cases you might already know how you would filter
+your content using a shell command or shell script. The ``shellpipe``
+filter allows you to start a shell and run custom commands to filter
+the content.
+
+The text data to be filtered will be written to the standard input
+(``stdin``) of the shell process and the filter output will be taken
+from the shell's standard output (``stdout``).
+
+For example, if you want to use ``grep`` tool with the case insensitive
+matching option (``-i``) and printing only the matching part of
+the line (``-o``), you can specify this as ``shellpipe`` filter:
+
+.. code:: yaml
+
+   url: https://example.net/shellpipe-grep.txt
+   filter:
+     - shellpipe: "grep -i -o 'price: <span>.*</span>'"
+
+This feature also allows you to use ``sed``, ``awk`` and ``perl``
+one-liners for text processing (of course, any text tool that
+works in a shell can be used). For example, this ``awk`` one-liner
+prepends the line number to each line:
+
+.. code:: yaml
+
+   url: https://example.net/shellpipe-awk-oneliner.txt
+   filter:
+     - shellpipe: awk '{ print FNR " " $0 }'
+
+You can also use a multi-line command for a more sophisticated
+shell script (``|`` in YAML denotes the start of a text block):
+
+.. code:: yaml
+
+   url: https://example.org/shellpipe-multiline.txt
+   filter:
+     - shellpipe: |
+         FILENAME=`mktemp`
+         # Copy the input to a temporary file, then pipe through awk
+         tee $FILENAME | awk '/The numbers for (.*) are:/,/The next draw is on (.*)./'
+         # Analyze the input file in some other way
+         echo "Input lines: $(wc -l $FILENAME | awk '{ print $1 }')"
+         rm -f $FILENAME
+
+
+Within the ``shellpipe`` script, two environment variables will
+be set for further customization (this can be useful if you have
+a external shell script file that is used as filter for multiple
+jobs, but needs to treat each job in a slightly different way):
+
++----------------------------+------------------------------------------------------+
+| Environment variable       | Contents                                             |
++============================+======================================================+
+| ``$URLWATCH_JOB_NAME``     | The name of the job (``name`` key in jobs YAML)      |
++----------------------------+------------------------------------------------------+
+| ``$URLWATCH_JOB_LOCATION`` | The URL of the job, or command line (for shell jobs) |
++----------------------------+------------------------------------------------------+

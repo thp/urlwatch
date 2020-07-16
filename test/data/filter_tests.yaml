@@ -65,7 +65,7 @@ xpath_text:
         bar
 xpath_exclude:
     filter:
-        xpath:
+      - xpath:
             path: //div
             exclude: //*[@class='excl'] | //*/@class
     data: |
@@ -80,7 +80,7 @@ xpath_exclude:
         <div id="bar">bar</div>
 xpath_xml_namespaces:
     filter:
-        xpath:
+      - xpath:
             path: //item | //f:item
             method: xml
             exclude: //f:year | //author
@@ -124,7 +124,7 @@ css:
         <div>bar</div>
 css_exclude:
     filter:
-        css:
+      - css:
             selector: div
             exclude: '.excl, #bar'
     data: |
@@ -137,7 +137,7 @@ css_exclude:
         <div class="foo">foo</div>
 css_xml_namespaces:
     filter:
-        css:
+      - css:
             selector: item, f|item
             method: xml
             exclude: f|year, author
@@ -234,8 +234,8 @@ sort:
         the violet's blue.
 sort_paragraphs:
     filter:
-      sort:
-        separator: "\n\n"
+      - sort:
+          separator: "\n\n"
     data: |-
         Chimpanzee is a species of great ape native
         to the forest and savannah of tropical Africa.
@@ -260,15 +260,15 @@ sort_paragraphs:
         to the forest and savannah of tropical Africa.
 sort_separator_reverse:
   filter:
-    sort:
-      separator: '%'
-      reverse: true
+    - sort:
+        separator: '%'
+        reverse: true
   data: '3%2%4%1'
   expected_result: '4%3%2%1'
 sort_reverse:
   filter:
-    sort:
-      reverse: true
+    - sort:
+        reverse: true
   data: "a\nc\nb"
   expected_result: "c\nb\na"
 reverse_lines:
@@ -285,18 +285,18 @@ reverse_lines:
         A
 reverse_separator_dict:
   filter:
-    reverse:
-      separator: '|'
+    - reverse:
+        separator: '|'
   data: '1|5|3|4|2'
   expected_result: '2|4|3|5|1'
 reverse_separator_str:
   filter:
-    reverse: '%'
+    - reverse: '%'
   data: 'Hello%World'
   expected_result: 'World%Hello'
 reverse_separator_paragraph:
   filter:
-    reverse: "\n\n"
+    - reverse: "\n\n"
   data: |-
     A paragraph.
 

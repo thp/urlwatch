@@ -28,14 +28,10 @@
 
 
 import difflib
-import tempfile
-import subprocess
 import re
-import shlex
 import email.utils
 import itertools
 import logging
-import os
 import sys
 import time
 import html
@@ -117,29 +113,6 @@ class ReporterBase(object, metaclass=TrackSubClasses):
 
     def submit(self):
         raise NotImplementedError()
-
-    def unified_diff(self, job_state):
-        if job_state.job.diff_tool is not None:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                old_file_path = os.path.join(tmpdir, 'old_file')
-                new_file_path = os.path.join(tmpdir, 'new_file')
-                with open(old_file_path, 'w+b') as old_file, open(new_file_path, 'w+b') as new_file:
-                    old_file.write(job_state.old_data.encode('utf-8'))
-                    new_file.write(job_state.new_data.encode('utf-8'))
-                cmdline = shlex.split(job_state.job.diff_tool) + [old_file_path, new_file_path]
-                proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE)
-                stdout, _ = proc.communicate()
-                # Diff tools return 0 for "nothing changed" or 1 for "files differ", anything else is an error
-                if proc.returncode in (0, 1):
-                    return stdout.decode('utf-8')
-                else:
-                    raise subprocess.CalledProcessError(proc.returncode, cmdline)
-
-        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=True)
-        timestamp_new = email.utils.formatdate(time.time(), localtime=True)
-        return ''.join(difflib.unified_diff(job_state.old_data.splitlines(keepends=True),
-                                            job_state.new_data.splitlines(keepends=True),
-                                            '@', '@', timestamp_old, timestamp_new))
 
 
 class SafeHtml(object):
@@ -265,8 +238,11 @@ class HtmlReporter(ReporterBase):
         if difftype == 'unified':
             # Style should include 'padding-left:2.3em;text-indent:-2.3em' to have hanging indents of long lines
             # but Gmail strips the 'text-indent:-2.3em' and end up with everything indented
-            return ''.join(('<pre style="white-space:pre-wrap">', '\n'.join(self._diff_to_html(
-                self.unified_diff(job_state), getattr(job_state.job, 'is_markdown', False))), '</pre>'))
+            return ''.join((
+                '<pre style="white-space:pre-wrap">',
+                '\n'.join(self._diff_to_html(job_state.get_diff())),
+                '</pre>',
+            ))
         elif difftype == 'table':
             timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
             timestamp_new = email.utils.formatdate(time.time(), localtime=1)
@@ -336,7 +312,7 @@ class TextReporter(ReporterBase):
         if job_state.old_data in (None, job_state.new_data):
             return None
 
-        return self.unified_diff(job_state)
+        return job_state.get_diff()
 
     def _format_output(self, job_state, line_length):
         summary_part = []
@@ -727,7 +703,7 @@ class MarkdownReporter(ReporterBase):
         if job_state.old_data in (None, job_state.new_data):
             return None
 
-        return self.unified_diff(job_state)
+        return job_state.get_diff()
 
     def _format_output(self, job_state):
         summary_part = []
