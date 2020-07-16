@@ -173,7 +173,7 @@ class HtmlReporter(ReporterBase):
             </div>
             </body>
             </html>""").format(pkgname=urlwatch.pkgname, version=urlwatch.__version__, copyright=urlwatch.__copyright__,
-                                url=urlwatch.__url__, count=len(self.job_states), duration=self.duration.seconds)
+                               url=urlwatch.__url__, count=len(self.job_states), duration=self.duration.seconds)
 
     def _diff_to_html(self, unified_diff, is_markdown=False):
         if is_markdown and Markdown:
