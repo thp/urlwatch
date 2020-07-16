@@ -161,16 +161,15 @@ class HtmlReporter(ReporterBase):
     def _parts(self):
         cfg = self.report.config['report']['html']
 
-        yield SafeHtml(
-            '<!DOCTYPE html>\n'
-            '<html>\n'
-            '<head>\n'
-            '<title>urlwatch</title>\n'
-            '<meta http-equiv="content-type" content="text/html; charset=utf-8">\n'
-            '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
-            # No stylesheet: styles are embedded to avoid overwriting by email clients
-            '</head>\n'
-            '<body>\n')
+        yield SafeHtml("""
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <title>urlwatch</title>
+            <meta http-equiv="content-type" content="text/html; charset=utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body>""")
 
         for job_state in self.report.get_filtered_job_states(self.job_states):
             job = job_state.job
@@ -193,14 +192,14 @@ class HtmlReporter(ReporterBase):
 
             yield SafeHtml('<hr>')
 
-        yield SafeHtml(
-            '<div style="font-family:monospace;font-style:italic">\n'
-            '<span>{pkgname} {version}, {copyright}</span>\n'
-            '<address>Website: <a href="{url}">{url}</a></address>\n'
-            '<span>Watched {count} URLs in {duration} seconds</span>\n'
-            '</div>\n'
-            '</body>\n'
-            '</html>\n').format(pkgname=urlwatch.pkgname, version=urlwatch.__version__, copyright=urlwatch.__copyright__,
+        yield SafeHtml("""
+            <div style="font-family:monospace;font-style:italic">
+            <span>{pkgname} {version}, {copyright}</span>
+            <address>Website: <a href="{url}">{url}</a></address>
+            <span>Watched {count} URLs in {duration} seconds</span>
+            </div>
+            </body>
+            </html>""").format(pkgname=urlwatch.pkgname, version=urlwatch.__version__, copyright=urlwatch.__copyright__,
                                 url=urlwatch.__url__, count=len(self.job_states), duration=self.duration.seconds)
 
     def _diff_to_html(self, unified_diff, is_markdown=False):
@@ -237,7 +236,7 @@ class HtmlReporter(ReporterBase):
                 if line[0] == '+':
                     yield '<span style="color:green">+{html}</span>'.format(html=mark_to_html(line[1:]))
                 elif line[0] == '-':
-                    yield '<span style="color:red">+{html}</span>'.format(html=mark_to_html(line[1:]))
+                    yield '<span style="color:red">-{html}</span>'.format(html=mark_to_html(line[1:]))
                 elif line[0] == '@':
                     yield '<span style="background-color:whitesmoke">+{line}</span>'.format(line=line)
                 else:
