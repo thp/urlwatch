@@ -37,6 +37,9 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Travis CI: Set `pycodestyle` version to 2.6.0 to avoid CI breakage when new style checks are added
 - Diff results are now runtime cached on a per-job basis, which shouldn't affect behavior, but
   could be observed by an external `diff_tool` running at most once per job instead of multiple times
+- Jobs with a custom `diff_tool` or a `shellpipe` filter are now ignored if `jobs.yaml` has the
+  world-writable bit (`o+w`) set or is not owned by the current user (does not apply to Windows);
+  previously only `shell` jobs were ignored if the permissions/owners were wrong
 
 ### Deprecated
 
