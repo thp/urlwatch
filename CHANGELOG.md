@@ -11,13 +11,13 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Documentation is now available at [urlwatch.readthedocs.io](https://urlwatch.readthedocs.io)
   and shipped in the source tarball under `docs/`; filter examples in the docs are unit-tested
 - New filters:
- - `reverse`: Reverse input items (default: line-based) with optional `separator`
- - `pdf2text`: Convert PDF files to plaintext (must be first filter in chain)
- - `shellpipe`: Filter text with arbitrary command-line utilities / shell scripts
+  - `reverse`: Reverse input items (default: line-based) with optional `separator`
+  - `pdf2text`: Convert PDF files to plaintext (must be first filter in chain)
+  - `shellpipe`: Filter text with arbitrary command-line utilities / shell scripts
 - `FilterBase` API improvements for specifying subfilters:
- - Add `__supported_subfilters__` for sub filter checking and `--features` output
- - Add `__default_subfilter__` to map value-only parameters to dict parameters,
-   for example the `grep` filter now has a default subfilter named `re`
+  - Add `__supported_subfilters__` for sub filter checking and `--features` output
+  - Add `__default_subfilter__` to map value-only parameters to dict parameters,
+    for example the `grep` filter now has a default subfilter named `re`
 - Support for using Redis as a cache backend via `--cache=redis://localhost:6379/`
 
 ### Fixed
@@ -27,13 +27,13 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Changed
 
 - Filter improvements:
- - `sort`: Add `reverse` option to reverse the sorting order
- - `sort`: Add `separator` option to specify item separator (default is still line-based)
- - `beautify`: The `jsbeautifier` (for `<script>` tags) and `cssbeautifier` (for `<style>` tags)
-   module dependencies are now optional - if they are not installed, beautify only works on the HTML
- - Most filters that only had unnamed subfilters (e.g. `grep`) now have a named default subfilter
+  - `sort`: Add `reverse` option to reverse the sorting order
+  - `sort`: Add `separator` option to specify item separator (default is still line-based)
+  - `beautify`: The `jsbeautifier` (for `<script>` tags) and `cssbeautifier` (for `<style>` tags)
+    module dependencies are now optional - if they are not installed, beautify only works on the HTML
+  - Most filters that only had unnamed subfilters (e.g. `grep`) now have a named default subfilter
 - Reporter improvements:
- - ``pushover``: The message ``priority`` can now be configured
+  - ``pushover``: The message ``priority`` can now be configured
 - Travis CI: Set `pycodestyle` version to 2.6.0 to avoid CI breakage when new style checks are added
 - Diff results are now runtime cached on a per-job basis, which shouldn't affect behavior, but
   could be observed by an external `diff_tool` running at most once per job instead of multiple times
