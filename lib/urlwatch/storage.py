@@ -282,6 +282,9 @@ class UrlsBaseFileStorage(BaseTextualFileStorage, metaclass=ABCMeta):
                 if filter_kind == 'shellpipe':
                     return True
 
+                if job.diff_tool is not None:
+                    return True
+
             return False
 
         # Security checks for shell jobs - only execute if the current UID
