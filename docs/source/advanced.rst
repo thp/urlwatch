@@ -184,7 +184,12 @@ page (can be found by navigating to the events page on your browser):
 
 .. code-block:: yaml
 
-   navigate: https://m.facebook.com/PAGE/pages/permalink/?view_type=tab_events
+   url: http://m.facebook.com/PAGE/pages/permalink/?view_type=tab_events
    filter:
-     - css: div._5zma
-     - html2text
+     - css:
+         selector: div#objects_container
+         exclude: 'div.x, #m_more_friends_who_like_this, img'
+     - re.sub:
+         pattern: '(/events/\d*)[^"]*'
+         repl: '\1'
+     - html2text: pyhtml2text
