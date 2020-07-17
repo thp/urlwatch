@@ -32,6 +32,8 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Diff results are now runtime cached on a per-job basis, which shouldn't affect behavior, but
   could be observed by an external `diff_tool` running at most once per job instead of multiple times
 - The ``pushover`` reporter can now have the message ``priority`` configured
+- `beautify` filter: The `jsbeautifier` (for `<script>` tags) and `cssbeautifier` (for `<style>` tags)
+  module dependencies are now optional - if they are not installed, beautify only works on the HTML
 
 ### Deprecated
 
@@ -48,6 +50,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - HTML reporter: Add `viewport` meta tag for improved viewing on mobile devices (#432, by Mike Borsetti)
 - Optional support for insecure SMTP password storage in the config; use with caution (#431)
 - Add `matrix` reporter
+- New filter: `beautify` that can beautify HTML, JavaScript and CSS
 
 ### Fixed
 - Fix `--test-filter` when the specified job is not found

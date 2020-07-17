@@ -55,7 +55,8 @@ Where ``<packagename>`` is one of the following:
 |                         | `Pygments <https://pygments.org>`__ and                             |
 |                         | dependencies for other features as needed                           |
 +-------------------------+---------------------------------------------------------------------+
-| `beautify` filter       | `beautifulsoup4 <https://pypi.org/project/beautifulsoup4/>`__,      |
+| `beautify` filter       | `beautifulsoup4 <https://pypi.org/project/beautifulsoup4/>`__;      |
+|                         | optional dependencies (for ``<script>`` and ``<style>`` tags):      |
 |                         | `jsbeautifier <https://pypi.org/project/jsbeautifier/>`__ and       |
 |                         | `cssbeautifier <https://pypi.org/project/cssbeautifier/>`__         |
 +-------------------------+---------------------------------------------------------------------+
