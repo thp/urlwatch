@@ -168,8 +168,8 @@ class JobState(object):
             diff = [diff[0], head, '+**Comparison type: Deletions only**\n'] + diff[1:]
         elif self.job.comparison_filter is not None:
             raise ValueError('Comparison type filter not supported: %r' % (self.job.comparison_filter,))
-        return ''.join(diff)
 
+        return ''.join(diff)
 
 
 class Report(object):
