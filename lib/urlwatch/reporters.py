@@ -244,8 +244,8 @@ class HtmlReporter(ReporterBase):
                 '</pre>',
             ))
         elif difftype == 'table':
-            timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
-            timestamp_new = email.utils.formatdate(time.time(), localtime=1)
+            timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=True)
+            timestamp_new = email.utils.formatdate(time.time(), localtime=True)
             html_diff = difflib.HtmlDiff()
             table = html_diff.make_table(job_state.old_data.splitlines(keepends=True),
                                          job_state.new_data.splitlines(keepends=True),
