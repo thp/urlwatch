@@ -261,7 +261,7 @@ class Html2TextFilter(FilterBase):
             method = 're'
             options = {}
         if method == 'pyhtml2text':
-            setattr(self.job, 'is_markdown', True)
+            self.job.is_markdown = True
         from .html2txt import html2text
         return html2text(data, baseurl=getattr(self.job, 'url', getattr(self.job, 'navigate', '')),
                          method=method, options=options)
