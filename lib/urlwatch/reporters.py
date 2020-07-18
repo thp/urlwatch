@@ -211,7 +211,7 @@ class HtmlReporter(ReporterBase):
                 elif line[0] == '-':
                     yield '<span style="color:red">-{html}</span>'.format(html=mark_to_html(line[1:]))
                 elif line[0] == '@':
-                    yield '<span style="background-color:whitesmoke">+{line}</span>'.format(line=line)
+                    yield '<span style="background-color:whitesmoke">@{line}</span>'.format(line=line)
                 else:
                     yield line[0] + mark_to_html(line[1:])
         else:
@@ -240,7 +240,7 @@ class HtmlReporter(ReporterBase):
             # but Gmail strips the 'text-indent:-2.3em' and end up with everything indented
             return ''.join((
                 '<pre style="white-space:pre-wrap">',
-                '\n'.join(self._diff_to_html(job_state.get_diff())),
+                '\n'.join(self._diff_to_html(job_state.get_diff(), job_state.job.is_markdown)),
                 '</pre>',
             ))
         elif difftype == 'table':
