@@ -51,6 +51,7 @@ except ImportError:
 
 from .util import atomic_rename, edit_file
 from .jobs import JobBase, UrlJob, ShellJob
+from .filters import FilterBase
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +110,7 @@ DEFAULT_CONFIG = {
             'device': None,
             'sound': 'spacealarm',
             'user': '',
+            'priority': 'normal',
         },
         'pushbullet': {
             'enabled': False,
@@ -272,12 +274,25 @@ class UrlsBaseFileStorage(BaseTextualFileStorage, metaclass=ABCMeta):
     def load_secure(self):
         jobs = self.load()
 
+        def is_shell_job(job):
+            if isinstance(job, ShellJob):
+                return True
+
+            for filter_kind, subfilter in FilterBase.normalize_filter_list(job.filter):
+                if filter_kind == 'shellpipe':
+                    return True
+
+                if job.diff_tool is not None:
+                    return True
+
+            return False
+
         # Security checks for shell jobs - only execute if the current UID
         # is the same as the file/directory owner and only owner can write
         shelljob_errors = self.shelljob_security_checks()
-        if shelljob_errors and any(isinstance(job, ShellJob) for job in jobs):
+        if shelljob_errors and any(is_shell_job(job) for job in jobs):
             print(('Removing shell jobs, because %s' % (' and '.join(shelljob_errors),)))
-            jobs = [job for job in jobs if not isinstance(job, ShellJob)]
+            jobs = [job for job in jobs if not is_shell_job(job)]
 
         return jobs
 

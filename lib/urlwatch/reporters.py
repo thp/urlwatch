@@ -28,14 +28,10 @@
 
 
 import difflib
-import tempfile
-import subprocess
 import re
-import shlex
 import email.utils
 import itertools
 import logging
-import os
 import sys
 import time
 import html
@@ -74,44 +70,6 @@ logger = logging.getLogger(__name__)
 # Regular expressions that match the added/removed markers of GNU wdiff output
 WDIFF_ADDED_RE = r'[{][+].*?[+][}]'
 WDIFF_REMOVED_RE = r'[\[][-].*?[-][]]'
-
-
-@functools.lru_cache(maxsize=1)
-def cached_unified_diff(old_data, new_data, timestamp_old, timestamp_new, comparison_filter):
-    contextlines = 0 if comparison_filter else 3
-    diff = list(difflib.unified_diff(old_data.splitlines(keepends=True), new_data.splitlines(keepends=True),
-                                     '@', '@', timestamp_old, timestamp_new, contextlines))
-    if comparison_filter == 'additions':
-        len_before = len(diff) - 3
-        before_diff = diff
-        head = '...' + diff[0][3:]
-        diff = [dif for dif in diff if dif.startswith('+') or dif.startswith('@')]
-        len_after = len(diff) - 2
-        diff = [dif for dif, dif2 in zip([''] + diff, diff + ['']) if
-                not (dif.startswith('@') and dif2.startswith('@'))][1:]
-        diff = diff[:-1] if diff[-1].startswith('@') else diff
-        del_only = len(diff) == 1
-        diff = diff + ['.** No additions (only deletions)\n'] if del_only else diff
-        if (len_after / len_before) < .25:
-            diff = (before_diff[:2]
-                    + ['-**Comparison type: Additions only**\n'])
-            if del_only:
-                diff.append('.** No additions (only deletions)\n')
-            diff.append('-**Deletions are being shown as 75% or more of the diff is deletions**\n')
-            diff.extend(before_diff[2:])
-        else:
-            diff = [head, diff[0], '-**Comparison type: Additions only**\n'] + diff[1:]
-    elif comparison_filter == 'deletions':
-        head = '...' + diff[1][3:]
-        diff = [dif for dif in diff if dif.startswith('-') or dif.startswith('@')]
-        diff = [dif for dif, dif2 in zip([''] + diff, diff + ['']) if
-                not (dif.startswith('@') and dif2.startswith('@'))][1:]
-        diff = diff[:-1] if diff[-1].startswith('@') else diff
-        diff = diff + ['.** No deletions (only additions)\n'] if len(diff) == 1 else diff
-        diff = [diff[0], head, '+**Comparison type: Deletions only**\n'] + diff[1:]
-    elif comparison_filter is not None:
-        raise ValueError('Comparison type filter not supported: %r' % (comparison_filter,))
-    return ''.join(diff)
 
 
 class ReporterBase(object, metaclass=TrackSubClasses):
@@ -155,27 +113,6 @@ class ReporterBase(object, metaclass=TrackSubClasses):
 
     def submit(self):
         raise NotImplementedError()
-
-    def unified_diff(self, job_state):
-        if job_state.job.diff_tool is not None:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                old_file_path = os.path.join(tmpdir, 'old_file')
-                new_file_path = os.path.join(tmpdir, 'new_file')
-                with open(old_file_path, 'w+b') as old_file, open(new_file_path, 'w+b') as new_file:
-                    old_file.write(job_state.old_data.encode('utf-8'))
-                    new_file.write(job_state.new_data.encode('utf-8'))
-                cmdline = shlex.split(job_state.job.diff_tool) + [old_file_path, new_file_path]
-                proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE)
-                stdout, _ = proc.communicate()
-                # Diff tools return 0 for "nothing changed" or 1 for "files differ", anything else is an error
-                if proc.returncode in (0, 1):
-                    return stdout.decode('utf-8')
-                else:
-                    raise subprocess.CalledProcessError(proc.returncode, cmdline)
-
-        timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
-        timestamp_new = email.utils.formatdate(time.time(), localtime=1)
-        return cached_unified_diff(job_state.old_data, job_state.new_data, timestamp_old, timestamp_new, job_state.job.comparison_filter)
 
 
 class SafeHtml(object):
@@ -268,8 +205,8 @@ class HtmlReporter(ReporterBase):
             return SafeHtml('...')
 
         if difftype == 'table':
-            timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=1)
-            timestamp_new = email.utils.formatdate(time.time(), localtime=1)
+            timestamp_old = email.utils.formatdate(job_state.timestamp, localtime=True)
+            timestamp_new = email.utils.formatdate(time.time(), localtime=True)
             html_diff = difflib.HtmlDiff()
             return SafeHtml(html_diff.make_table(job_state.old_data.splitlines(keepends=True),
                                                  job_state.new_data.splitlines(keepends=True),
@@ -277,7 +214,7 @@ class HtmlReporter(ReporterBase):
         elif difftype == 'unified':
             return ''.join((
                 '<pre>',
-                '\n'.join(self._diff_to_html(self.unified_diff(job_state))),
+                '\n'.join(self._diff_to_html(job_state.get_diff())),
                 '</pre>',
             ))
         else:
@@ -334,7 +271,7 @@ class TextReporter(ReporterBase):
         if job_state.old_data in (None, job_state.new_data):
             return None
 
-        return self.unified_diff(job_state)
+        return job_state.get_diff()
 
     def _format_output(self, job_state, line_length):
         summary_part = []
@@ -513,7 +450,14 @@ class PushoverReport(WebServiceReporter):
         # If device is the empty string or not specified at all, use None to send to all devices
         # (see https://github.com/thp/urlwatch/issues/372)
         device = self.config.get('device', None) or None
-        msg = service.create_message(title=title, message=body, html=True, sound=sound, device=device)
+        priority = {
+            'lowest': chump.LOWEST,
+            'low': chump.LOW,
+            'normal': chump.NORMAL,
+            'high': chump.HIGH,
+            'emergency': chump.EMERGENCY,
+        }.get(self.config.get('priority', None), chump.NORMAL)
+        msg = service.create_message(title=title, message=body, html=True, sound=sound, device=device, priority=priority)
         msg.send()
 
 
@@ -725,7 +669,7 @@ class MarkdownReporter(ReporterBase):
         if job_state.old_data in (None, job_state.new_data):
             return None
 
-        return self.unified_diff(job_state)
+        return job_state.get_diff()
 
     def _format_output(self, job_state):
         summary_part = []

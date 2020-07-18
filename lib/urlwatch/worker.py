@@ -88,7 +88,7 @@ def run_jobs(urlwatcher):
             matched_history_time = job_state.history_data.get(job_state.new_data)
             if matched_history_time:
                 job_state.timestamp = matched_history_time
-            if matched_history_time or job_state.new_data == job_state.old_data:
+            if matched_history_time or job_state.new_data == job_state.old_data or job_state.get_diff() is False:
                 report.unchanged(job_state)
                 if job_state.tries > 0:
                     job_state.tries = 0

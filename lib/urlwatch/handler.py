@@ -32,6 +32,12 @@ import datetime
 import logging
 import time
 import traceback
+import tempfile
+import difflib
+import os
+import shlex
+import subprocess
+import email.utils
 
 from .filters import FilterBase
 from .jobs import NotModifiedError
@@ -54,6 +60,7 @@ class JobState(object):
         self.tries = 0
         self.etag = None
         self.error_ignored = False
+        self._generated_diff = None
 
     def load(self):
         guid = self.job.get_guid()
@@ -81,21 +88,9 @@ class JobState(object):
                 data = FilterBase.auto_process(self, data)
 
                 # Apply any specified filters
-                filter_list = self.job.filter
+                for filter_kind, subfilter in FilterBase.normalize_filter_list(self.job.filter):
+                    data = FilterBase.process(filter_kind, subfilter, self, data)
 
-                if filter_list:
-                    if isinstance(filter_list, list):
-                        for item in filter_list:
-                            key = next(iter(item))
-                            filter_kind, subfilter = key, item[key]
-                            data = FilterBase.process(filter_kind, subfilter, self, data)
-                    elif isinstance(filter_list, str):
-                        for filter_kind in filter_list.split(','):
-                            if ':' in filter_kind:
-                                filter_kind, subfilter = filter_kind.split(':', 1)
-                            else:
-                                subfilter = None
-                            data = FilterBase.process(filter_kind, subfilter, self, data)
                 self.new_data = data
 
             except Exception as e:
@@ -116,6 +111,64 @@ class JobState(object):
                 logger.debug('Increasing number of tries to %i for %s', self.tries, self.job)
 
         return self
+
+    def get_diff(self):
+        if self._generated_diff is None:
+            self._generated_diff = self._generate_diff()
+
+        return self._generated_diff
+
+    def _generate_diff(self):
+        if self.job.diff_tool is not None:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                old_file_path = os.path.join(tmpdir, 'old_file')
+                new_file_path = os.path.join(tmpdir, 'new_file')
+                with open(old_file_path, 'w+b') as old_file, open(new_file_path, 'w+b') as new_file:
+                    old_file.write(self.old_data.encode('utf-8'))
+                    new_file.write(self.new_data.encode('utf-8'))
+                cmdline = shlex.split(self.job.diff_tool) + [old_file_path, new_file_path]
+                proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE)
+                stdout, _ = proc.communicate()
+                # Diff tools return 0 for "nothing changed" or 1 for "files differ", anything else is an error
+                if proc.returncode == 0:
+                    return False
+                elif proc.returncode == 1:
+                    return stdout.decode('utf-8')
+                else:
+                    raise subprocess.CalledProcessError(proc.returncode, cmdline)
+
+        timestamp_old = email.utils.formatdate(self.timestamp, localtime=True)
+        timestamp_new = email.utils.formatdate(time.time(), localtime=True)
+        contextlines = 0 if self.job.comparison_filter else 3
+        diff = list(difflib.unified_diff(self.old_data.splitlines(keepends=True),
+                                         self.new_data.splitlines(keepends=True),
+                                         '@', '@', timestamp_old, timestamp_new, contextlines))
+        if self.job.comparison_filter == 'additions':
+            if (len(self.new_data) / len(self.old_data)) <= .25:
+                diff = (diff[:2] + ['-**Comparison type: Additions only**\n']
+                        + ['-**Deletions are being shown as 75% or more of the content has been deleted**\n']
+                        + diff[2:])
+            else:
+                head = '...' + diff[0][3:]
+                diff = [dif for dif in diff if dif.startswith('+') or dif.startswith('@')]
+                diff = [dif for dif, dif2 in zip([''] + diff, diff + ['']) if
+                        not (dif.startswith('@') and dif2.startswith('@'))][1:]
+                diff = diff[:-1] if diff[-1].startswith('@') else diff
+                if len(diff) == 1:
+                    return False
+                diff = [head, diff[0], '-**Comparison type: Additions only**\n'] + diff[1:]
+        elif self.job.comparison_filter == 'deletions':
+            head = '...' + diff[1][3:]
+            diff = [dif for dif in diff if dif.startswith('-') or dif.startswith('@')]
+            diff = [dif for dif, dif2 in zip([''] + diff, diff + ['']) if
+                    not (dif.startswith('@') and dif2.startswith('@'))][1:]
+            diff = diff[:-1] if diff[-1].startswith('@') else diff
+            if len(diff) == 1:
+                return False
+            diff = [diff[0], head, '+**Comparison type: Deletions only**\n'] + diff[1:]
+        elif self.job.comparison_filter is not None:
+            raise ValueError('Comparison type filter not supported: %r' % (self.job.comparison_filter,))
+        return ''.join(diff)
 
 
 class Report(object):
