@@ -6,6 +6,8 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+### Added
+
 - HTML output now survives stylesheet rewriting by email and other clients and lines wrap around
 - Markdown of the `pyhtml2text` sub-filter of the `html2text` filter is reconstructed into HTML (includes making links clickable again)
 
