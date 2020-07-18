@@ -491,7 +491,14 @@ class PushoverReport(WebServiceReporter):
         # If device is the empty string or not specified at all, use None to send to all devices
         # (see https://github.com/thp/urlwatch/issues/372)
         device = self.config.get('device', None) or None
-        msg = service.create_message(title=title, message=body, html=True, sound=sound, device=device)
+        priority = {
+            'lowest': chump.LOWEST,
+            'low': chump.LOW,
+            'normal': chump.NORMAL,
+            'high': chump.HIGH,
+            'emergency': chump.EMERGENCY,
+        }.get(self.config.get('priority', None), chump.NORMAL)
+        msg = service.create_message(title=title, message=body, html=True, sound=sound, device=device, priority=priority)
         msg.send()
 
 

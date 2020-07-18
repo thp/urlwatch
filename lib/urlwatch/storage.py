@@ -110,6 +110,7 @@ DEFAULT_CONFIG = {
             'device': None,
             'sound': 'spacealarm',
             'user': '',
+            'priority': 'normal',
         },
         'pushbullet': {
             'enabled': False,
@@ -279,6 +280,9 @@ class UrlsBaseFileStorage(BaseTextualFileStorage, metaclass=ABCMeta):
 
             for filter_kind, subfilter in FilterBase.normalize_filter_list(job.filter):
                 if filter_kind == 'shellpipe':
+                    return True
+
+                if job.diff_tool is not None:
                     return True
 
             return False

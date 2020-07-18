@@ -223,20 +223,35 @@ class BeautifyFilter(FilterBase):
     __no_subfilter__ = True
 
     def filter(self, data, subfilter):
-        import jsbeautifier
-        import cssbeautifier
         from bs4 import BeautifulSoup as bs
         soup = bs(data, features="lxml")
-        scripts = soup.find_all('script')
-        for script in scripts:
-            if script.string is not None:
-                beautified_js = jsbeautifier.beautify(script.string)
-                script.string = beautified_js
-        styles = soup.find_all('style')
-        for style in styles:
-            if style.string is not None:
-                beautified_css = cssbeautifier.beautify(style.string)
-                style.string = beautified_css
+
+        try:
+            import jsbeautifier
+        except ImportError:
+            logger.info('"jsbeautifier" is not installed, will not beautify <script> tags')
+            jsbeautifier = None
+
+        if jsbeautifier is not None:
+            scripts = soup.find_all('script')
+            for script in scripts:
+                if script.string is not None:
+                    beautified_js = jsbeautifier.beautify(script.string)
+                    script.string = beautified_js
+
+        try:
+            import cssbeautifier
+        except ImportError:
+            logger.info('"cssbeautifier" is not installed, will not beautify <style> tags')
+            cssbeautifier = None
+
+        if cssbeautifier is not None:
+            styles = soup.find_all('style')
+            for style in styles:
+                if style.string is not None:
+                    beautified_css = cssbeautifier.beautify(style.string)
+                    style.string = beautified_css
+
         return soup.prettify()
 
 

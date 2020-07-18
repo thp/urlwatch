@@ -6,33 +6,45 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
-### Added
-
-- Project URLs added to `setup.py`
-- Sphinx-based documentation
-- `reverse` filter: Reverse input items (default: line-based) with optional `separator`
-- Add `__supported_subfilters__` to `FilterBase` for sub filter checking and `--features` output
-- Add `__default_subfilter__` to `FilterBase` to map value-only parameters to dict parameters,
-  for example the `grep` filter now has a default subfilter named `re`
-- Support for a Redis cache backend via `--cache=redis://localhost:6379/`
-- New `pdf2text` filter (must be first filter in chain) to convert PDF files to plaintext
-- Job filter examples in the "Filters" documentation are now unit-tested
-- New `shellpipe` filter that can filter text with arbitrary command-line utilities / shell scripts
 - HTML output now survives stylesheet rewriting by email and other clients and lines wrap around
 - Markdown of the `pyhtml2text` sub-filter of the `html2text` filter is reconstructed into HTML (includes making links clickable again)
 
+## [2.19] -- 2020-07-17
+
+### Added
+
+- Documentation is now available at [urlwatch.readthedocs.io](https://urlwatch.readthedocs.io)
+  and shipped in the source tarball under `docs/`; filter examples in the docs are unit-tested
+- New filters:
+  - `reverse`: Reverse input items (default: line-based) with optional `separator`
+  - `pdf2text`: Convert PDF files to plaintext (must be first filter in chain)
+  - `shellpipe`: Filter text with arbitrary command-line utilities / shell scripts
+- `FilterBase` API improvements for specifying subfilters:
+  - Add `__supported_subfilters__` for sub filter checking and `--features` output
+  - Add `__default_subfilter__` to map value-only parameters to dict parameters,
+    for example the `grep` filter now has a default subfilter named `re`
+- Support for using Redis as a cache backend via `--cache=redis://localhost:6379/`
+
 ### Fixed
 
-- Declare updated Python 3.5 dependency in `setup.py`
+- Declare updated Python 3.5 dependency in `setup.py` (already a requirement since urlwatch 2.18)
 
 ### Changed
 
-- `sort` filter: Add `reverse` option to reverse the sorting order
-- `sort` filter: Add `separator` option to specify item separator (default is still line-based)
+- Filter improvements:
+  - `sort`: Add `reverse` option to reverse the sorting order
+  - `sort`: Add `separator` option to specify item separator (default is still line-based)
+  - `beautify`: The `jsbeautifier` (for `<script>` tags) and `cssbeautifier` (for `<style>` tags)
+    module dependencies are now optional - if they are not installed, beautify only works on the HTML
+  - Most filters that only had unnamed subfilters (e.g. `grep`) now have a named default subfilter
+- Reporter improvements:
+  - ``pushover``: The message ``priority`` can now be configured
 - Travis CI: Set `pycodestyle` version to 2.6.0 to avoid CI breakage when new style checks are added
-- Most filters that only had unnamed subfilters (e.g. `grep`) now have a named default subfilter
 - Diff results are now runtime cached on a per-job basis, which shouldn't affect behavior, but
   could be observed by an external `diff_tool` running at most once per job instead of multiple times
+- Jobs with a custom `diff_tool` or a `shellpipe` filter are now ignored if `jobs.yaml` has the
+  world-writable bit (`o+w`) set or is not owned by the current user (does not apply to Windows);
+  previously only `shell` jobs were ignored if the permissions/owners were wrong
 
 ### Deprecated
 
@@ -49,6 +61,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - HTML reporter: Add `viewport` meta tag for improved viewing on mobile devices (#432, by Mike Borsetti)
 - Optional support for insecure SMTP password storage in the config; use with caution (#431)
 - Add `matrix` reporter
+- New filter: `beautify` that can beautify HTML, JavaScript and CSS
 
 ### Fixed
 - Fix `--test-filter` when the specified job is not found
