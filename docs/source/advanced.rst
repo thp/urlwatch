@@ -173,3 +173,23 @@ document. On a properly set up Tor installation, one can just prefix the
    torify urlwatch
 
 .. _Tor Network: https://www.torproject.org
+
+
+Watching Facebook Page Events
+-----------------------------
+
+If you want to be notified of new events on a public Facebook page, you
+can use the following job pattern, replace ``PAGE`` with the name of the
+page (can be found by navigating to the events page on your browser):
+
+.. code-block:: yaml
+
+   url: http://m.facebook.com/PAGE/pages/permalink/?view_type=tab_events
+   filter:
+     - css:
+         selector: div#objects_container
+         exclude: 'div.x, #m_more_friends_who_like_this, img'
+     - re.sub:
+         pattern: '(/events/\d*)[^"]*'
+         repl: '\1'
+     - html2text: pyhtml2text

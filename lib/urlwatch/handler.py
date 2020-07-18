@@ -171,6 +171,7 @@ class JobState(object):
         return ''.join(diff)
 
 
+
 class Report(object):
     def __init__(self, urlwatch_config):
         self.config = urlwatch_config.config_storage.config

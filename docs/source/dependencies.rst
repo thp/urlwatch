@@ -50,9 +50,13 @@ Where ``<packagename>`` is one of the following:
 +-------------------------+---------------------------------------------------------------------+
 | `browser` job kind      | `requests-html <https://html.python-requests.org>`__                |
 +-------------------------+---------------------------------------------------------------------+
-| Unit testing            | `pycodestyle <http://pycodestyle.pycqa.org/en/latest/>`__           |
+| Unit testing            | `pycodestyle <http://pycodestyle.pycqa.org/en/latest/>`__,          |
+|                         | `docutils <https://docutils.sourceforge.io>`__,                     |
+|                         | `Pygments <https://pygments.org>`__ and                             |
+|                         | dependencies for other features as needed                           |
 +-------------------------+---------------------------------------------------------------------+
-| `beautify` filter       | `beautifulsoup4 <https://pypi.org/project/beautifulsoup4/>`__,      |
+| `beautify` filter       | `beautifulsoup4 <https://pypi.org/project/beautifulsoup4/>`__;      |
+|                         | optional dependencies (for ``<script>`` and ``<style>`` tags):      |
 |                         | `jsbeautifier <https://pypi.org/project/jsbeautifier/>`__ and       |
 |                         | `cssbeautifier <https://pypi.org/project/cssbeautifier/>`__         |
 +-------------------------+---------------------------------------------------------------------+
