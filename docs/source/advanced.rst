@@ -184,7 +184,7 @@ page (can be found by navigating to the events page on your browser):
 
 .. code-block:: yaml
 
-   url: http://m.facebook.com/PAGE/pages/permalink/?view_type=tab_events
+   url: https://m.facebook.com/PAGE/pages/permalink/?view_type=tab_events
    filter:
      - css:
          selector: div#objects_container
@@ -193,3 +193,5 @@ page (can be found by navigating to the events page on your browser):
          pattern: '(/events/\d*)[^"]*'
          repl: '\1'
      - html2text: pyhtml2text
+   comparison_filter: additions
+
