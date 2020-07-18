@@ -189,7 +189,7 @@ class HtmlReporter(ReporterBase):
                     return '-' * 80
                 pre = ''
                 if text.lstrip().startswith('* '):  # item of unordered list
-                    lstripped = text.lstrip()
+                    lstripped = text.lstrip(' ')
                     indent = len(text) - len(lstripped)
                     pre = '&nbsp;' * indent
                     pre += '● ' if indent == 2 else '◾ ' if indent == 4 else '○ '
