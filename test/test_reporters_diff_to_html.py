@@ -88,7 +88,8 @@ def strong():
     out = (' <strong>strong</strong>')
     eq_(''.join(list(htmlreporter._diff_to_html(inp, is_markdown=True))), out)
 
+
 def strikethrough():
     inp = ' ~~strikethrough~~'
     out = (' <strike>strikethrough</strike>')
-    eq_(''.join(l
+    eq_(''.join(list(htmlreporter._diff_to_html(inp, is_markdown=True))), out)
