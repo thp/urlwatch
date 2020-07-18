@@ -60,19 +60,19 @@ def bullet_point_1():
 
 
 def bullet_point_2():
-     inp = '     * Bullet point level 2'
+    inp = '     * Bullet point level 2'
     out = (' &nbsp;&nbsp;&nbsp;&nbsp;◾ Bullet point level 2')
     eq_(''.join(list(htmlreporter._diff_to_html(inp, is_markdown=True))), out)
 
 
 def bullet_point_3():
-     inp = '       * Bullet point level 3'
+    inp = '       * Bullet point level 3'
     out = (' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;○ Bullet point level 3')
     eq_(''.join(list(htmlreporter._diff_to_html(inp, is_markdown=True))), out)
 
 
 def bullet_point_4():
-     inp = '         * Bullet point level 4'
+    inp = '         * Bullet point level 4'
     out = (' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;○ Bullet point level 4')
     eq_(''.join(list(htmlreporter._diff_to_html(inp, is_markdown=True))), out)
 
