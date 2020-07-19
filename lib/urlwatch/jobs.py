@@ -201,7 +201,8 @@ class ShellJob(Job):
 
         # If the first filter is a bytes filter, return content in bytes instead of in unicode
         # as that's what's required by the library used by that filter
-        if self.filter and (FilterBase.is_bytes_filter(self.filter[0])
+        if self.filter and (FilterBase.is_bytes_filter(next(iter(self.filter[0])))
+                            or FilterBase.is_bytes_filter(self.filter[0])
                             or FilterBase.is_bytes_filter(self.filter)):
             return stdout_data
 
@@ -293,7 +294,8 @@ class UrlJob(Job):
 
         # If the first filter is a bytes filter, return content in bytes instead of in unicode
         # as that's what's required by the library used by that filter
-        if self.filter and (FilterBase.is_bytes_filter(self.filter[0])
+        if self.filter and (FilterBase.is_bytes_filter(next(iter(self.filter[0])))
+                            or FilterBase.is_bytes_filter(self.filter[0])
                             or FilterBase.is_bytes_filter(self.filter)):
             return response.content
 
