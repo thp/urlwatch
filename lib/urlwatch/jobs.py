@@ -199,10 +199,7 @@ class ShellJob(Job):
         if result != 0:
             raise ShellError(result)
 
-        # If the first filter is a bytes filter, return content in bytes instead of in unicode
-        # as that's what's required by the library used by that filter
-        if self.filter and (FilterBase.is_bytes_filter(self.filter)
-                            or FilterBase.is_bytes_filter(next(iter(self.filter[0])))):
+        if FilterBase.filter_chain_needs_bytes(self.filter):
             return stdout_data
 
         return stdout_data.decode('utf-8')
@@ -291,10 +288,7 @@ class UrlJob(Job):
         # Save ETag from response into job_state, which will be saved in cache
         job_state.etag = response.headers.get('ETag')
 
-        # If the first filter is a bytes filter, return content in bytes instead of in unicode
-        # as that's what's required by the library used by that filter
-        if self.filter and (FilterBase.is_bytes_filter(self.filter)
-                            or FilterBase.is_bytes_filter(next(iter(self.filter[0])))):
+        if FilterBase.filter_chain_needs_bytes(self.filter):
             return response.content
 
         # If we can't find the encoding in the headers, requests gets all

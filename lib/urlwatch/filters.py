@@ -145,9 +145,20 @@ class FilterBase(object, metaclass=TrackSubClasses):
         return filtercls(state.job, state).filter(data, subfilter)
 
     @classmethod
-    def is_bytes_filter(cls, filter):
-        return (filter in [name for name, class_ in FilterBase.__subclasses__.items()
-                           if getattr(class_, '__uses_bytes__', False)])
+    def filter_chain_needs_bytes(cls, filter):
+        # If the first filter is a bytes filter, return content in bytes instead of
+        # in unicode as that's what's required by the library used by that filter
+        first_filter = next(cls.normalize_filter_list(filter), None)
+        if first_filter is not None:
+            filter_kind, subfilter = first_filter
+            return cls.is_bytes_filter_kind(filter_kind)
+
+        return False
+
+    @classmethod
+    def is_bytes_filter_kind(cls, filter_kind):
+        return (filter_kind in [name for name, class_ in cls.__subclasses__.items()
+                                if getattr(class_, '__uses_bytes__', False)])
 
     def match(self):
         return False
