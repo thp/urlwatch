@@ -117,7 +117,7 @@ class FilterBase(object, metaclass=TrackSubClasses):
             filter_spec = [dict([filter_kind.split(':', 1)]) if ':' in filter_kind else filter_kind
                            for filter_kind in filter_spec.split(',')]
 
-            logger.warn('String-based filter definitions (%s) are deprecated, please convert to dict-style:\n\n%s',
+            logger.warn('String-based filter definitions (%s) are deprecated, please convert to dict-style (see https://urlwatch.readthedocs.io/en/latest/deprecated.html):\n\n%s',
                         old_filter_spec, yaml.dump(filter_spec, default_flow_style=False))
 
         if isinstance(filter_spec, list):

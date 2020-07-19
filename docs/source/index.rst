@@ -62,6 +62,7 @@ The Handbook
    filters
    reporters
    advanced
+   deprecated
    migration
 
 
