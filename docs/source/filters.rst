@@ -8,7 +8,10 @@
 Filters
 =======
 
-Filters are applied to the downloaded page before diffing the changes.
+Filters are currently used in two stages of processing:
+
+* Applied to the downloaded page before diffing the changes (``filter``)
+* Applied to the diff result before reporting the changes (``diff_filter``)
 
 While creating your filter pipeline, you might want to preview what the
 filtered output looks like. You can do so by first configuring your job
