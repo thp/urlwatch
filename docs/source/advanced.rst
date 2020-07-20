@@ -133,8 +133,9 @@ different from the latest three distinct states. The differences are
 shown relative to the closest match.
 
 
-Receving a report every time urlwatch runs
-------------------------------------------
+Receiving a report every time urlwatch runs
+-------------------------------------------
+
 If you are watching pages that change seldomly, but you still want to
 be notified daily if ``urlwatch`` still works, you can watch the output
 of the ``date`` command, for example:
