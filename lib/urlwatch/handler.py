@@ -70,10 +70,8 @@ class JobState(object):
         try:
             self.job.release_resources(JobState.resources)
         except Exception as ex:
-            logger.error('Got exception while releasing resources for job: %r', self.job, exc_info=ex)
-            if self.exception is None:
-                self.exception = ex
-                self.traceback = traceback.format_exc()
+            # Log warning only. We don't want exceptions from releasing resources to override job run results
+            logger.warning('Got exception while releasing resources for job: %r', self.job, exc_info=ex)
 
     def load(self):
         guid = self.job.get_guid()
