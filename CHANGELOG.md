@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [UNRELEASED]
+
+### Added
+
+- A job can now have a `diff_filter` set, which works the same way as the normal
+  `filter` (and has the same filters available), but applies to the `diff` output
+  instead of the page content
+
 ## [2.19] -- 2020-07-17
 
 ### Added

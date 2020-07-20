@@ -115,6 +115,9 @@ class JobState(object):
     def get_diff(self):
         if self._generated_diff is None:
             self._generated_diff = self._generate_diff()
+            # Apply any specified diff filters
+            for filter_kind, subfilter in FilterBase.normalize_filter_list(self.job.diff_filter):
+                self._generated_diff = FilterBase.process(filter_kind, subfilter, self, self._generated_diff)
 
         return self._generated_diff
 

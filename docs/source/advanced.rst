@@ -193,3 +193,54 @@ page (can be found by navigating to the events page on your browser):
          pattern: '(/events/\d*)[^"]*'
          repl: '\1'
      - html2text: pyhtml2text
+
+
+Only show added or removed lines
+--------------------------------
+
+The ``diff_filter`` feature can be used to filter the diff output text
+with the same tools (see :ref:`filters`) used for filtering web pages.
+
+In order to show only diff lines with added lines, use:
+
+.. code-block:: yaml
+
+   url: http://example.com/things-get-added.html
+   diff_filter:
+     - grep: '^[@+]'
+
+This will only keep diff lines starting with ``@`` or ``+``. Similarly,
+to only keep removed lines:
+
+.. code-block:: yaml
+
+   url: http://example.com/things-get-removed.html
+   diff_filter:
+     - grep: '^[@-]'
+
+More sophisticated diff filtering is possibly by combining existing
+filters, writing a new filter or using ``shellpipe`` to delegate the
+filtering/processing of the diff output to an external tool.
+
+
+Pass diff output to a custom script
+-----------------------------------
+
+In some situations, it might be useful to run a script with the diff as input
+when changes were detected (e.g. to start an update or process something). This
+can be done by combining ``diff_filter`` with the ``shellpipe`` filter, which
+can be any custom script.
+
+The output of the custom script will then be the diff result as reported by
+urlwatch, so if it outputs any status, the ``CHANGED`` notification that
+urlwatch does will contain the output of the custom script, not the original
+diff. This can even have a "normal" filter attached to only watch links
+(the ``css: a`` part of the filter definitions):
+
+.. code-block:: yaml
+
+   url: http://example.org/downloadlist.html
+   filter:
+     - css: a
+   diff_filter:
+     - shellpipe: /usr/local/bin/process_new_links.sh
