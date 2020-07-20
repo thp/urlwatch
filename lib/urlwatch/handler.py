@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 class JobState(object):
-    resouces = {}
+    resources = {}
 
     def __init__(self, cache_storage, job):
         self.cache_storage = cache_storage
@@ -59,7 +59,7 @@ class JobState(object):
 
     def __enter__(self):
         try:
-            self.job.request_resources(JobState.resouces)
+            self.job.request_resources(JobState.resources)
         except Exception as ex:
             self.exception = ex
             self.traceback = traceback.format_exc()
@@ -68,7 +68,7 @@ class JobState(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         try:
-            self.job.release_resources(JobState.resouces)
+            self.job.release_resources(JobState.resources)
         except Exception as ex:
             logger.error('Got exception while releasing resources for job: %r', self.job, exc_info=ex)
             if self.exception is None:
