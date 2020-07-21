@@ -384,7 +384,7 @@ class EMailReporter(TextReporter):
             smtp_user = self.config['smtp'].get('user', None) or self.config['from']
             # Legacy support: The current smtp "auth" setting was previously called "keyring"
             if 'keyring' in self.config['smtp']:
-                logger.info('The SMTP config key "keyring" is now called "auth".')
+                logger.info('The SMTP config key "keyring" is now called "auth". See https://urlwatch.readthedocs.io/en/latest/deprecated.html')
             use_auth = self.config['smtp'].get('auth', self.config['smtp'].get('keyring', False))
             mailer = SMTPMailer(smtp_user, self.config['smtp']['host'], self.config['smtp']['port'],
                                 self.config['smtp']['starttls'], use_auth,
