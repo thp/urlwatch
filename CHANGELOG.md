@@ -13,6 +13,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
   instead of the page content
 - Documentation now has a section on the configuration settings (`--edit-config`)
 
+### Changed
+
+- The `urlwatch` script (Git only) now works when run from different paths
+
 ## [2.19] -- 2020-07-17
 
 ### Added
