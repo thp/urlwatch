@@ -60,6 +60,7 @@ The Handbook
    dependencies
    jobs
    filters
+   configuration
    reporters
    advanced
    deprecated

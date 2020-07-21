@@ -118,3 +118,8 @@ Optional keys for all job types
 - ``compared_versions``: Number of versions to compare for similarity
 - ``kind`` (redundant): Either ``url``, ``shell`` or ``browser``.  Automatically derived from the unique key (``url``, ``command`` or ``navigate``) of the job type
 
+
+Settings keys for all jobs at once
+----------------------------------
+
+See :ref:`job_defaults` for how to configure keys for all jobs at once.

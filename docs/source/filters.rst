@@ -27,6 +27,14 @@ The output of this command will be the filtered plaintext of the job,
 this is the output that will (in a real urlwatch run) be the input to
 the diff algorithm.
 
+The ``filter`` is only applied to new content, the old content was
+already filtered when it was retrieved. This means that changes to
+``filter`` are not visible when reporting unchanged contents
+(see :ref:`configuration_display` for details), and the diff output
+will be between (old content with filter at the time old content was
+retrieved) and (new content with current filter).
+
+
 Built-in filters
 ----------------
 

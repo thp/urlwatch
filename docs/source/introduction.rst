@@ -80,4 +80,4 @@ If you have more than one job, per `YAML specifications <https://yaml.org/spec/>
 - ``pushover``
 - ``stdout``
 
-This configuration is contained in its own YAML file accessible with ``urlwatch --edit-config`` and documented at :ref:`Reporters`.
+Reporters are configured in a separate file, see :ref:`configuration`.

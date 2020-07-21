@@ -12,6 +12,8 @@ You can enable one or more additional reporters that are used to send
 change notifications. Please note that most reporters need additional
 dependencies installed.
 
+See :ref:`configuration` on how to edit the configuration.
+
 Built-in reporters
 ------------------
 

@@ -3,21 +3,6 @@
 Advanced Topics
 ===============
 
-If you want to change some settings for all your jobs, edit the
-``job_defaults`` section in your config file:
-
-.. code-block:: yaml
-
-   ...
-   job_defaults:
-     all:
-       diff_tool: wdiff
-     url:
-       ignore_connection_errors: true
-
-The above config file sets all jobs to use wdiff as diff tool, and all
-“url” jobs to ignore connection errors.
-
 
 Adding URLs from the command line
 ---------------------------------
