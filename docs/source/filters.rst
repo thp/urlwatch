@@ -380,6 +380,25 @@ string).
            pattern: '</([^>]*)>'
            repl: '<END OF TAG \1>'
 
+If you want to enable certain flags (e.g. ``re.MULTILINE``) in the
+call, this is possible by inserting an "inline flag" documented in
+`flags in re.compile`_, here are some examples:
+
+* ``re.MULTILINE``: ``(?m)`` (Makes ``^`` match start-of-line and ``$`` match end-of-line)
+* ``re.DOTALL``: ``(?s)`` (Makes ``.`` also match a newline)
+* ``re.IGNORECASE``: ``(?i)`` (Perform case-insensitive matching)
+
+.. _flags in re.compile: https://docs.python.org/3/library/re.html#re.compile
+
+This allows you, for example, to remove all leading spaces (only
+space character and tab):
+
+.. code:: yaml
+
+   url: http://example.com/leading-spaces.txt
+   filter:
+     - re.sub: '(?m)^[ \t]*'
+
 
 Using a shell script as a filter
 --------------------------------

@@ -315,3 +315,14 @@ reverse_separator_paragraph:
     over two lines.
 
     A paragraph.
+re_sub_multiline:
+  filter:
+    - re.sub: '(?m)^jQuery.*'
+  data: |-
+    One Line
+    jQuery Line
+    Another Line
+  expected_result: |-
+    One Line
+    
+    Another Line

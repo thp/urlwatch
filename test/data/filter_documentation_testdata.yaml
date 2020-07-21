@@ -309,3 +309,16 @@ https://example.net/shellpipe-awk-oneliner.txt:
     3 How
     4 Are
     5 You
+http://example.com/leading-spaces.txt:
+  input: |
+    A document
+      with some indentation
+    and sometimes
+      	  with tabs mixed in
+      gets converted.
+  output: |
+    A document
+    with some indentation
+    and sometimes
+    with tabs mixed in
+    gets converted.
