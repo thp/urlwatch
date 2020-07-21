@@ -83,6 +83,8 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Drop support for Python 3.3 and Python 3.4 (new minimum requirement is Python 3.5)
 - Use `html.escape` instead of `cgi.escape` (which was removed in Python 3.8; #424, by Chenfeng Bao)
 - Allow non-ASCII characters in `format-json` output filter (#433, by Mike Borsetti)
+- The `keyring` config option for `email` was changed to `auth`; if you have problems
+  with authentication where none is needed, set `report/email/smtp/auth` to `false`
 
 
 ## [2.17] -- 2019-04-12
