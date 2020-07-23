@@ -29,6 +29,7 @@ At the moment, the following reporters are built-in:
 - **pushover**: Send summary via pushover.net
 - **slack**: Custom Slack reporter
 - **telegram**: Custom Telegram reporter
+- **ifttt**: Send summary via IFTTT
 
 .. To convert the "urlwatch --features" output, use:
    sed -e 's/^  \* \(.*\) - \(.*\)$/- **\1**: \2/'
@@ -114,6 +115,16 @@ the configuration as seen above.
 
 You can use the command ``urlwatch --test-slack`` to test if the Slack
 integration works.
+
+IFTTT
+----------
+
+IFTTT notifications are configured similarly to Slack (see
+above). You’ll need to retrieve your webhook url from your IFTTT account.
+
+Visit https://ifttt.com/maker_webhooks/settings to retrieve your key.
+
+`webhook_url` is of form https://maker.ifttt.com/trigger/{event_name_you_want}/with/key/{your_key}
 
 Matrix
 ------
