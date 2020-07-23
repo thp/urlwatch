@@ -63,4 +63,6 @@ Where ``<packagename>`` is one of the following:
 | `pdf2text` filter       | `pdftotext <https://github.com/jalan/pdftotext>`__ and              |
 |                         | its OS-specific dependencies (see the above link)                   |
 +-------------------------+---------------------------------------------------------------------+
+| XMPP reporter           |`aioxmpp <https://github.com/horazont/aioxmpp>`__                    |
++-------------------------+---------------------------------------------------------------------+
 

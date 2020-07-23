@@ -27,6 +27,7 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+import asyncio
 import difflib
 import re
 import email.utils
@@ -43,6 +44,7 @@ import urlwatch
 from .mailer import SMTPMailer
 from .mailer import SendmailMailer
 from .util import TrackSubClasses, chunkstring
+from .xmpp import XMPP
 
 try:
     import chump
@@ -746,3 +748,26 @@ class MatrixReporter(MarkdownReporter):
         else:
             logger.debug('Not formatting as Markdown; dependency on markdown2 not met?')
             client_api.send_message(room_id, body_markdown)
+
+
+class XMPPReporter(TextReporter):
+    """Send a message using the XMPP Protocol"""
+    MAX_LENGTH = 262144
+
+    __kind__ = 'xmpp'
+
+    def submit(self):
+
+        sender = self.config['sender']
+        recipient = self.config['recipient']
+
+        text = '\n'.join(super().submit())
+
+        if not text:
+            logger.debug('Not sending XMPP message (no changes)')
+            return
+
+        xmpp = XMPP(sender, recipient, self.config.get('insecure_password'))
+
+        for chunk in chunkstring(text, self.MAX_LENGTH, numbering=True):
+            asyncio.run(xmpp.send(chunk))

@@ -146,6 +146,11 @@ DEFAULT_CONFIG = {
             'key': '',
             'event': '',
         },
+        'xmpp': {
+            'enabled': False,
+            'sender': '',
+            'recipient': '',
+        },
     },
 
     'job_defaults': {
