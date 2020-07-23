@@ -27,7 +27,7 @@ The second key is one of either ``url``, ``navigate`` or ``command``:
 
 - ``url`` retrieves what is served by the web server,
 - ``navigate`` handles more web pages requiring JavaScript to display the content to be monitored, and
-- ``command`` runs a shell command. 
+- ``command`` runs a shell command.
 
 You can then use optional keys to finely control various job's parameters.
 
@@ -79,5 +79,6 @@ If you have more than one job, per `YAML specifications <https://yaml.org/spec/>
 - ``matrix``
 - ``pushover``
 - ``stdout``
+- ``xmpp``
 
 Reporters are configured in a separate file, see :ref:`configuration`.

@@ -284,4 +284,27 @@ Note that this makes it really easy for your password to be picked up by
 software running on your machine, by other users logged into the system
 and/or for the password to appear in log files accidentally.
 
+XMPP
+___
 
+You can have notifications sent to you through the `XMPP protocol`.
+
+To achieve this, you should register a new XMPP account that is just
+used for urlwatch.
+
+Here is a sample configuration:
+
+.. code:: yaml
+
+   xmpp:
+     enabled: true
+     sender: "BOT_ACCOUNT_NAME"
+     recipient: "YOUR_ACCOUNT_NAME"
+
+The password is not stored in the config file, but in your keychain. To
+store the password, run: ``urlwatch --xmpp-login`` and enter your
+password.
+
+If for whatever reason you cannot use a keyring to store your password 
+you can also set the insecure_password option in the XMPP config. For 
+more information read "SMTP login without keyring".
