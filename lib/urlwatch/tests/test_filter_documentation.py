@@ -10,7 +10,8 @@ import pytest
 
 from urlwatch.filters import FilterBase
 
-root = os.path.join(os.path.dirname(__file__), '..')
+root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
+here = os.path.dirname(__file__)
 
 
 # https://stackoverflow.com/a/48719723/1047040
@@ -55,10 +56,10 @@ FILTER_DOC_URLS = load_filter_testdata()
 
 @pytest.mark.parametrize('url, job', FILTER_DOC_URLS.items())
 def test_url(url, job):
-    testdata = yaml.safe_load(open(os.path.join(root, 'test/data/filter_documentation_testdata.yaml')).read())
+    testdata = yaml.safe_load(open(os.path.join(here, 'data/filter_documentation_testdata.yaml')).read())
     d = testdata[url]
     if 'filename' in d:
-        input_data = open(os.path.join(root, 'test/data', d['filename']), 'rb').read()
+        input_data = open(os.path.join(here, 'data', d['filename']), 'rb').read()
     else:
         input_data = d['input']
 

@@ -222,7 +222,7 @@ class LegacyHooksPyFilter(FilterBase):
                 result = data
             return result
         except Exception as e:
-            logger.warn('Could not apply legacy hooks filter: %s', e)
+            logger.warning('Could not apply legacy hooks filter: %s', e)
             return data
 
 

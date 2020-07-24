@@ -87,7 +87,7 @@ class Urlwatch(object):
             jobs = self.urls_storage.load_secure()
             logger.info('Found {0} jobs'.format(len(jobs)))
         else:
-            logger.warn('No jobs file found')
+            logger.warning('No jobs file found')
             jobs = []
 
         self.jobs = jobs

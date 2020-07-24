@@ -17,6 +17,9 @@ from urlwatch.storage import YamlConfigStorage, CacheMiniDBStorage
 from urlwatch.main import Urlwatch
 from urlwatch.util import import_module_from_source
 
+root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
+here = os.path.dirname(__file__)
+
 
 def test_required_classattrs_in_subclasses():
     for kind, subclass in JobBase.__subclasses__.items():
@@ -49,7 +52,7 @@ def test_save_load_jobs():
 
 
 def test_load_config_yaml():
-    config_file = os.path.join(os.path.dirname(__file__), 'data', 'urlwatch.yaml')
+    config_file = os.path.join(here, 'data', 'urlwatch.yaml')
     if os.path.exists(config_file):
         config = YamlConfigStorage(config_file)
         assert config is not None
@@ -58,7 +61,7 @@ def test_load_config_yaml():
 
 
 def test_load_urls_txt():
-    urls_txt = os.path.join(os.path.dirname(__file__), 'data', 'urls.txt')
+    urls_txt = os.path.join(here, 'data', 'urls.txt')
     if os.path.exists(urls_txt):
         assert len(UrlsTxt(urls_txt).load_secure()) > 0
 
@@ -98,16 +101,16 @@ def teardown_func():
         yield
     finally:
         "tear down test fixtures"
-        cache = os.path.join(os.path.dirname(__file__), 'data', 'cache.db')
+        cache = os.path.join(here, 'data', 'cache.db')
         if os.path.exists(cache):
             os.remove(cache)
 
 
 def test_run_watcher():
     with teardown_func():
-        urls = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'share', 'urlwatch', 'examples', 'urls.yaml.example')
-        config = os.path.join(os.path.dirname(__file__), 'data', 'urlwatch.yaml')
-        cache = os.path.join(os.path.dirname(__file__), 'data', 'cache.db')
+        urls = os.path.join(root, 'share', 'urlwatch', 'examples', 'urls.yaml.example')
+        config = os.path.join(here, 'data', 'urlwatch.yaml')
+        cache = os.path.join(here, 'data', 'cache.db')
         hooks = ''
 
         config_storage = YamlConfigStorage(config)
@@ -139,9 +142,9 @@ def test_unserialize_with_unknown_key():
 
 
 def prepare_retry_test():
-    urls = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'test', 'data', 'invalid-url.yaml')
-    config = os.path.join(os.path.dirname(__file__), 'data', 'urlwatch.yaml')
-    cache = os.path.join(os.path.dirname(__file__), 'data', 'cache.db')
+    urls = os.path.join(here, 'data', 'invalid-url.yaml')
+    config = os.path.join(here, 'data', 'urlwatch.yaml')
+    cache = os.path.join(here, 'data', 'cache.db')
     hooks = ''
 
     config_storage = YamlConfigStorage(config)
@@ -207,7 +210,7 @@ def test_reset_tries_to_zero_when_successful():
 
             # use an url that definitely exists
             job = urlwatcher.jobs[0]
-            job.url = 'file://' + os.path.join(os.path.dirname(__file__), 'data', 'urlwatch.yaml')
+            job.url = 'file://' + os.path.join(here, 'data', 'urlwatch.yaml')
 
             urlwatcher.run_jobs()
 

@@ -109,7 +109,7 @@ class ReporterBase(object, metaclass=TrackSubClasses):
                 subclass(report, cfg, job_states, duration).submit()
 
         if not any_enabled:
-            logger.warn('No reporters enabled.')
+            logger.warning('No reporters enabled.')
 
     def submit(self):
         raise NotImplementedError()
