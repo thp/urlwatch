@@ -141,6 +141,11 @@ DEFAULT_CONFIG = {
             'to': '',
             'subject': '{count} changes: {jobs}'
         },
+        'ifttt': {
+            'enabled': False,
+            'key': '',
+            'event': '',
+        },
     },
 
     'job_defaults': {

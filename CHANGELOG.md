@@ -12,6 +12,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
   `filter` (and has the same filters available), but applies to the `diff` output
   instead of the page content
 - Documentation now has a section on the configuration settings (`--edit-config`)
+- IFTTT reporter (#512, by Florian Gaultier)
 
 ### Changed
 

@@ -31,6 +31,7 @@ At the moment, the following reporters are built-in:
 - **pushover**: Send summary via pushover.net
 - **slack**: Custom Slack reporter
 - **telegram**: Custom Telegram reporter
+- **ifttt**: Send summary via IFTTT
 
 .. To convert the "urlwatch --features" output, use:
    sed -e 's/^  \* \(.*\) - \(.*\)$/- **\1**: \2/'
@@ -122,6 +123,38 @@ the configuration as seen above.
 
 You can use the command ``urlwatch --test-slack`` to test if the Slack
 integration works.
+
+IFTTT
+-----
+
+To configure IFTTT events, you need to retrieve your key from here:
+
+https://ifttt.com/maker_webhooks/settings
+
+The URL shown in "Account Info" has the following format:
+
+.. code::
+
+   https://maker.ifttt.com/use/{key}
+
+In this URL, ``{key}`` is your API key. The configuration should look like
+this (you can pick any event name you want):
+
+.. code:: yaml
+
+   ifttt:
+     enabled: true
+     key: aA12abC3D456efgHIjkl7m
+     event: event_name_you_want
+
+The event will contain three values in the posted JSON:
+
+* ``value1``: The type of change (``new``, ``changed``, ``unchanged`` or ``error``)
+* ``value2``: The name of the job (``name`` key in ``jobs.yaml``)
+* ``value3``: The location of the job (``url``, ``command`` or ``navigate`` key in ``jobs.yaml``)
+
+These values will be passed on to the Action in your Recipe.
+
 
 Matrix
 ------
