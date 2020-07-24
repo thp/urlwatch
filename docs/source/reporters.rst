@@ -117,14 +117,36 @@ You can use the command ``urlwatch --test-slack`` to test if the Slack
 integration works.
 
 IFTTT
-----------
+-----
 
-IFTTT notifications are configured similarly to Slack (see
-above). You’ll need to retrieve your webhook url from your IFTTT account.
+To configure IFTTT events, you need to retrieve your key from here:
 
-Visit https://ifttt.com/maker_webhooks/settings to retrieve your key.
+https://ifttt.com/maker_webhooks/settings
 
-`webhook_url` is of form https://maker.ifttt.com/trigger/{event_name_you_want}/with/key/{your_key}
+The URL shown in "Account Info" has the following format:
+
+.. code::
+
+   https://maker.ifttt.com/use/{key}
+
+In this URL, ``{key}`` is your API key. The configuration should look like
+this (you can pick any event name you want):
+
+.. code:: yaml
+
+   ifttt:
+     enabled: true
+     key: aA12abC3D456efgHIjkl7m
+     event: event_name_you_want
+
+The event will contain three values in the posted JSON:
+
+* ``value1``: The type of change (``new``, ``changed``, ``unchanged`` or ``error``)
+* ``value2``: The name of the job (``name`` key in ``jobs.yaml``)
+* ``value3``: The location of the job (``url``, ``command`` or ``navigate`` key in ``jobs.yaml``)
+
+These values will be passed on to the Action in your Recipe.
+
 
 Matrix
 ------

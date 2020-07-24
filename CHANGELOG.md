@@ -10,6 +10,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - Project URLs added to `setup.py`
 - Sphinx-based documentation
+- IFTTT reporter (#512, by Florian Gaultier)
 
 ### Fixed
 

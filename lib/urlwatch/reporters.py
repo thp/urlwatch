@@ -437,11 +437,15 @@ class IFTTTReport(TextReporter):
     __kind__ = 'ifttt'
 
     def submit(self):
-        webhook_url = self.config['webhook_url']
+        webhook_url = 'https://maker.ifttt.com/trigger/{event}/with/key/{key}'.format(**self.config)
         for job_state in self.report.get_filtered_job_states(self.job_states):
             pretty_name = job_state.job.pretty_name()
             location = job_state.job.get_location()
-            requests.post(webhook_url, json={"value1": "URL changed ({0})".format(job_state.verb), "value2": pretty_name, "value3": location})
+            result = requests.post(webhook_url, json={
+                'value1': job_state.verb,
+                'value2': pretty_name,
+                'value3': location,
+            })
 
 
 class WebServiceReporter(TextReporter):
