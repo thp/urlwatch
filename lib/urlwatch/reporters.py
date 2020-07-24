@@ -494,7 +494,7 @@ class PushbulletReport(WebServiceReporter):
 
 
 class MailGunReporter(TextReporter):
-    """Custom email reporter that uses Mailgun"""
+    """Send e-mail via the Mailgun service"""
 
     __kind__ = 'mailgun'
 
@@ -552,7 +552,7 @@ class MailGunReporter(TextReporter):
 
 
 class TelegramReporter(TextReporter):
-    """Custom Telegram reporter"""
+    """Send a message using Telegram"""
     MAX_LENGTH = 4096
 
     __kind__ = 'telegram'
@@ -601,7 +601,7 @@ class TelegramReporter(TextReporter):
 
 
 class SlackReporter(TextReporter):
-    """Custom Slack reporter"""
+    """Send a message to a Slack channel"""
     MAX_LENGTH = 40000
 
     __kind__ = 'slack'
@@ -712,7 +712,7 @@ class MarkdownReporter(ReporterBase):
 
 
 class MatrixReporter(MarkdownReporter):
-    """Custom Matrix reporter"""
+    """Send a message to a room using the Matrix protocol"""
     MAX_LENGTH = 4096
 
     __kind__ = 'matrix'
