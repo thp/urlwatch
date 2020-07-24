@@ -1,8 +1,5 @@
-import logging
 from urlwatch.util import chunkstring
-from nose.tools import eq_, raises
-
-logger = logging.getLogger(__name__)
+from nose.tools import eq_
 
 
 def test_chunkstring():
