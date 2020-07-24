@@ -42,7 +42,7 @@ import requests
 import urlwatch
 from .mailer import SMTPMailer
 from .mailer import SendmailMailer
-from .util import TrackSubClasses
+from .util import TrackSubClasses, chunkstring
 
 try:
     import chump
@@ -570,7 +570,7 @@ class TelegramReporter(TextReporter):
             return
 
         result = None
-        for chunk in self.chunkstring(text, self.MAX_LENGTH):
+        for chunk in chunkstring(text, self.MAX_LENGTH, numbering=True):
             for chat_id in chat_ids:
                 res = self.submitToTelegram(bot_token, chat_id, chunk)
                 if res.status_code != requests.codes.ok or res is None:
@@ -596,9 +596,6 @@ class TelegramReporter(TextReporter):
                                                                                                 result.content))
         return result
 
-    def chunkstring(self, string, length):
-        return (string[0 + i:length + i] for i in range(0, len(string), length))
-
 
 class SlackReporter(TextReporter):
     """Send a message to a Slack channel"""
@@ -615,7 +612,7 @@ class SlackReporter(TextReporter):
             return
 
         result = None
-        for chunk in self.chunkstring(text, self.MAX_LENGTH):
+        for chunk in chunkstring(text, self.MAX_LENGTH, numbering=True):
             res = self.submit_to_slack(webhook_url, chunk)
             if res.status_code != requests.codes.ok or res is None:
                 result = res
@@ -636,9 +633,6 @@ class SlackReporter(TextReporter):
                 "Failed to parse slack response. HTTP status code: {0}, content: {1}".format(result.status_code,
                                                                                              result.content))
         return result
-
-    def chunkstring(self, string, length):
-        return (string[0 + i:length + i] for i in range(0, len(string), length))
 
 
 class MarkdownReporter(ReporterBase):

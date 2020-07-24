@@ -111,3 +111,30 @@ def import_module_from_source(module_name, source_path):
     sys.modules[module_name] = module
     loader.exec_module(module)
     return module
+
+
+def chunkstring(string, length, *, numbering=False):
+    if len(string) <= length:
+        return [string]
+
+    if numbering:
+        # Subtract to fit numbering (FIXME: this breaks for > 9 chunks)
+        length -= len(' (0/0)')
+        parts = []
+        string = string.strip()
+        while string:
+            if len(string) <= length:
+                parts.append(string)
+                string = ''
+                break
+
+            idx = string.rfind(' ', 1, length + 1)
+            if idx == -1:
+                idx = string.rfind('\n', 1, length + 1)
+            if idx == -1:
+                idx = length
+            parts.append(string[:idx])
+            string = string[idx:].strip()
+        return ('{} ({}/{})'.format(part, i + 1, len(parts)) for i, part in enumerate(parts))
+
+    return (string[i:length + i].strip() for i in range(0, len(string), length))
