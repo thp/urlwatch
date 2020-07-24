@@ -19,6 +19,9 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - The `urlwatch` script (Git only) now works when run from different paths
 - Chunking of strings (e.g. for Slack and Telegram) now adds numbering (e.g.
   ` (1/2)`) to the messages (only if a message is split into multiple parts)
+- Unit tests have been migrated from `nose` to `pytest`
+  and moved from `test/` to `lib/urlwatch/tests/`
+
 
 ## [2.19] -- 2020-07-17
 
