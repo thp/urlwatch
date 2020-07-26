@@ -285,7 +285,7 @@ software running on your machine, by other users logged into the system
 and/or for the password to appear in log files accidentally.
 
 XMPP
-___
+----
 
 You can have notifications sent to you through the `XMPP protocol`.
 
