@@ -64,6 +64,6 @@ Where ``<packagename>`` is one of the following:
 |                         | its OS-specific dependencies (see the above link)                   |
 +-------------------------+---------------------------------------------------------------------+
 | `ocr` filter            | `pytesseract <https://github.com/madmaze/pytesseract>`__ and        |
-|                         | `Pillow <https://python-pillow.org>`__                              |
+|                         | `Pillow <https://python-pillow.org>`__ and Tesseract OCR)           |
 +-------------------------+---------------------------------------------------------------------+
 
