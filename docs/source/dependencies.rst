@@ -66,4 +66,6 @@ Where ``<packagename>`` is one of the following:
 | `ocr` filter            | `pytesseract <https://github.com/madmaze/pytesseract>`__ and        |
 |                         | `Pillow <https://python-pillow.org>`__ and Tesseract OCR)           |
 +-------------------------+---------------------------------------------------------------------+
+| XMPP reporter           |`aioxmpp <https://github.com/horazont/aioxmpp>`__                    |
++-------------------------+---------------------------------------------------------------------+
 

@@ -16,6 +16,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - New filter: ``ocr`` to convert text in images to plaintext (using Tesseract OCR)
 - Add `--test-diff-filter` command-line option that can test the `diff_tool` and
   `diff_filter` settings for a job (needs at least 2 historic snapshots)
+- New reporter: ``xmpp`` to send a message using the XMPP (Jabber) protocol (#533, by Thorben Günther)
 
 ### Changed
 

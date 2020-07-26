@@ -1,6 +1,6 @@
 FROM python:3.8.2
 
-RUN python3 -m pip install pyyaml minidb requests keyring appdirs lxml cssselect beautifulsoup4 jsbeautifier cssbeautifier
+RUN python3 -m pip install pyyaml minidb requests keyring appdirs lxml cssselect beautifulsoup4 jsbeautifier cssbeautifier aioxmpp
 
 WORKDIR /opt/urlwatch
 

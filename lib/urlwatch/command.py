@@ -40,6 +40,7 @@ from .jobs import JobBase, UrlJob
 from .reporters import ReporterBase
 from .util import atomic_rename, edit_file, import_module_from_source
 from .mailer import set_password, have_password
+from .xmpp import xmpp_have_password, xmpp_set_password
 
 logger = logging.getLogger(__name__)
 
@@ -314,10 +315,48 @@ class UrlwatchCommand:
 
             sys.exit(0)
 
+    def check_xmpp_login(self):
+        if self.urlwatch_config.xmpp_login:
+            xmpp_config = self.urlwatcher.config_storage.config['report']['xmpp']
+
+            success = True
+
+            if not xmpp_config['enabled']:
+                print('Please enable XMPP reporting in the config first.')
+                success = False
+
+            xmpp_sender = xmpp_config.get('sender')
+            if not xmpp_sender:
+                print('Please configure the XMPP sender in the config first.')
+                success = False
+
+            if not xmpp_config.get('recipient'):
+                print('Please configure the XMPP recipient in the config first.')
+                success = False
+
+            if not success:
+                sys.exit(1)
+
+            if 'insecure_password' in xmpp_config:
+                print('The password is already set in the config (key "insecure_password").')
+                sys.exit(0)
+
+            if xmpp_have_password(xmpp_sender):
+                message = 'Password for %s already set, update? [y/N] ' % (xmpp_sender)
+                if input(message).lower() != 'y':
+                    print('Password unchanged.')
+                    sys.exit(0)
+
+            if success:
+                xmpp_set_password(xmpp_sender)
+
+            sys.exit(0)
+
     def run(self):
         self.check_edit_config()
         self.check_smtp_login()
         self.check_telegram_chats()
+        self.check_xmpp_login()
         self.check_test_slack()
         self.handle_actions()
         self.urlwatcher.run_jobs()
