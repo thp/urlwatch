@@ -231,6 +231,38 @@ tag in its results:
          exclude: a
 
 
+Limiting the returned items from a CSS Selector or XPath
+--------------------------------------------------------
+
+If you only want to return a subset of the items returned by a CSS
+selector or XPath filter, you can use two additional subfilters:
+
+* ``skip``: How many elements to skip from the beginning (default: 0)
+* ``maxitems``: How many elements to return at most (default: no limit)
+
+For example, if the page has multiple elements, but you only want
+to select the second and third matching element (skip the first, and
+return at most two elements), you can use this filter:
+
+.. code:: yaml
+
+   url: https://example.net/css-skip-maxitems.html
+   filter:
+     - css:
+         selector: div.cpu
+         skip: 1
+         maxitems: 2
+
+Dealing with duplicated results
+*******************************
+
+If you get multiple results on one page, but you only expected one
+(e.g. because the page contains both a mobile and desktop version in
+the same HTML document, and shows/hides one via CSS depending on the
+viewport size), you can use ``maxitems: 1`` to only return the first
+item.
+
+
 Filtering PDF documents
 -----------------------
 

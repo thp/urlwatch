@@ -564,6 +564,8 @@ class LxmlParser:
         self.method = subfilter.get('method', 'html')
         self.exclude = subfilter.get('exclude')
         self.namespaces = subfilter.get('namespaces')
+        self.skip = int(subfilter.get('skip', 0))
+        self.maxitems = int(subfilter.get('maxitems', 0))
         if self.method not in ('html', 'xml'):
             raise ValueError('%s method must be "html" or "xml", got %r' % (filter_kind, self.method))
         if self.method == 'html' and self.namespaces is not None:
@@ -662,7 +664,21 @@ class LxmlParser:
         return [el for el in map(self._reevaluate, selected_elems) if el is not None]
 
     def get_filtered_data(self):
-        return '\n'.join(self._to_string(element) for element in self._get_filtered_elements())
+        elements = list(self._get_filtered_elements())
+        if self.skip:
+            elements = elements[self.skip:]
+        if self.maxitems:
+            elements = elements[:self.maxitems]
+        return '\n'.join(self._to_string(element) for element in elements)
+
+
+LXML_PARSER_COMMON_SUBFILTERS = {
+    'method': 'The method (html or xml) used for parsing',
+    'exclude': 'Elements to remove from the final result',
+    'namespaces': 'Mapping of XML namespaces for matching',
+    'skip': 'Number of elements to skip from the beginning (default: 0)',
+    'maxitems': 'Maximum number of items to return (default: all)',
+}
 
 
 class CssFilter(FilterBase):
@@ -672,9 +688,7 @@ class CssFilter(FilterBase):
 
     __supported_subfilters__ = {
         'selector': 'The CSS selector to use for filtering (required)',
-        'method': 'The method (html or xml) used for parsing',
-        'exclude': 'Elements to remove from the final result',
-        'namespaces': 'Mapping of XML namespaces for matching',
+        **LXML_PARSER_COMMON_SUBFILTERS,
     }
 
     __default_subfilter__ = 'selector'
@@ -692,9 +706,7 @@ class XPathFilter(FilterBase):
 
     __supported_subfilters__ = {
         'path': 'The XPath to use for filtering (required)',
-        'method': 'The method (html or xml) used for parsing',
-        'exclude': 'Elements to remove from the final result',
-        'namespaces': 'Mapping of XML namespaces for matching',
+        **LXML_PARSER_COMMON_SUBFILTERS,
     }
 
     __default_subfilter__ = 'path'

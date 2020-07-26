@@ -335,3 +335,15 @@ https://example.net/ocr-test.png:
     over the lazy fox. The quick brown dog
     jumped over the lazy fox. The quick
     brown dog jumped over the lazy fox.
+https://example.net/css-skip-maxitems.html:
+  input: |
+    <body>
+      <div class="cpu">486</div>
+      <div class="cpu">Pentium</div>
+      <div class="cpu">Pentium MMX</div>
+      <div class="cpu">Pentium Pro</div>
+    </body>
+  output: |
+    <div class="cpu">Pentium</div>
+
+    <div class="cpu">Pentium MMX</div>
