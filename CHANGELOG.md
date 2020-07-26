@@ -10,11 +10,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - A job can now have a `diff_filter` set, which works the same way as the normal
   `filter` (and has the same filters available), but applies to the `diff` output
-  instead of the page content
+  instead of the page content (can be tested with `--test-diff-filter`, needs 2
+  or more historic snapshots in the cache)
 - Documentation now has a section on the configuration settings (`--edit-config`)
 - New filter: ``ocr`` to convert text in images to plaintext (using Tesseract OCR)
-- Add `--test-diff-filter` command-line option that can test the `diff_tool` and
-  `diff_filter` settings for a job (needs at least 2 historic snapshots)
 - New reporters:
   - ``ifttt`` to send an event to If This Then That (ifttt.com) (#512, by Florian Gaultier)
   - ``xmpp`` to send a message using the XMPP (Jabber) protocol (#533, by Thorben Günther)
