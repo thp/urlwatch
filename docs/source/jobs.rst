@@ -111,10 +111,10 @@ Optional keys for all job types
 -------------------------------
 
 - ``name``: Human-readable name/label of the job
-- ``filter``: :ref:`filters` (if any) to apply to the output
+- ``filter``: :ref:`filters` (if any) to apply to the output (can be tested with ``--test-filter``)
 - ``max_tries``: Number of times to retry fetching the resource
 - ``diff_tool``: Command to a custom tool for generating diff text
-- ``diff_filter``: :ref:`filters` (if any) to apply to the diff result
+- ``diff_filter``: :ref:`filters` (if any) to apply to the diff result (can be tested with ``--test-diff-filter``)
 - ``compared_versions``: Number of versions to compare for similarity
 - ``kind`` (redundant): Either ``url``, ``shell`` or ``browser``.  Automatically derived from the unique key (``url``, ``command`` or ``navigate``) of the job type
 
