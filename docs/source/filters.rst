@@ -34,6 +34,11 @@ already filtered when it was retrieved. This means that changes to
 will be between (old content with filter at the time old content was
 retrieved) and (new content with current filter).
 
+Once urlwatch has collected at least 2 historic snapshots of a job
+(two different states of a webpage) you can use the command-line
+option ``--test-diff-filter`` to test your ``diff_filter`` settings;
+this will use historic data cached locally.
+
 
 Built-in filters
 ----------------

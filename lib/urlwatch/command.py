@@ -115,12 +115,15 @@ class UrlwatchCommand:
         except ValueError:
             return next((job for job in self.urlwatcher.jobs if job.get_location() == query), None)
 
-    def test_filter(self):
-        job = self._find_job(self.urlwatch_config.test_filter)
+    def _get_job(self, id):
+        job = self._find_job(id)
         if job is None:
-            print('Not found: %r' % (self.urlwatch_config.test_filter,))
-            return 1
-        job = job.with_defaults(self.urlwatcher.config_storage.config)
+            print('Not found: {!r}'.format(id))
+            raise SystemExit(1)
+        return job.with_defaults(self.urlwatcher.config_storage.config)
+
+    def test_filter(self, id):
+        job = self._get_job(id)
 
         if isinstance(job, UrlJob):
             # Force re-retrieval of job, as we're testing filters
@@ -131,6 +134,27 @@ class UrlwatchCommand:
         if job_state.exception is not None:
             raise job_state.exception
         print(job_state.new_data)
+        # We do not save the job state or job on purpose here, since we are possibly modifying the job
+        # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
+        return 0
+
+    def test_diff_filter(self, id):
+        job = self._get_job(id)
+
+        history_data = self.urlwatcher.cache_storage.get_history_data(job.get_guid(), 10)
+        history_data = [key for key, value in sorted(history_data.items(), key=lambda kv: kv[1])]
+
+        if len(history_data) < 2:
+            print('Not enough historic data available (need at least 2 different snapshots)')
+            return 1
+
+        for i in range(len(history_data) - 1):
+            job_state = JobState(self.urlwatcher.cache_storage, job)
+            job_state.old_data = history_data[i]
+            job_state.new_data = history_data[i + 1]
+            print('=== Filtered diff between state {} and state {} ==='.format(i, i + 1))
+            print(job_state.get_diff())
+
         # We do not save the job state or job on purpose here, since we are possibly modifying the job
         # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
         return 0
@@ -175,7 +199,9 @@ class UrlwatchCommand:
         if self.urlwatch_config.edit_hooks:
             sys.exit(self.edit_hooks())
         if self.urlwatch_config.test_filter:
-            sys.exit(self.test_filter())
+            sys.exit(self.test_filter(self.urlwatch_config.test_filter))
+        if self.urlwatch_config.test_diff_filter:
+            sys.exit(self.test_diff_filter(self.urlwatch_config.test_diff_filter))
         if self.urlwatch_config.list:
             sys.exit(self.list_urls())
         if self.urlwatch_config.add is not None or self.urlwatch_config.delete is not None:
