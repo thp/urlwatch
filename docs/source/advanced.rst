@@ -230,3 +230,20 @@ diff. This can even have a "normal" filter attached to only watch links
      - css: a
    diff_filter:
      - shellpipe: /usr/local/bin/process_new_links.sh
+
+
+Setting the content width for ``html2text`` (``lynx`` method)
+-------------------------------------------------------------
+
+When using the ``lynx`` method in the ``html2text`` filter, it uses a default
+width that will cause additional line breaks to be inserted.
+
+To set the ``lynx`` output width to 400 characters, use this filter setup:
+
+.. code-block:: yaml
+
+   url: http://example.com/longlines.html
+   filter:
+     - html2text:
+         method: lynx
+         width: 400
