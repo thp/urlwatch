@@ -558,26 +558,16 @@ class LxmlParser:
 
     def __init__(self, filter_kind, subfilter, expr_key):
         self.filter_kind = filter_kind
-        if subfilter is None:
+        if expr_key not in subfilter:
             raise ValueError('Need %s for filtering' % (self.EXPR_NAMES[filter_kind],))
-        if isinstance(subfilter, str):
-            self.expression = subfilter
-            self.method = 'html'
-            self.exclude = None
-            self.namespaces = None
-        elif isinstance(subfilter, dict):
-            if expr_key not in subfilter:
-                raise ValueError('Need %s for filtering' % (self.EXPR_NAMES[filter_kind],))
-            self.expression = subfilter[expr_key]
-            self.method = subfilter.get('method', 'html')
-            self.exclude = subfilter.get('exclude')
-            self.namespaces = subfilter.get('namespaces')
-            if self.method not in ('html', 'xml'):
-                raise ValueError('%s method must be "html" or "xml", got %r' % (filter_kind, self.method))
-            if self.method == 'html' and self.namespaces is not None:
-                raise ValueError('Namespace prefixes only supported with "xml" method.')
-        else:
-            raise ValueError('%s subfilter must be a string or dict' % (filter_kind,))
+        self.expression = subfilter[expr_key]
+        self.method = subfilter.get('method', 'html')
+        self.exclude = subfilter.get('exclude')
+        self.namespaces = subfilter.get('namespaces')
+        if self.method not in ('html', 'xml'):
+            raise ValueError('%s method must be "html" or "xml", got %r' % (filter_kind, self.method))
+        if self.method == 'html' and self.namespaces is not None:
+            raise ValueError('Namespace prefixes only supported with "xml" method.')
         self.parser = (etree.HTMLParser if self.method == 'html' else etree.XMLParser)()
         self.data = ''
 
