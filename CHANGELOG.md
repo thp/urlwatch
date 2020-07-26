@@ -27,6 +27,12 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
   and moved from `test/` to `lib/urlwatch/tests/`
 - The ``css`` and ``xpath`` filters now accept ``skip`` and ``maxitems`` as subfilter
 
+### Fixed
+
+- The ``html2text`` method ``lynx`` now treats any subfilters with a non-``null``
+  value as command-line argument ``-key value`` (previously only the value ``true``
+  was treated like this, and any other values were silently dropped)
+
 
 ## [2.19] -- 2020-07-17
 
