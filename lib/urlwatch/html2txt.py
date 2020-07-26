@@ -84,7 +84,10 @@ def html2text(data, baseurl, method, options):
     stdout_encoding = 'utf-8'
 
     for k, v in options.items():
-        cmd.append('-%s %s' % (k, v) if v is True else '-%s' % k)
+        if v is not None:
+            cmd.append('-{} {}'.format(k, v))
+        else:
+            cmd.append('-{}'.format(k))
 
     logger.debug('Command: %r, stdout encoding: %s', cmd, stdout_encoding)
 
