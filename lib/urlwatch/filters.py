@@ -38,6 +38,7 @@ import json
 import yaml
 import sys
 import subprocess
+import io
 
 from enum import Enum
 from lxml import etree
@@ -117,8 +118,8 @@ class FilterBase(object, metaclass=TrackSubClasses):
             filter_spec = [dict([filter_kind.split(':', 1)]) if ':' in filter_kind else filter_kind
                            for filter_kind in filter_spec.split(',')]
 
-            logger.warn('String-based filter definitions (%s) are deprecated, please convert to dict-style (see https://urlwatch.readthedocs.io/en/latest/deprecated.html):\n\n%s',
-                        old_filter_spec, yaml.dump(filter_spec, default_flow_style=False))
+            logger.warning('String-based filter definitions (%s) are deprecated, please convert to dict-style (see https://urlwatch.readthedocs.io/en/latest/deprecated.html):\n\n%s',
+                           old_filter_spec, yaml.dump(filter_spec, default_flow_style=False))
 
         if isinstance(filter_spec, list):
             for item in filter_spec:
@@ -222,7 +223,7 @@ class LegacyHooksPyFilter(FilterBase):
                 result = data
             return result
         except Exception as e:
-            logger.warn('Could not apply legacy hooks filter: %s', e)
+            logger.warning('Could not apply legacy hooks filter: %s', e)
             return data
 
 
@@ -312,7 +313,6 @@ class Pdf2TextFilter(FilterBase):
             raise ValueError('The pdf2text filter needs bytes input (is it the first filter?)')
 
         import pdftotext
-        import io
         return '\n\n'.join(pdftotext.PDF(io.BytesIO(data), password=subfilter.get('password', '')))
 
 
@@ -793,3 +793,26 @@ class ShellPipeFilter(FilterBase):
 
         return subprocess.check_output(subfilter['command'], shell=True,
                                        input=data.encode(encoding), env=env).decode(encoding)
+
+
+class OCRFilter(FilterBase):
+    """Convert text in images to plaintext using Tesseract OCR"""
+
+    __kind__ = 'ocr'
+    __uses_bytes__ = True
+
+    __supported_subfilters__ = {
+        'language': 'Language of the text (e.g. "fra" or "eng+fra")',
+        'timeout': 'Timeout (in seconds) for OCR (default 10 seconds)',
+    }
+
+    def filter(self, data, subfilter):
+        if not isinstance(data, bytes):
+            raise ValueError('The ocr filter needs bytes input (is it the first filter?)')
+
+        language = subfilter.get('language', None)
+        timeout = int(subfilter.get('timeout', 10))
+
+        import pytesseract
+        from PIL import Image
+        return pytesseract.image_to_string(Image.open(io.BytesIO(data)), lang=language, timeout=timeout)

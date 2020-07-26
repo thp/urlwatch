@@ -5,12 +5,13 @@ import docutils.frontend
 
 import os
 import yaml
+import pytest
 
-from nose.tools import eq_
 
 from urlwatch.filters import FilterBase
 
-root = os.path.join(os.path.dirname(__file__), '..')
+root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
+here = os.path.dirname(__file__)
 
 
 # https://stackoverflow.com/a/48719723/1047040
@@ -37,34 +38,35 @@ class YAMLCodeBlockVisitor(docutils.nodes.NodeVisitor):
         ...
 
 
-def test_url():
+def load_filter_testdata():
     doc = parse_rst(open(os.path.join(root, 'docs/source/filters.rst')).read())
     visitor = YAMLCodeBlockVisitor(doc)
     doc.walk(visitor)
 
-    testdata = yaml.safe_load(open(os.path.join(root, 'test/data/filter_documentation_testdata.yaml')).read())
-
     jobs = {job['url']: job for job in visitor.jobs}
 
     # Make sure all URLs are unique
-    eq_(len(jobs), len(visitor.jobs))
+    assert len(jobs) == len(visitor.jobs)
 
-    def test_job(url):
-        job = jobs[url]
+    return jobs
 
-        d = testdata[url]
-        if 'filename' in d:
-            input_data = open(os.path.join(root, 'test/data', d['filename']), 'rb').read()
-        else:
-            input_data = d['input']
 
-        for filter_kind, subfilter in FilterBase.normalize_filter_list(job['filter']):
-            filtercls = FilterBase.__subclasses__[filter_kind]
-            input_data = filtercls(None, None).filter(input_data, subfilter)
-            # TODO: FilterBase.process(cls, filter_kind, subfilter, state, data):
+FILTER_DOC_URLS = load_filter_testdata()
 
-        output_data = d['output']
-        eq_(input_data, output_data)
 
-    for job in visitor.jobs:
-        yield test_job, job['url']
+@pytest.mark.parametrize('url, job', FILTER_DOC_URLS.items())
+def test_url(url, job):
+    testdata = yaml.safe_load(open(os.path.join(here, 'data/filter_documentation_testdata.yaml')).read())
+    d = testdata[url]
+    if 'filename' in d:
+        input_data = open(os.path.join(here, 'data', d['filename']), 'rb').read()
+    else:
+        input_data = d['input']
+
+    for filter_kind, subfilter in FilterBase.normalize_filter_list(job['filter']):
+        filtercls = FilterBase.__subclasses__[filter_kind]
+        input_data = filtercls(None, None).filter(input_data, subfilter)
+        # TODO: FilterBase.process(cls, filter_kind, subfilter, state, data):
+
+    output_data = d['output']
+    assert input_data == output_data

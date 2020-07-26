@@ -322,3 +322,16 @@ http://example.com/leading-spaces.txt:
     and sometimes
     with tabs mixed in
     gets converted.
+https://example.net/ocr-test.png:
+  # Image taken from https://stackoverflow.com/q/39754903/1047040
+  filename: ocr-test.png
+  output: |-
+    This is a lot of 12 point text to test the
+    ocr code and see if it works on all types
+    of file format.
+
+    The quick brown dog jumped over the
+    lazy fox. The quick brown dog jumped
+    over the lazy fox. The quick brown dog
+    jumped over the lazy fox. The quick
+    brown dog jumped over the lazy fox.
