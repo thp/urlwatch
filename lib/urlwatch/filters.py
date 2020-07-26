@@ -38,6 +38,7 @@ import json
 import yaml
 import sys
 import subprocess
+import io
 
 from enum import Enum
 from lxml import etree
@@ -312,7 +313,6 @@ class Pdf2TextFilter(FilterBase):
             raise ValueError('The pdf2text filter needs bytes input (is it the first filter?)')
 
         import pdftotext
-        import io
         return '\n\n'.join(pdftotext.PDF(io.BytesIO(data), password=subfilter.get('password', '')))
 
 
@@ -793,3 +793,26 @@ class ShellPipeFilter(FilterBase):
 
         return subprocess.check_output(subfilter['command'], shell=True,
                                        input=data.encode(encoding), env=env).decode(encoding)
+
+
+class OCRFilter(FilterBase):
+    """Convert text in images to plaintext using Tesseract OCR"""
+
+    __kind__ = 'ocr'
+    __uses_bytes__ = True
+
+    __supported_subfilters__ = {
+        'language': 'Language of the text (e.g. "fra" or "eng+fra")',
+        'timeout': 'Timeout (in seconds) for OCR (default 10 seconds)',
+    }
+
+    def filter(self, data, subfilter):
+        if not isinstance(data, bytes):
+            raise ValueError('The ocr filter needs bytes input (is it the first filter?)')
+
+        language = subfilter.get('language', None)
+        timeout = int(subfilter.get('timeout', 10))
+
+        import pytesseract
+        from PIL import Image
+        return pytesseract.image_to_string(Image.open(io.BytesIO(data)), lang=language, timeout=timeout)
