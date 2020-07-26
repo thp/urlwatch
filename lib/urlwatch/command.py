@@ -32,15 +32,14 @@ import logging
 import os
 import shutil
 import sys
-
 import requests
 
 from .filters import FilterBase
 from .handler import JobState
 from .jobs import JobBase, UrlJob
-from .mailer import have_password, set_password
 from .reporters import ReporterBase
 from .util import atomic_rename, edit_file, import_module_from_source
+from .mailer import set_password, have_password
 from .xmpp import xmpp_have_password, xmpp_set_password
 
 logger = logging.getLogger(__name__)
@@ -231,8 +230,7 @@ class UrlwatchCommand:
             for chat_info in requests.get('https://api.telegram.org/bot{}/getUpdates'.format(bot_token)).json()['result']:
                 chat = chat_info['message']['chat']
                 if chat['type'] == 'private':
-                    chats[str(chat['id'])] = ' '.join((chat['first_name'], chat['last_name'])
-                                                      ) if 'last_name' in chat else chat['first_name']
+                    chats[str(chat['id'])] = ' '.join((chat['first_name'], chat['last_name'])) if 'last_name' in chat else chat['first_name']
 
             if not chats:
                 print('No chats found. Say hello to your bot at https://t.me/{}'.format(info['result']['username']))
@@ -261,8 +259,7 @@ class UrlwatchCommand:
                 print('You need to set up your slack webhook_url first (see README.md)')
                 sys.exit(1)
 
-            info = requests.post(webhook_url, json={
-                                 "text": "Test message from urlwatch, your configuration is working"})
+            info = requests.post(webhook_url, json={"text": "Test message from urlwatch, your configuration is working"})
             if info.status_code == requests.codes.ok:
                 print('Successfully sent message to Slack')
                 sys.exit(0)

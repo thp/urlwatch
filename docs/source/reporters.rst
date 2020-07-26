@@ -261,6 +261,8 @@ store the password, run: ``urlwatch --smtp-login`` and enter your
 password.
 
 
+.. _smtp-login-without-keyring:
+
 SMTP login without keyring
 --------------------------
 
@@ -285,7 +287,7 @@ software running on your machine, by other users logged into the system
 and/or for the password to appear in log files accidentally.
 
 XMPP
-___
+----
 
 You can have notifications sent to you through the `XMPP protocol`.
 
@@ -305,6 +307,7 @@ The password is not stored in the config file, but in your keychain. To
 store the password, run: ``urlwatch --xmpp-login`` and enter your
 password.
 
-If for whatever reason you cannot use a keyring to store your password 
-you can also set the insecure_password option in the XMPP config. For 
-more information read "SMTP login without keyring".
+If for whatever reason you cannot use a keyring to store your password
+you can also set the ``insecure_password`` option in the XMPP config.
+For more information about the security implications, see
+:ref:`smtp-login-without-keyring`.
