@@ -13,6 +13,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
   instead of the page content
 - Documentation now has a section on the configuration settings (`--edit-config`)
 - IFTTT reporter (#512, by Florian Gaultier)
+- New filter: ``ocr`` to convert text in images to plaintext (using Tesseract OCR)
 
 ### Changed
 

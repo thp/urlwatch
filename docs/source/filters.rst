@@ -57,6 +57,7 @@ At the moment, the following filters are built-in:
 - **html2text**: Convert HTML to plaintext
 - **pdf2text**: Convert PDF to plaintext
 - **ical2text**: Convert `iCalendar`_ to plaintext
+- **ocr**: Convert text in images to plaintext using Tesseract OCR
 - **re.sub**: Replace text with regular expressions using Python's re.sub
 - **reverse**: Reverse input items
 - **sha1sum**: Calculate the SHA-1 checksum of the content
@@ -462,3 +463,33 @@ jobs, but needs to treat each job in a slightly different way):
 +----------------------------+------------------------------------------------------+
 | ``$URLWATCH_JOB_LOCATION`` | The URL of the job, or command line (for shell jobs) |
 +----------------------------+------------------------------------------------------+
+
+
+Converting text in images to plaintext
+--------------------------------------
+
+The ``ocr`` filter uses the `Tesseract OCR engine`_ to convert text in images
+to plain text. It requires two Python modules to be installed:
+`pytesseract`_ and `Pillow`_. Any file formats supported by Pillow (PIL) are
+supported.
+
+.. _Tesseract OCR engine: https://github.com/tesseract-ocr
+.. _pytesseract: https://github.com/madmaze/pytesseract
+.. _Pillow: https://python-pillow.org
+
+This filter *must* be the first filter in a chain of filters, since it
+consumes binary data and outputs text data.
+
+.. code-block:: yaml
+
+   url: https://example.net/ocr-test.png
+   filter:
+     - ocr:
+         timeout: 5
+         language: eng
+     - strip
+
+The sub-filters ``timeout`` and ``language`` are optional:
+
+* ``timeout``: Timeout for the recognition, in seconds (default: 10 seconds)
+* ``language``: Text language (e.g. ``fra`` or ``eng+fra``, default: ``eng``)

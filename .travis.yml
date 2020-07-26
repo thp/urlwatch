@@ -8,6 +8,6 @@ python:
 install:
   - pip install -r requirements.txt
   - pip install pycodestyle==2.6.0 pytest
-  - sudo apt-get install -y build-essential libpoppler-cpp-dev pkg-config python-dev
-  - pip install pdftotext docutils pygments
+  - sudo apt-get install -y build-essential libpoppler-cpp-dev pkg-config python-dev tesseract-ocr
+  - pip install pdftotext docutils pygments pytesseract pillow
 script: pytest -v
