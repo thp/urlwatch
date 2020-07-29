@@ -71,3 +71,20 @@ def test_providing_subfilter_to_filter_without_subfilter_raises_valueerror():
 def test_providing_unknown_subfilter_raises_valueerror():
     with pytest.raises(ValueError):
         list(FilterBase.normalize_filter_list([{'grep': {'re': 'Price: .*', 'anothersubfilter': '42'}}]))
+
+
+def test_shellpipe_inherits_environment_but_does_not_modify_it():
+    # https://github.com/thp/urlwatch/issues/541
+
+    # Set a specific value to check it doesn't overwrite the current env
+    os.environ['URLWATCH_JOB_NAME'] = 'should-not-be-overwritten'
+
+    # See if the shellpipe process can use a variable from the outside
+    os.environ['INHERITED_FROM'] = 'parent-process'
+    filtercls = FilterBase.__subclasses__.get('shellpipe')
+    result = filtercls(None, None).filter('input-string', {'command': 'echo "$INHERITED_FROM/$URLWATCH_JOB_NAME"'})
+    # Check that the inherited value and the job name is set properly
+    assert result == 'parent-process/\n'
+
+    # Check that outside the variable wasn't overwritten by the filter
+    assert os.environ['URLWATCH_JOB_NAME'] == 'should-not-be-overwritten'

@@ -26,6 +26,8 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Unit tests have been migrated from `nose` to `pytest`
   and moved from `test/` to `lib/urlwatch/tests/`
 - The ``css`` and ``xpath`` filters now accept ``skip`` and ``maxitems`` as subfilter
+- The ``shellpipe`` filter now inherits all environment variables (e.g. ``$PATH``)
+  of the ``urlwatch`` process
 
 ### Fixed
 

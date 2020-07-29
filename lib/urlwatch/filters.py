@@ -788,10 +788,12 @@ class ShellPipeFilter(FilterBase):
 
         encoding = sys.getdefaultencoding()
 
-        env = {
+        # Work on a copy to not modify the outside environment
+        env = dict(os.environ)
+        env.update({
             'URLWATCH_JOB_NAME': self.job.pretty_name() if self.job else '',
             'URLWATCH_JOB_LOCATION': self.job.get_location() if self.job else '',
-        }
+        })
 
         return subprocess.check_output(subfilter['command'], shell=True,
                                        input=data.encode(encoding), env=env).decode(encoding)
