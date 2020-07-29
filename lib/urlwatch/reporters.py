@@ -101,6 +101,15 @@ class ReporterBase(object, metaclass=TrackSubClasses):
         return '\n'.join(result)
 
     @classmethod
+    def submit_one(cls, name, report, job_states, duration):
+        subclass = cls.__subclasses__[name]
+        cfg = report.config['report'].get(name, {'enabled': False})
+        if cfg['enabled']:
+            subclass(report, cfg, job_states, duration).submit()
+        else:
+            raise ValueError('Reporter not enabled: {name}'.format(name=name))
+
+    @classmethod
     def submit_all(cls, report, job_states, duration):
         any_enabled = False
         for name, subclass in cls.__subclasses__.items():

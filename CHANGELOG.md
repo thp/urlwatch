@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [UNRELEASED]
+
+### Added
+
+- Added `--test-reporter REPORTER` command-line option to send an
+  example report using any configured notification service
+
+### Removed
+
+- The `--test-slack` command line option has been removed, you can
+  test your Slack reporter configuration using `--test-reporter slack`
+
+
 ## [2.20] -- 2020-07-29
 
 ### Added

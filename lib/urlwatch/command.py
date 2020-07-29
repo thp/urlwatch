@@ -33,9 +33,10 @@ import os
 import shutil
 import sys
 import requests
+import traceback
 
 from .filters import FilterBase
-from .handler import JobState
+from .handler import JobState, Report
 from .jobs import JobBase, UrlJob
 from .reporters import ReporterBase
 from .util import atomic_rename, edit_file, import_module_from_source
@@ -247,25 +248,63 @@ class UrlwatchCommand:
             print('\nChat up your bot here: https://t.me/{}'.format(info['result']['username']))
             sys.exit(0)
 
-    def check_test_slack(self):
-        if self.urlwatch_config.test_slack:
-            config = self.urlwatcher.config_storage.config['report'].get('slack', None)
-            if not config:
-                print('You need to configure slack in your config first (see README.md)')
-                sys.exit(1)
+    def check_test_reporter(self):
+        name = self.urlwatch_config.test_reporter
+        if name is None:
+            return
 
-            webhook_url = config.get('webhook_url', None)
-            if not webhook_url:
-                print('You need to set up your slack webhook_url first (see README.md)')
-                sys.exit(1)
+        if name not in ReporterBase.__subclasses__:
+            print('No such reporter: {}'.format(name))
+            print('\nSupported reporters:\n{}\n'.format(ReporterBase.reporter_documentation()))
+            sys.exit(1)
 
-            info = requests.post(webhook_url, json={"text": "Test message from urlwatch, your configuration is working"})
-            if info.status_code == requests.codes.ok:
-                print('Successfully sent message to Slack')
-                sys.exit(0)
-            else:
-                print('Error while submitting message to Slack:{0}'.format(info.text))
-                sys.exit(1)
+        cfg = self.urlwatcher.config_storage.config['report'].get(name, {'enabled': False})
+        if not cfg.get('enabled', False):
+            print('Reporter is not enabled/configured: {}'.format(name))
+            print('Use {} --edit-config to configure reporters'.format(sys.argv[0]))
+            sys.exit(1)
+
+        report = Report(self.urlwatcher)
+
+        def build_job(name, url, old, new):
+            job = JobBase.unserialize({'name': name, 'url': url})
+
+            # Can pass in None as cache_storage, as we are not
+            # going to load or save the job state for testing
+            job_state = JobState(None, job)
+
+            job_state.old_data = old
+            job_state.new_data = new
+
+            return job_state
+
+        def set_error(job_state, message):
+            try:
+                raise ValueError(message)
+            except ValueError as e:
+                job_state.exception = e
+                job_state.traceback = job_state.job.format_error(e, traceback.format_exc())
+
+            return job_state
+
+        report.new(build_job('Newly Added', 'http://example.com/new', '', ''))
+        report.changed(build_job('Something Changed', 'http://example.com/changed', """
+        Unchanged Line
+        Previous Content
+        Another Unchanged Line
+        """, """
+        Unchanged Line
+        Updated Content
+        Another Unchanged Line
+        """))
+        report.unchanged(build_job('Same As Before', 'http://example.com/unchanged',
+                                   'Same Old, Same Old\n',
+                                   'Same Old, Same Old\n'))
+        report.error(set_error(build_job('Error Reporting', 'http://example.com/error', '', ''), 'Oh Noes!'))
+
+        report.finish_one(name)
+
+        sys.exit(0)
 
     def check_smtp_login(self):
         if self.urlwatch_config.smtp_login:
@@ -357,7 +396,7 @@ class UrlwatchCommand:
         self.check_smtp_login()
         self.check_telegram_chats()
         self.check_xmpp_login()
-        self.check_test_slack()
+        self.check_test_reporter()
         self.handle_actions()
         self.urlwatcher.run_jobs()
         self.urlwatcher.close()
