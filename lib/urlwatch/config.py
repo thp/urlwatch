@@ -90,7 +90,7 @@ class CommandConfig(BaseConfig):
         group = parser.add_argument_group('Authentication')
         group.add_argument('--smtp-login', action='store_true', help='Enter password for SMTP (store in keyring)')
         group.add_argument('--telegram-chats', action='store_true', help='List telegram chats the bot is joined to')
-        group.add_argument('--test-slack', action='store_true', help='Send a test notification to Slack')
+        group.add_argument('--test-reporter', metavar='REPORTER', help='Send a test notification')
         group.add_argument('--xmpp-login', action='store_true', help='Enter password for XMPP (store in keyring)')
 
         group = parser.add_argument_group('job list management')

@@ -182,3 +182,9 @@ class Report(object):
         duration = (end - self.start)
 
         ReporterBase.submit_all(self, self.job_states, duration)
+
+    def finish_one(self, name):
+        end = datetime.datetime.now()
+        duration = (end - self.start)
+
+        ReporterBase.submit_one(name, self, self.job_states, duration)

@@ -14,6 +14,26 @@ dependencies installed.
 
 See :ref:`configuration` on how to edit the configuration.
 
+To send a test notification, use the ``--test-reporter`` command-line option
+with the name of the reporter::
+
+    urlwatch --test-reporter stdout
+
+This will create a test report with ``new``, ``changed``, ``unchanged`` and
+``error`` notifications (only the ones configured in ``display`` in the
+:ref:`configuration` will be shown in the report) and send it via the
+``stdout`` reporter (if it is enabled).
+
+To test if your e-mail reporter is configured correctly, you can use::
+
+   urlwatch --test-reporter email
+
+Any reporter that is configured and enabled can be tested.
+
+If the notification does not work, check your configuration and/or add
+the ``--verbose`` command-line option to show detailed debug logs.
+
+
 Built-in reporters
 ------------------
 
@@ -121,8 +141,6 @@ To set up Slack, from you Slack Team, create a new app and activate
 “Incoming Webhooks” on a channel, you’ll get a webhook URL, copy it into
 the configuration as seen above.
 
-You can use the command ``urlwatch --test-slack`` to test if the Slack
-integration works.
 
 IFTTT
 -----
