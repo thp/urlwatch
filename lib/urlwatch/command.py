@@ -131,11 +131,11 @@ class UrlwatchCommand:
             # Force re-retrieval of job, as we're testing filters
             job.ignore_cached = True
 
-        job_state = JobState(self.urlwatcher.cache_storage, job)
-        job_state.process()
-        if job_state.exception is not None:
-            raise job_state.exception
-        print(job_state.new_data)
+        with JobState(self.urlwatcher.cache_storage, job) as job_state:
+            job_state.process()
+            if job_state.exception is not None:
+                raise job_state.exception
+            print(job_state.new_data)
         # We do not save the job state or job on purpose here, since we are possibly modifying the job
         # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
         return 0
@@ -151,11 +151,11 @@ class UrlwatchCommand:
             return 1
 
         for i in range(len(history_data) - 1):
-            job_state = JobState(self.urlwatcher.cache_storage, job)
-            job_state.old_data = history_data[i]
-            job_state.new_data = history_data[i + 1]
-            print('=== Filtered diff between state {} and state {} ==='.format(i, i + 1))
-            print(job_state.get_diff())
+            with JobState(self.urlwatcher.cache_storage, job) as job_state:
+                job_state.old_data = history_data[i]
+                job_state.new_data = history_data[i + 1]
+                print('=== Filtered diff between state {} and state {} ==='.format(i, i + 1))
+                print(job_state.get_diff())
 
         # We do not save the job state or job on purpose here, since we are possibly modifying the job
         # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
@@ -270,7 +270,9 @@ class UrlwatchCommand:
             job = JobBase.unserialize({'name': name, 'url': url})
 
             # Can pass in None as cache_storage, as we are not
-            # going to load or save the job state for testing
+            # going to load or save the job state for testing;
+            # also no need to use it as context manager, since
+            # no processing is called on the job
             job_state = JobState(None, job)
 
             job_state.old_data = old

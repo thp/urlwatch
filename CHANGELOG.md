@@ -10,6 +10,9 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - Added `--test-reporter REPORTER` command-line option to send an
   example report using any configured notification service
+- `JobBase` now has `main_thread_enter()` and `main_thread_exit()`
+  functions that can be overridden by subclasses to run code in
+  the main thread before and after processing of a job
 
 ### Removed
 
