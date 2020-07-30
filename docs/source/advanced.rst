@@ -247,3 +247,14 @@ To set the ``lynx`` output width to 400 characters, use this filter setup:
      - html2text:
          method: lynx
          width: 400
+
+
+Comparing web pages visually
+----------------------------
+
+To compare the visual contents of web pages, Nicolai has written
+`pyvisualcompare <https://github.com/nspo/pyvisualcompare>`__ as
+a frontend (with GUI) to ``urlwatch``. The tool can be used to
+select a region of a web page. It then generates a configuration
+for ``urlwatch`` to run ``pyvisualcompare`` and generate a hash
+for the screen contents.
