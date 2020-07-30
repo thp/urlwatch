@@ -50,13 +50,13 @@ Job-specific optional keys:
 (Note: ``url`` implies ``kind: url``)
 
 
-Navigate
---------
+Browser
+-------
 
 This job type is a resource-intensive variant of "URL" to handle web pages
 requiring JavaScript in order to render the content to be monitored.
 
-The optional ``pyppeteer`` package must be installed to run "Navigate" jobs
+The optional ``pyppeteer`` package must be installed to run "Browser" jobs
 (see :ref:`dependencies`).
 
 At the moment, the Chromium version used by ``pyppeteer`` only supports
@@ -64,6 +64,10 @@ macOS (x86_64), Windows (both x86 and x64) and Linux (x86_64). See
 `this issue <https://github.com/pyppeteer/pyppeteer/issues/155>`__ in the
 Pyppeteer issue tracker for progress on getting ARM devices supported
 (e.g. Raspberry Pi).
+
+Because ``pyppeteer`` downloads a special version of Chromium (~ 100 MiB),
+the first execution of a ``browser`` job could take some time (and bandwidth).
+It is possible to run ``pyppeteer-install`` to pre-download Chromium.
 
 .. code-block:: yaml
 
@@ -83,13 +87,9 @@ to render the page in a headless Chromium instance, it requires massively
 more resources than a "URL" job. Use it only on pages where ``url`` does not
 give the right results.
 
-Hint: in many instances instead of using "Navigate" you can 
+Hint: in many instances instead of using a "Browser" job you can
 monitor the output of an API called by the site during page loading
 containing the information you're after using the much faster "URL" job type.
-
-Because ``pyppeteer`` downloads a special version of Chromium (~ 100 MiB),
-the first execution of a ``browser`` job could take some time (and bandwidth).
-It is possible to run ``pyppeteer-install`` to pre-download Chromium.
 
 (Note: ``navigate`` implies ``kind: browser``)
 
