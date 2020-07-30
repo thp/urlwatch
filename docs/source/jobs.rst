@@ -94,8 +94,8 @@ containing the information you're after using the much faster "URL" job type.
 (Note: ``navigate`` implies ``kind: browser``)
 
 
-Command
--------
+Shell
+-----
 
 This job type allows you to watch the output of arbitrary shell commands,
 which is useful for e.g. monitoring a FTP uploader folder, output of
