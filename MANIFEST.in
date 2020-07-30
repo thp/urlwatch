@@ -1,5 +1,4 @@
-include CHANGELOG.md COPYING README.md
-recursive-include share *
-recursive-include test/data *
-include docs/Makefile docs/make.bat
-recursive-include docs/source *
+include CHANGELOG.md COPYING
+graft docs
+graft lib/urlwatch/tests
+graft share
