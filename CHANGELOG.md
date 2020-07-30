@@ -10,11 +10,21 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - Added `--test-reporter REPORTER` command-line option to send an
   example report using any configured notification service
+- `JobBase` now has `main_thread_enter()` and `main_thread_exit()`
+  functions that can be overridden by subclasses to run code in
+  the main thread before and after processing of a job
+  (based on an initial implementation by Chenfeng Bao)
 
 ### Removed
 
 - The `--test-slack` command line option has been removed, you can
   test your Slack reporter configuration using `--test-reporter slack`
+
+### Changed
+
+- The `browser` job now uses Pyppeteer instead of Requests-HTML for
+  rendering pages while executing JavaScript; this makes JavaScript
+  execution work properly (based on code by Chenfeng Bao)
 
 
 ## [2.20] -- 2020-07-29

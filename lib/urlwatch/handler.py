@@ -62,6 +62,23 @@ class JobState(object):
         self.error_ignored = False
         self._generated_diff = None
 
+    def __enter__(self):
+        try:
+            self.job.main_thread_enter()
+        except Exception as ex:
+            logger.info('Exception while creating resources for job: %r', self.job, exc_info=True)
+            self.exception = ex
+            self.traceback = traceback.format_exc()
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        try:
+            self.job.main_thread_exit()
+        except Exception as ex:
+            # We don't want exceptions from releasing resources to override job run results
+            logger.warning('Exception while releasing resources for job: %r', self.job, exc_info=True)
+
     def load(self):
         guid = self.job.get_guid()
         self.old_data, self.timestamp, self.tries, self.etag = self.cache_storage.load(self.job, guid)
@@ -79,6 +96,10 @@ class JobState(object):
 
     def process(self):
         logger.info('Processing: %s', self.job)
+
+        if self.exception:
+            return self
+
         try:
             try:
                 self.load()

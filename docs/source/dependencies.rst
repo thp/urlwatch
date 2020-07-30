@@ -48,7 +48,7 @@ Where ``<packagename>`` is one of the following:
 | `stdout` reporter with  | `colorama <https://github.com/tartley/colorama>`__                  |
 | color on Windows        |                                                                     |
 +-------------------------+---------------------------------------------------------------------+
-| `browser` job kind      | `requests-html <https://html.python-requests.org>`__                |
+| `browser` job kind      | `pyppeteer <https://github.com/pyppeteer/pyppeteer>`__              |
 +-------------------------+---------------------------------------------------------------------+
 | Unit testing            | `pycodestyle <http://pycodestyle.pycqa.org/en/latest/>`__,          |
 |                         | `docutils <https://docutils.sourceforge.io>`__,                     |
