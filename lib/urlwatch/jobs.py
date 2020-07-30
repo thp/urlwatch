@@ -369,8 +369,12 @@ class BrowserJob(Job):
     def get_location(self):
         return self.navigate
 
+    def main_thread_enter(self):
+        from .browser import BrowserContext
+        self.ctx = BrowserContext()
+
+    def main_thread_exit(self):
+        self.ctx.close()
+
     def retrieve(self, job_state):
-        from requests_html import HTMLSession
-        session = HTMLSession()
-        response = session.get(self.navigate)
-        return response.html.html
+        return self.ctx.process(self.navigate)

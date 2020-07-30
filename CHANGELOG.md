@@ -19,6 +19,11 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - The `--test-slack` command line option has been removed, you can
   test your Slack reporter configuration using `--test-reporter slack`
 
+### Changed
+
+- The `browser` job now uses Pyppeteer instead of Requests-HTML for
+  rendering pages while executing JavaScript
+
 
 ## [2.20] -- 2020-07-29
 

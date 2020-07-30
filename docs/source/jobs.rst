@@ -56,7 +56,7 @@ Navigate
 This job type is a resource-intensive variant of "URL" to handle web pages
 requiring JavaScript in order to render the content to be monitored.
 
-The optional ``requests-html`` package must be installed to run "Navigate" jobs
+The optional ``pyppeteer`` package must be installed to run "Navigate" jobs
 (see :ref:`dependencies`).
 
 .. code-block:: yaml
@@ -72,7 +72,7 @@ Job-specific optional keys:
 
 - none
 
-As this job uses `Requests-HTML <http://html.python-requests.org>`__
+As this job uses `Pyppeteer <https://github.com/pyppeteer/pyppeteer>`__
 to render the page in a headless Chromium instance, it requires massively
 more resources than a "URL" job. Use it only on pages where ``url`` does not
 give the right results.
