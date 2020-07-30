@@ -13,6 +13,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - `JobBase` now has `main_thread_enter()` and `main_thread_exit()`
   functions that can be overridden by subclasses to run code in
   the main thread before and after processing of a job
+  (based on an initial implementation by Chenfeng Bao)
 
 ### Removed
 
@@ -22,7 +23,8 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Changed
 
 - The `browser` job now uses Pyppeteer instead of Requests-HTML for
-  rendering pages while executing JavaScript
+  rendering pages while executing JavaScript; this makes JavaScript
+  execution work properly (based on code by Chenfeng Bao)
 
 
 ## [2.20] -- 2020-07-29
