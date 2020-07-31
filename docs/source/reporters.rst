@@ -45,13 +45,14 @@ At the moment, the following reporters are built-in:
 
 - **stdout**: Print summary on stdout (the console)
 - **email**: Send summary via e-mail / SMTP
-- **mailgun**: Custom email reporter that uses Mailgun
-- **matrix**: Custom Matrix reporter
+- **mailgun**: Send e-mail via the Mailgun service
+- **matrix**: Send a message to a room using the Matrix protocol
 - **pushbullet**: Send summary via pushbullet.com
 - **pushover**: Send summary via pushover.net
-- **slack**: Custom Slack reporter
-- **telegram**: Custom Telegram reporter
+- **slack**: Send a message to a Slack channel
+- **telegram**: Send a message using Telegram
 - **ifttt**: Send summary via IFTTT
+- **xmpp**: Send a message using the XMPP Protocol
 
 .. To convert the "urlwatch --features" output, use:
    sed -e 's/^  \* \(.*\) - \(.*\)$/- **\1**: \2/'
