@@ -216,7 +216,7 @@ class LegacyHooksPyFilter(FilterBase):
     def match(self):
         return self.hooks is not None
 
-    def filter(self, data, subfilter):
+    def filter(self, data):
         try:
             result = self.hooks.filter(self.job.get_location(), data)
             if result is None:
@@ -782,7 +782,7 @@ class ShellPipeFilter(FilterBase):
 
     __default_subfilter__ = 'command'
 
-    def filter(self, data, subfilter=None):
+    def filter(self, data, subfilter):
         if 'command' not in subfilter:
             raise ValueError('{} filter needs a command'.format(self.__kind__))
 

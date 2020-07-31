@@ -86,6 +86,7 @@ class CustomMatchUrlFilter(filters.AutoMatchFilter):
     # that have the given properties set
     MATCH = {'url': 'http://example.org/'}
 
+    # An auto-match filter does not have any subfilters
     def filter(self, data):
         return data.replace('foo', 'bar')
 
@@ -93,6 +94,7 @@ class CustomRegexMatchUrlFilter(filters.RegexMatchFilter):
     # Similar to AutoMatchFilter
     MATCH = {'url': re.compile('http://example.org/.*')}
 
+    # An auto-match filter does not have any subfilters
     def filter(self, data):
         return data.replace('foo', 'bar')
 

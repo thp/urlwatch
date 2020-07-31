@@ -26,6 +26,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
   rendering pages while executing JavaScript; this makes JavaScript
   execution work properly (based on code by Chenfeng Bao)
 
+### Fixed
+
+- Applying legacy `hooks.py` filters (broken since 2.19; reported by Maxime Werlen)
+
 
 ## [2.20] -- 2020-07-29
 
