@@ -22,7 +22,7 @@ copyright = '2020, Thomas Perl'
 author = 'Thomas Perl'
 
 # The full version, including alpha/beta/rc tags
-release = '2.20'
+release = '2.21'
 
 
 # -- General configuration ---------------------------------------------------
