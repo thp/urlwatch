@@ -232,6 +232,47 @@ class HtmlReporter(ReporterBase):
             raise ValueError('Diff style not supported: %r' % (difftype,))
 
 
+class RSSReporter(HtmlReporter):
+    """Generate an RSS feed"""
+    __kind__ = 'rss'
+
+    def submit(self):
+        import copy
+        diffs = []
+        for js in self.job_states:
+            history = js.cache_storage.get_history_data(js.job.get_guid(), 5)
+            for old_ver, new_ver in zip(list(history.keys())[1:], history.keys()):
+                tempjs = copy.copy(js)
+                tempjs.old_data = old_ver
+                tempjs.timestamp = history[old_ver]
+                tempjs.new_data = new_ver
+                diff = tempjs.get_diff()
+                html_diff = diff
+                item = f'''
+                <item>
+                  <title>{tempjs.job.pretty_name()}</title>
+                  <description> <![CDATA[<pre>{html_diff}</pre>]]> </description>
+                  <guid isPermaLink="false"> {tempjs.job.get_guid()}.{history[new_ver]} </guid>
+                  <pubDate> {email.utils.formatdate(history[new_ver], usegmt=True)} </pubDate>
+                </item>'''
+                diffs.append([history[new_ver], item])
+
+        sorted_diffs = [d[1] for d in sorted(diffs, key=lambda x: x[0])]
+
+        with open("/home/adam/scratch/test.rss", "w") as f:
+            f.write('''
+<rss version="2.0">
+<channel>
+<title>URLWatch Updates</title>
+<link>https://thp.io/2008/urlwatch/</link>
+<description>urlwatch monitors webpages for you</description>
+<language>en-us</language>
+<generator>urlwatch</generator>''')
+            for diff in diffs:
+                f.write(diff[1])
+            f.write('</channel>\n</rss>')
+
+
 class TextReporter(ReporterBase):
     def submit(self):
         cfg = self.report.config['report']['text']
