@@ -161,9 +161,9 @@ class JobState(object):
 
         timestamp_old = email.utils.formatdate(self.timestamp, localtime=True)
         timestamp_new = email.utils.formatdate(time.time(), localtime=True)
-        return ''.join(difflib.unified_diff(self.old_data.splitlines(keepends=True),
-                                            self.new_data.splitlines(keepends=True),
-                                            '@', '@', timestamp_old, timestamp_new))
+        return '\n'.join(difflib.unified_diff(self.old_data.splitlines(),
+                                              self.new_data.splitlines(),
+                                              '@', '@', timestamp_old, timestamp_new, lineterm=''))
 
 
 class Report(object):
