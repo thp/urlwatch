@@ -364,6 +364,8 @@ class BrowserJob(Job):
 
     __required__ = ('navigate',)
 
+    __optional__ = ('wait_until',)
+
     LOCATION_IS_URL = True
 
     def get_location(self):
@@ -377,4 +379,4 @@ class BrowserJob(Job):
         self.ctx.close()
 
     def retrieve(self, job_state):
-        return self.ctx.process(self.navigate)
+        return self.ctx.process(self.navigate, wait_until=self.wait_until)

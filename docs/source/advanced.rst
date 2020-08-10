@@ -258,3 +258,15 @@ a frontend (with GUI) to ``urlwatch``. The tool can be used to
 select a region of a web page. It then generates a configuration
 for ``urlwatch`` to run ``pyvisualcompare`` and generate a hash
 for the screen contents.
+
+
+Configuring how long browser jobs wait for pages to load
+--------------------------------------------------------
+
+For browser jobs, you can configure how long the headless browser will wait
+before a page is considered loaded by using the `wait_until` option. It can take one of four values:
+
+  - `load` will wait until the `load` browser event is fired (default).
+  - `documentloaded` will wait until the `DOMContentLoaded` browser event is fired.
+  - `networkidle0` will wait until there are no more than 0 network connections for at least 500 ms.
+  - `networkidle2` will wait until there are no more than 2 network connections for at least 500 ms.

@@ -3,7 +3,7 @@
 Jobs
 ====
 
-Jobs are the kind of things that `urlwatch` can monitor. 
+Jobs are the kind of things that `urlwatch` can monitor.
 
 The list of jobs to run are contained in the configuration file ``urls.yaml``,
 accessed with the command ``urlwatch --edit``, each separated by a line
@@ -80,7 +80,8 @@ Required keys:
 
 Job-specific optional keys:
 
-- none
+- ``wait_until``:  Either ``load``, ``domcontentloaded``, ``networkidle0``, or ``networkidle2`` (see :ref:`advanced_topics`)
+
 
 As this job uses `Pyppeteer <https://github.com/pyppeteer/pyppeteer>`__
 to render the page in a headless Chromium instance, it requires massively

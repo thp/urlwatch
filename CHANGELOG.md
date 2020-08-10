@@ -6,6 +6,11 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## [UNRELEASED]
 
+### Added
+
+- Added 'wait_until' option to browser jobs to configure how long
+  the headless browser will wait for pages to load.
+
 ### Changed
 
 - Diff output is now generated more uniformly, independent of whether
