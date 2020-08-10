@@ -28,6 +28,7 @@
 
 
 import asyncio
+import copy
 import difflib
 import re
 import email.utils
@@ -39,6 +40,8 @@ import html
 import functools
 
 import requests
+from lxml import etree
+from lxml.builder import E
 
 import urlwatch
 from .mailer import SMTPMailer
@@ -236,41 +239,44 @@ class RSSReporter(HtmlReporter):
     """Generate an RSS feed"""
     __kind__ = 'rss'
 
+    def _history_pair_diff_item(self, job_state, pair):
+        [old_ver, old_ts], [new_ver, new_ts] = pair
+        tempjs = copy.copy(job_state)
+        tempjs.old_data = old_ver
+        tempjs.timestamp = old_ts
+        tempjs.new_data = new_ver
+        diff = tempjs.get_diff()
+        html_diff = etree.tostring(E.pre(diff))
+        return E.item(
+            E.title(tempjs.job.pretty_name()),
+            E.description(etree.CDATA(html_diff)),
+            E.link(tempjs.job.get_location()) if tempjs.job.LOCATION_IS_URL else None,
+            E.guid({'isPermaLink': "false"},  tempjs.job.get_guid() + '.' + str(new_ts)),
+            E.pubDate( email.utils.formatdate(new_ts, usegmt=True)))
+
+    def _diffs(self, max_history):
+        for job_state in self.job_states:
+            history = job_state.cache_storage.get_history_data(
+                job_state.job.get_guid(), max_history)
+            history_pairs = zip(list(history.items())[1:], history.items())
+            for pair in history_pairs:
+                yield self._history_pair_diff_item(job_state, pair)
+
     def submit(self):
-        import copy
-        diffs = []
-        for js in self.job_states:
-            history = js.cache_storage.get_history_data(js.job.get_guid(), 5)
-            for old_ver, new_ver in zip(list(history.keys())[1:], history.keys()):
-                tempjs = copy.copy(js)
-                tempjs.old_data = old_ver
-                tempjs.timestamp = history[old_ver]
-                tempjs.new_data = new_ver
-                diff = tempjs.get_diff()
-                html_diff = diff
-                item = f'''
-                <item>
-                  <title>{tempjs.job.pretty_name()}</title>
-                  <description> <![CDATA[<pre>{html_diff}</pre>]]> </description>
-                  <guid isPermaLink="false"> {tempjs.job.get_guid()}.{history[new_ver]} </guid>
-                  <pubDate> {email.utils.formatdate(history[new_ver], usegmt=True)} </pubDate>
-                </item>'''
-                diffs.append([history[new_ver], item])
+        cfg = self.report.config['report']['rss']
+        max_history_per_job = cfg['max_history_per_job']
 
-        sorted_diffs = [d[1] for d in sorted(diffs, key=lambda x: x[0])]
-
-        with open("/home/adam/scratch/test.rss", "w") as f:
-            f.write('''
-<rss version="2.0">
-<channel>
-<title>URLWatch Updates</title>
-<link>https://thp.io/2008/urlwatch/</link>
-<description>urlwatch monitors webpages for you</description>
-<language>en-us</language>
-<generator>urlwatch</generator>''')
-            for diff in diffs:
-                f.write(diff[1])
-            f.write('</channel>\n</rss>')
+        with open("/home/adam/scratch/test.rss", "wb") as f:
+            tree = etree.ElementTree(
+                E.rss({'version': '2.0'},
+                      E.channel(
+                          E.title('URLWatch Updates'),
+                          E.link('https://thp.io/2008/urlwatch/'),
+                          E.description('urlwatch monitors webpages for you'),
+                          E.language('en-us'),
+                          E.generator('urlwatch'),
+                          *self._diffs(max_history_per_job))))
+            tree.write(f, pretty_print=True)
 
 
 class TextReporter(ReporterBase):
