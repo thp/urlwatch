@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [UNRELEASED]
+
+### Changed
+
+- Diff output is now generated more uniformly, independent of whether
+  the input data has a trailing newline or not; if this behavior is not
+  intended, use an external `diff_tool` (PR#550, by Adam Goldsmith)
+
 ## [2.21] -- 2020-07-31
 
 ### Added
