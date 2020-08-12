@@ -252,7 +252,7 @@ class RSSReporter(HtmlReporter):
             E.description(etree.CDATA(html_diff)),
             E.link(tempjs.job.get_location()) if tempjs.job.LOCATION_IS_URL else None,
             E.guid({'isPermaLink': "false"},  tempjs.job.get_guid() + '.' + str(new_ts)),
-            E.pubDate( email.utils.formatdate(new_ts, usegmt=True)))
+            E.pubDate(email.utils.formatdate(new_ts, usegmt=True)))
 
     def _diffs(self, max_history):
         for job_state in self.job_states:
@@ -265,8 +265,9 @@ class RSSReporter(HtmlReporter):
     def submit(self):
         cfg = self.report.config['report']['rss']
         max_history_per_job = cfg['max_history_per_job']
+        output_file = cfg['output_file']
 
-        with open("/home/adam/scratch/test.rss", "wb") as f:
+        with open(output_file, "wb") as f:
             tree = etree.ElementTree(
                 E.rss({'version': '2.0'},
                       E.channel(
