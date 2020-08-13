@@ -262,20 +262,29 @@ class RSSReporter(HtmlReporter):
             for pair in history_pairs:
                 yield self._history_pair_diff_item(job_state, pair)
 
+    def _rss_metadata(self, feed_metadata):
+        for prop, value in feed_metadata.items():
+            el = etree.Element(prop)
+            el.text = value
+            yield el
+
     def submit(self):
         cfg = self.report.config['report']['rss']
         max_history_per_job = cfg['max_history_per_job']
         output_file = cfg['output_file']
+        feed_metadata = {
+            "title": "urlwatch Updates",
+            "link": "https://thp.io/2008/urlwatch/",
+            "description": "urlwatch monitors webpages for you",
+            **cfg.get('feed_metadata', {})
+        }
 
         with open(output_file, "wb") as f:
             tree = etree.ElementTree(
                 E.rss({'version': '2.0'},
                       E.channel(
-                          E.title('URLWatch Updates'),
-                          E.link('https://thp.io/2008/urlwatch/'),
-                          E.description('urlwatch monitors webpages for you'),
-                          E.language('en-us'),
-                          E.generator('urlwatch'),
+                          *self._rss_metadata(feed_metadata),
+                          E.generator('urlwatch ' + urlwatch.__version__),
                           *self._diffs(max_history_per_job))))
             tree.write(f, pretty_print=True)
 
