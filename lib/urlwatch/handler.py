@@ -133,16 +133,16 @@ class JobState(object):
 
         return self
 
-    def get_diff(self):
+    def get_diff(self, new_time=None):
         if self._generated_diff is None:
-            self._generated_diff = self._generate_diff()
+            self._generated_diff = self._generate_diff(new_time)
             # Apply any specified diff filters
             for filter_kind, subfilter in FilterBase.normalize_filter_list(self.job.diff_filter):
                 self._generated_diff = FilterBase.process(filter_kind, subfilter, self, self._generated_diff)
 
         return self._generated_diff
 
-    def _generate_diff(self):
+    def _generate_diff(self, new_time=None):
         if self.job.diff_tool is not None:
             with tempfile.TemporaryDirectory() as tmpdir:
                 old_file_path = os.path.join(tmpdir, 'old_file')
@@ -160,7 +160,8 @@ class JobState(object):
                     raise subprocess.CalledProcessError(proc.returncode, cmdline)
 
         timestamp_old = email.utils.formatdate(self.timestamp, localtime=True)
-        timestamp_new = email.utils.formatdate(time.time(), localtime=True)
+        timestamp_new = email.utils.formatdate(new_time if new_time is not None else time.time(),
+                                               localtime=True)
         return '\n'.join(difflib.unified_diff(self.old_data.splitlines(),
                                               self.new_data.splitlines(),
                                               '@', '@', timestamp_old, timestamp_new, lineterm=''))
