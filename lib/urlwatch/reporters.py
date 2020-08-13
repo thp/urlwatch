@@ -239,24 +239,24 @@ class RSSReporter(HtmlReporter):
     """Generate an RSS feed"""
     __kind__ = 'rss'
 
-    def _history_pair_diff_item(self, job_state, pair):
-        """Perform a diff between two historical states, with job_state as a base."""
-        [old_ver, old_ts], [new_ver, new_ts] = pair
-        # TODO: this feels like a hack; maybe it should create an
-        # entirely new job state?
-        tempjs = copy.copy(job_state)
-        tempjs.old_data = old_ver
-        tempjs.timestamp = old_ts
-        tempjs.new_data = new_ver
-        diff = tempjs.get_diff(new_ts)
+    def _history_state_pair_diff(self, base_state, old_state, new_state):
+        """Perform a diff between two historical states, with base_state as a base."""
+        [old_data, old_timestamp] = old_state
+        [new_data, new_timestamp] = new_state
+        # TODO: this feels like a hack; maybe it should create a new job state?
+        tempjs = copy.copy(base_state)
+        tempjs.old_data = old_data
+        tempjs.timestamp = old_timestamp
+        tempjs.new_data = new_data
+        diff = tempjs.get_diff(new_timestamp)
 
         html_diff = etree.tostring(E.pre(diff))
         return E.item(
             E.title(tempjs.job.pretty_name()),
             E.description(etree.CDATA(html_diff)),
             E.link(tempjs.job.get_location()) if tempjs.job.LOCATION_IS_URL else None,
-            E.guid({'isPermaLink': "false"},  tempjs.job.get_guid() + '.' + str(new_ts)),
-            E.pubDate(email.utils.formatdate(new_ts, usegmt=True)))
+            E.guid({'isPermaLink': "false"}, tempjs.job.get_guid() + '.' + str(new_timestamp)),
+            E.pubDate(email.utils.formatdate(new_timestamp, usegmt=True)))
 
     def _diffs(self, max_history):
         for job_state in self.job_states:
@@ -265,8 +265,8 @@ class RSSReporter(HtmlReporter):
             history = job_state.cache_storage.get_history_data(
                 job_state.job.get_guid(), max_history)
             history_pairs = zip(list(history.items())[1:], history.items())
-            for pair in history_pairs:
-                yield self._history_pair_diff_item(job_state, pair)
+            for old_state, new_state in history_pairs:
+                yield self._history_state_pair_diff(job_state, old_state, new_state)
 
     def _rss_metadata(self, feed_metadata):
         """Create XML elements for RSS feed metadata."""
