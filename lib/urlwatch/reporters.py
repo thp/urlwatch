@@ -240,12 +240,16 @@ class RSSReporter(HtmlReporter):
     __kind__ = 'rss'
 
     def _history_pair_diff_item(self, job_state, pair):
+        """Perform a diff between two historical states, with job_state as a base."""
         [old_ver, old_ts], [new_ver, new_ts] = pair
+        # TODO: this feels like a hack; maybe it should create an
+        # entirely new job state?
         tempjs = copy.copy(job_state)
         tempjs.old_data = old_ver
         tempjs.timestamp = old_ts
         tempjs.new_data = new_ver
         diff = tempjs.get_diff(new_ts)
+
         html_diff = etree.tostring(E.pre(diff))
         return E.item(
             E.title(tempjs.job.pretty_name()),
@@ -256,6 +260,8 @@ class RSSReporter(HtmlReporter):
 
     def _diffs(self, max_history):
         for job_state in self.job_states:
+            """For each job, get up to max_history history items, and then diff
+               them each with the previous item, returning a RSS item."""
             history = job_state.cache_storage.get_history_data(
                 job_state.job.get_guid(), max_history)
             history_pairs = zip(list(history.items())[1:], history.items())
@@ -263,6 +269,7 @@ class RSSReporter(HtmlReporter):
                 yield self._history_pair_diff_item(job_state, pair)
 
     def _rss_metadata(self, feed_metadata):
+        """Create XML elements for RSS feed metadata."""
         for prop, value in feed_metadata.items():
             el = etree.Element(prop)
             el.text = value
