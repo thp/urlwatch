@@ -245,7 +245,7 @@ class RSSReporter(HtmlReporter):
         tempjs.old_data = old_ver
         tempjs.timestamp = old_ts
         tempjs.new_data = new_ver
-        diff = tempjs.get_diff()
+        diff = tempjs.get_diff(new_ts)
         html_diff = etree.tostring(E.pre(diff))
         return E.item(
             E.title(tempjs.job.pretty_name()),
