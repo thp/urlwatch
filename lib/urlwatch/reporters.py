@@ -610,9 +610,12 @@ class TelegramReporter(TextReporter):
 
 class SlackReporter(TextReporter):
     """Send a message to a Slack channel"""
-    MAX_LENGTH = 40000
 
     __kind__ = 'slack'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.MAX_LENGTH = self.config['max_message_length'] or 40000
 
     def submit(self):
         webhook_url = self.config['webhook_url']
