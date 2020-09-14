@@ -199,7 +199,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ### Added
 - Support for Mailgun regions (by Daniel Peukert, PR#280)
-- CLI: Allow multiple occurences of 'filter' when adding jobs (PR#278)
+- CLI: Allow multiple occurrences of 'filter' when adding jobs (PR#278)
 
 ### Changed
 - Fixed incorrect name for chat_id config in the default config (by Robin B, PR#276)

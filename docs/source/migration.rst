@@ -8,7 +8,7 @@ a quick rundown of changes in 2.0:
    specifying names for jobs, different job kinds, directly applying
    filters, selecting the HTTP request method, specifying POST data as
    dictionary and much more
--  The cache directory has been replaced with a SQLite 3 database file
+-  The cache directory has been replaced with an SQLite 3 database file
    “cache.db” in `minidb`_ format, storing all change history (use
    ``--gc-cache`` to remove old changes if you don’t need them anymore)
    for further analysis
