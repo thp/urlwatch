@@ -742,7 +742,7 @@ class MatrixReporter(MarkdownReporter):
         client_api = matrix_client.api.MatrixHttpApi(homeserver_url, access_token)
 
         if Markdown is not None:
-            body_html = Markdown().convert(body_markdown)
+            body_html = Markdown(extras=["fenced-code-blocks"]).convert(body_markdown)
 
             client_api.send_message_event(
                 room_id,
