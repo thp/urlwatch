@@ -124,7 +124,7 @@ DEFAULT_CONFIG = {
         'slack': {
             'enabled': False,
             'webhook_url': '',
-            'max_message_length': 40000
+            'max_message_length': 40000,
         },
         'matrix': {
             'enabled': False,
