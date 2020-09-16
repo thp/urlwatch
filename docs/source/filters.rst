@@ -195,7 +195,7 @@ dates):
 
 To match an element in an `XML
 namespace <https://www.w3.org/TR/xml-names/>`__, use a namespace prefix
-before the tag name. Use a ``:`` to seperate the namespace prefix and
+before the tag name. Use a ``:`` to separate the namespace prefix and
 the tag name in an XPath expression, and use a ``|`` in a CSS selector.
 
 .. code:: yaml
@@ -490,7 +490,7 @@ shell script (``|`` in YAML denotes the start of a text block):
 
 Within the ``shellpipe`` script, two environment variables will
 be set for further customization (this can be useful if you have
-a external shell script file that is used as filter for multiple
+an external shell script file that is used as filter for multiple
 jobs, but needs to treat each job in a slightly different way):
 
 +----------------------------+------------------------------------------------------+

@@ -13,7 +13,7 @@ Every time you run `urlwatch`, it:
 
 :ref:`Jobs`
 -----------
-Each website or shell command to be monitored consitutes a "job".
+Each website or shell command to be monitored constitutes a "job".
 
 The instructions for each such job are contained in a config file in the `YAML format`_, accessible with the ``urlwatch --edit`` command.
 If you get an error, set your ``$EDITOR`` (or ``$VISUAL``) environment

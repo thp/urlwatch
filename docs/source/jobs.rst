@@ -98,7 +98,7 @@ Shell
 -----
 
 This job type allows you to watch the output of arbitrary shell commands,
-which is useful for e.g. monitoring a FTP uploader folder, output of
+which is useful for e.g. monitoring an FTP uploader folder, output of
 scripts that query external devices (RPi GPIO), etc...
 
 .. code-block:: yaml
