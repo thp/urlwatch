@@ -615,7 +615,7 @@ class SlackReporter(TextReporter):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.MAX_LENGTH = self.config['max_message_length'] or 40000
+        self.MAX_LENGTH = self.config.get('max_message_length', 40000)
 
     def submit(self):
         webhook_url = self.config['webhook_url']
