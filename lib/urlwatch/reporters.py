@@ -647,7 +647,7 @@ class SlackReporter(TextReporter):
 
 
 class MarkdownReporter(ReporterBase):
-    def submit(self):
+    def submit(self, max_length=None):
         cfg = self.report.config['report']['markdown']
         show_details = cfg['details']
         show_footer = cfg['footer']
@@ -668,18 +668,75 @@ class MarkdownReporter(ReporterBase):
             summary.extend(summary_part)
             details.extend(details_part)
 
+        # Sum of the lengths of parts, with newlines taken into account
+        summary_len = sum(len(part) for part in summary) + len(summary) - 1
+
+        # Determine the space remaining after the summary. Reserve some extra
+        # space so we can at least report that all details were omitted if the
+        # message is too long.
+        remaining_len = max_length - summary_len - 40
+
+        if summary and show_footer:
+            footer = ('--- ',
+                      '%s %s, %s  ' % (urlwatch.pkgname, urlwatch.__version__, urlwatch.__copyright__),
+                      'Website: %s  ' % (urlwatch.__url__,),
+                      'watched %d URLs in %d seconds' % (len(self.job_states), self.duration.seconds))
+            footer_len = sum(len(part) for part in footer) + len(footer) - 1
+            remaining_len -= footer_len
+
+        # Calculate approximate available length per item, shared equally.
+        len_per_details = remaining_len // len(details)
+
         if summary:
             yield from ('%d. %s' % (idx + 1, line) for idx, line in enumerate(summary))
             yield ''
 
         if show_details:
-            yield from details
+            if len_per_details < 100:
+                yield "Details omitted due to message length."
+            else:
+                unprocessed = len(details)
+
+                for header, body in details:
+                    # Calculate the available length for the body and render it
+                    avail_length = len_per_details - len(header) - 1
+                    body = MarkdownReporter._format_details_body(body, avail_length)
+                    actual_length = len(header) + len(body)
+                    unprocessed -= 1
+
+                    yield header
+                    yield body
+                    yield ''
+
+                    # Distribute the unused length into subsequent items,
+                    # unless we're at the last item already.
+                    unused = len_per_details - actual_length
+                    remaining_len -= len_per_details
+                    remaining_len += unused
+
+                    if unprocessed > 0:
+                        len_per_details = remaining_len // unprocessed
 
         if summary and show_footer:
-            yield from ('--- ',
-                        '%s %s, %s  ' % (urlwatch.pkgname, urlwatch.__version__, urlwatch.__copyright__),
-                        'Website: %s  ' % (urlwatch.__url__,),
-                        'watched %d URLs in %d seconds' % (len(self.job_states), self.duration.seconds))
+            yield from footer
+
+    @staticmethod
+    def _format_details_body(s, max_length):
+        # Number of characters for the Markdown code block wrapper (three
+        # backticks and a newline, twice).
+        wrapper_length = 8
+
+        # Message to print when the diff is too long.
+        trim_message = "[... diff trimmed ...]"
+        trim_message_length = len(trim_message)
+
+        if max_length is None or len(s) + wrapper_length <= max_length:
+            return "```\n{}\n```".format(s)
+        else:
+            while len(s) + wrapper_length + trim_message_length > max_length:
+                s = re.sub("\n.*$", "", s)
+
+            return "```\n{}\n```\n{}".format(s, trim_message)
 
     def _format_content(self, job_state):
         if job_state.verb == 'error':
@@ -708,10 +765,8 @@ class MarkdownReporter(ReporterBase):
 
         summary_part.append(pretty_summary)
 
-        details_part.append('### ' + summary)
         if content is not None:
-            details_part.extend(('', '```', content, '```', ''))
-        details_part.extend(('', ''))
+            details_part.append(('### ' + summary, content))
 
         return summary_part, details_part
 
@@ -730,14 +785,11 @@ class MatrixReporter(MarkdownReporter):
         access_token = self.config['access_token']
         room_id = self.config['room_id']
 
-        body_markdown = '\n'.join(super().submit())
+        body_markdown = '\n'.join(super().submit(MatrixReporter.MAX_LENGTH))
 
         if not body_markdown:
             logger.debug('Not calling Matrix API (no changes)')
             return
-
-        if len(body_markdown) > self.MAX_LENGTH:
-            body_markdown = body_markdown[:self.MAX_LENGTH]
 
         client_api = matrix_client.api.MatrixHttpApi(homeserver_url, access_token)
 
