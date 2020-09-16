@@ -773,7 +773,7 @@ class MarkdownReporter(ReporterBase):
 
 class MatrixReporter(MarkdownReporter):
     """Send a message to a room using the Matrix protocol"""
-    MAX_LENGTH = 4096
+    MAX_LENGTH = 16384
 
     __kind__ = 'matrix'
 
