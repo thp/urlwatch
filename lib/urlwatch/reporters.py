@@ -731,12 +731,12 @@ class MarkdownReporter(ReporterBase):
         trim_message_length = len(trim_message)
 
         if max_length is None or len(s) + wrapper_length <= max_length:
-            return "```\n{}\n```".format(s)
+            return "```diff\n{}\n```".format(s)
         else:
             while len(s) + wrapper_length + trim_message_length > max_length:
                 s = re.sub("\n.*$", "", s)
 
-            return "```\n{}\n```\n{}".format(s, trim_message)
+            return "```diff\n{}\n```\n{}".format(s, trim_message)
 
     def _format_content(self, job_state):
         if job_state.verb == 'error':
@@ -794,7 +794,7 @@ class MatrixReporter(MarkdownReporter):
         client_api = matrix_client.api.MatrixHttpApi(homeserver_url, access_token)
 
         if Markdown is not None:
-            body_html = Markdown(extras=["fenced-code-blocks"]).convert(body_markdown)
+            body_html = Markdown(extras=["fenced-code-blocks", "highlightjs-lang"]).convert(body_markdown)
 
             client_api.send_message_event(
                 room_id,
