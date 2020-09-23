@@ -144,7 +144,7 @@ class UrlwatchCommand:
         job = self._get_job(id)
 
         history_data = self.urlwatcher.cache_storage.get_history_data(job.get_guid(), 10)
-        history_data = [key for key, value in sorted(history_data.items(), key=lambda kv: kv[1])]
+        history_data = sorted(history_data.items(), key=lambda kv: kv[1])
 
         if len(history_data) < 2:
             print('Not enough historic data available (need at least 2 different snapshots)')
@@ -152,8 +152,8 @@ class UrlwatchCommand:
 
         for i in range(len(history_data) - 1):
             with JobState(self.urlwatcher.cache_storage, job) as job_state:
-                job_state.old_data = history_data[i]
-                job_state.new_data = history_data[i + 1]
+                job_state.old_data, job_state.timestamp = history_data[i]
+                job_state.new_data, job_state.current_timestamp = history_data[i + 1]
                 print('=== Filtered diff between state {} and state {} ==='.format(i, i + 1))
                 print(job_state.get_diff())
 
