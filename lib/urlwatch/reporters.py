@@ -722,9 +722,7 @@ class MarkdownReporter(ReporterBase):
 
     @staticmethod
     def _format_details_body(s, max_length):
-        # Number of characters for the Markdown code block wrapper (three
-        # backticks and a newline, twice).
-        wrapper_length = 8
+        wrapper_length = len("```diff\n\n```")
 
         # Message to print when the diff is too long.
         trim_message = "[... diff trimmed ...]"
