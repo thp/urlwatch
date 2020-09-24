@@ -731,8 +731,13 @@ class MarkdownReporter(ReporterBase):
         if max_length is None or len(s) + wrapper_length <= max_length:
             return "```diff\n{}\n```".format(s)
         else:
-            while len(s) + wrapper_length + trim_message_length > max_length:
+            while len(s) + wrapper_length + trim_message_length > max_length and '\n' in s:
                 s = re.sub("\n.*$", "", s)
+
+            # If it's still longer than the max length, we have a single long
+            # line left so just cut it short.
+            if len(s) + wrapper_length + trim_message_length > max_length:
+                s = s[:max_length]
 
             return "```diff\n{}\n```\n{}".format(s, trim_message)
 
