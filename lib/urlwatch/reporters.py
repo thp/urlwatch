@@ -674,7 +674,8 @@ class MarkdownReporter(ReporterBase):
         # Determine the space remaining after the summary. Reserve some extra
         # space so we can at least report that all details were omitted if the
         # message is too long.
-        remaining_len = max_length - summary_len - 40
+        if max_length is not None:
+            remaining_len = max_length - summary_len - 40
 
         if summary and show_footer:
             footer = ('--- ',
@@ -682,27 +683,32 @@ class MarkdownReporter(ReporterBase):
                       'Website: %s  ' % (urlwatch.__url__,),
                       'watched %d URLs in %d seconds' % (len(self.job_states), self.duration.seconds))
             footer_len = sum(len(part) for part in footer) + len(footer) - 1
-            remaining_len -= footer_len
+
+            if max_length is not None:
+                remaining_len -= footer_len
 
         # Calculate approximate available length per item, shared equally.
-        len_per_details = remaining_len // len(details)
+        if max_length is not None:
+            len_per_details = remaining_len // len(details)
 
         if summary:
             yield from ('%d. %s' % (idx + 1, line) for idx, line in enumerate(summary))
             yield ''
 
         if show_details:
-            if len_per_details < 100:
+            if max_length is not None and len_per_details < 100:
                 yield "Details omitted due to message length."
             else:
                 unprocessed = len(details)
 
                 for header, body in details:
                     # Calculate the available length for the body and render it
-                    avail_length = len_per_details - len(header) - 1
+                    if max_length is not None:
+                        avail_length = len_per_details - len(header) - 1
+                    else:
+                        avail_length = None
+
                     body = MarkdownReporter._format_details_body(body, avail_length)
-                    actual_length = len(header) + len(body)
-                    unprocessed -= 1
 
                     yield header
                     yield body
@@ -710,12 +716,16 @@ class MarkdownReporter(ReporterBase):
 
                     # Distribute the unused length into subsequent items,
                     # unless we're at the last item already.
-                    unused = len_per_details - actual_length
-                    remaining_len -= len_per_details
-                    remaining_len += unused
+                    if max_length is not None:
+                        actual_length = len(header) + len(body)
+                        unprocessed -= 1
 
-                    if unprocessed > 0:
-                        len_per_details = remaining_len // unprocessed
+                        unused = len_per_details - actual_length
+                        remaining_len -= len_per_details
+                        remaining_len += unused
+
+                        if unprocessed > 0:
+                            len_per_details = remaining_len // unprocessed
 
         if summary and show_footer:
             yield from footer
