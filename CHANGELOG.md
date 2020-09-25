@@ -10,6 +10,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - Added 'wait_until' option to browser jobs to configure how long
   the headless browser will wait for pages to load.
+- Jobs now have an optional `treat_new_as_changed` (default `false`)
+  key that can be set, and will treat newly-found pages as changed,
+  and display a diff from the empty string (useful for `diff_tool`
+  or `diff_filter` with side effects)
 
 ### Changed
 

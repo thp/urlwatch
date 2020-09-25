@@ -270,3 +270,22 @@ before a page is considered loaded by using the `wait_until` option. It can take
   - `documentloaded` will wait until the `DOMContentLoaded` browser event is fired.
   - `networkidle0` will wait until there are no more than 0 network connections for at least 500 ms.
   - `networkidle2` will wait until there are no more than 2 network connections for at least 500 ms.
+
+
+Treating ``NEW`` jobs as ``CHANGED``
+------------------------------------
+
+In some cases (e.g. when the ``diff_tool`` or ``diff_filter`` executes some
+external command as a side effect that should also run for the initial page
+state), you can set the ``treat_new_as_changed`` to ``true``, which will make
+the job report as ``CHANGED`` instead of ``NEW`` the first time it is retrieved
+(and the diff will be reported, too).
+
+.. code-block:: yaml
+
+   url: http://example.com/initialpage.html
+   treat_new_as_changed: true
+
+This option will also change the behavior of ``--test-diff-filter``, and allow
+testing the diff filter if only a single version of the page has been
+retrieved.

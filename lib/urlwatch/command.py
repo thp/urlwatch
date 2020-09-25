@@ -146,6 +146,11 @@ class UrlwatchCommand:
         history_data = self.urlwatcher.cache_storage.get_history_data(job.get_guid(), 10)
         history_data = sorted(history_data.items(), key=lambda kv: kv[1])
 
+        if len(history_data) and getattr(job, 'treat_new_as_changed', False):
+            # Insert empty history entry, so first snapshot is diffed against the empty string
+            _, first_timestamp = history_data[0]
+            history_data.insert(0, ('', first_timestamp))
+
         if len(history_data) < 2:
             print('Not enough historic data available (need at least 2 different snapshots)')
             return 1

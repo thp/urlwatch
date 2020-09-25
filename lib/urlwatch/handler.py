@@ -104,6 +104,12 @@ class JobState(object):
         try:
             try:
                 self.load()
+
+                if self.old_data is None and getattr(self.job, 'treat_new_as_changed', False):
+                    # Force creation of a diff for "NEW"ly found items by pretending we had an empty page before
+                    self.old_data = ''
+                    self.timestamp = None
+
                 data = self.job.retrieve(self)
 
                 # Apply automatic filters first
