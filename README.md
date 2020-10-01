@@ -13,10 +13,11 @@
                                   ... monitors webpages for you
 ```
 
-urlwatch is intended to help you watch changes in webpages and get notified
+About:
+this urlwatch is intended to help you watch changes in webpages and get notified
 (via e-mail, in your terminal or through various third party services) of any
-changes. The change notification will include the URL that has changed and
-a unified diff of what has changed.
+changes. The changes notification will include the URL that has changed and
+a unified diff. of what has changed.
 
 * Documentation: https://urlwatch.readthedocs.io/
 * Website: https://thp.io/2008/urlwatch/
