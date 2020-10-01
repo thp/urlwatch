@@ -4,13 +4,13 @@
 
 
 ```
-                         _               _       _       ____
+               An Amazing Monitors Wepages on ...          _               _       _       ____
               _   _ _ __| |_      ____ _| |_ ___| |__   |___ \
              | | | | '__| \ \ /\ / / _` | __/ __| '_ \    __) |
              | |_| | |  | |\ V  V / (_| | || (__| | | |  / __/
               \__,_|_|  |_| \_/\_/ \__,_|\__\___|_| |_| |_____|
 
-                                  ... monitors webpages for you
+                                  Best Desktop Monitors Webpages For You...
 ```
 
 urlwatch is intended to help you watch changes in webpages and get notified
