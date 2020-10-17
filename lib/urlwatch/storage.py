@@ -365,8 +365,8 @@ class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
                 conflicting_jobs.append(guid_jobs[0].get_location())
 
         if conflicting_jobs:
-            raise ValueError('\n   '.join(['Each job must have a unique URL, append #1, #2, ... to make them unique:'] +
-                                          conflicting_jobs))
+            raise ValueError('\n   '.join(['Each job must have a unique URL, append #1, #2, ... to make them unique:']
+                                          + conflicting_jobs))
 
         return jobs
 
