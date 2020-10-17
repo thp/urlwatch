@@ -32,6 +32,7 @@ import os
 import stat
 import copy
 import platform
+import collections
 from abc import ABCMeta, abstractmethod
 
 import shutil
@@ -350,14 +351,31 @@ class YamlConfigStorage(BaseYamlFileStorage):
 
 
 class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
+    @classmethod
+    def _parse(cls, fp):
+        jobs = [JobBase.unserialize(job) for job in yaml.load_all(fp, Loader=yaml.SafeLoader)
+                if job is not None]
+        jobs_by_guid = collections.defaultdict(list)
+        for job in jobs:
+            jobs_by_guid[job.get_guid()].append(job)
+
+        conflicting_jobs = []
+        for guid, guid_jobs in jobs_by_guid.items():
+            if len(guid_jobs) != 1:
+                conflicting_jobs.append(guid_jobs[0].get_location())
+
+        if conflicting_jobs:
+            raise ValueError('\n   '.join(['Each job must have a unique URL, append #1, #2, ... to make them unique:'] +
+                                          conflicting_jobs))
+
+        return jobs
 
     @classmethod
     def parse(cls, *args):
         filename = args[0]
         if filename is not None and os.path.exists(filename):
             with open(filename) as fp:
-                return [JobBase.unserialize(job) for job in yaml.load_all(fp, Loader=yaml.SafeLoader)
-                        if job is not None]
+                return cls._parse(fp)
 
     def save(self, *args):
         jobs = args[0]
@@ -368,7 +386,7 @@ class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
 
     def load(self, *args):
         with open(self.filename) as fp:
-            return [JobBase.unserialize(job) for job in yaml.load_all(fp, Loader=yaml.SafeLoader) if job is not None]
+            return self._parse(fp)
 
 
 class UrlsTxt(BaseTxtFileStorage, UrlsBaseFileStorage):

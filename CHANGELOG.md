@@ -22,6 +22,9 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
   intended, use an external `diff_tool` (PR#550, by Adam Goldsmith)
 - The `--test-diff-filter` output now properly reports timestamps from
   the history entry instead of the current date and time (Fixes #573)
+- Unique GUIDs for jobs are now enforced at load time, append "#1",
+  "#2", ... to the URLs to make them unique if you have multiple
+  different jobs that share the same request URL (Fixes #586)
 
 ## [2.21] -- 2020-07-31
 

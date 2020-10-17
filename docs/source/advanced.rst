@@ -289,3 +289,26 @@ the job report as ``CHANGED`` instead of ``NEW`` the first time it is retrieved
 This option will also change the behavior of ``--test-diff-filter``, and allow
 testing the diff filter if only a single version of the page has been
 retrieved.
+
+
+Monitoring the same URL in multiple jobs
+----------------------------------------
+
+Because urlwatch uses the ``url``/``navigate`` (for URL/Browser jobs) and/or
+the ``command`` (for Shell jobs) key as unique identifier, each URL can only
+appear in a single job. If you want to monitor the same URL multiple times,
+you can append ``#1``, ``#2``, ... (or anything that makes them unique) to
+the URLs, like this:
+
+.. code-block:: yaml
+
+    name: "Looking for Thing A"
+    url: http://example.com/#1
+    filter:
+      - grep: "Thing A"
+    ---
+    name: "Looking for Thing B"
+    url: http://example.com/#2
+    filter:
+      - grep: "Thing B"
+
