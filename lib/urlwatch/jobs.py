@@ -221,13 +221,13 @@ class UrlJob(Job):
     __required__ = ('url',)
     __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
                     'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding', 'timeout',
-                    'ignore_timeout_errors', 'ignore_too_many_redirects')
+                    'ignore_timeout_errors', 'ignore_too_many_redirects', 'url_for_human')
 
     LOCATION_IS_URL = True
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
     def get_location(self):
-        return self.url
+        return self.url_for_human if self.url_for_human else self.url
 
     def retrieve(self, job_state):
         headers = {
