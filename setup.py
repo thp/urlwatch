@@ -10,8 +10,8 @@ main_py = open(os.path.join('lib', 'urlwatch', '__init__.py')).read()
 m = dict(re.findall("\n__([a-z]+)__ = '([^']+)'", main_py))
 docs = re.findall('"""(.*?)"""', main_py, re.DOTALL)
 
-if sys.version_info < (3, 3):
-    sys.exit('urlwatch requires Python 3.3 or newer')
+if sys.version_info < (3, 5):
+    sys.exit('urlwatch requires Python 3.5 or newer')
 
 m['name'] = 'urlwatch'
 m['author'], m['author_email'] = re.match(r'(.*) <(.*)>', m['author']).groups()
