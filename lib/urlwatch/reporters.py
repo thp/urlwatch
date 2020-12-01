@@ -203,7 +203,11 @@ class HtmlReporter(ReporterBase):
             elif line.startswith('-'):
                 yield SafeHtml('<span class="unified_sub">{line}</span>').format(line=line)
             else:
-                yield SafeHtml('<span class="unified_nor">{line}</span>').format(line=line)
+                # Basic colorization for wdiff-style differences
+                line = SafeHtml('<span class="unified_nor">{line}</span>').format(line=line)
+                line = re.sub(WDIFF_ADDED_RE, lambda x: '<span class="diff_add">'+x.group(0)+'</span>', line)
+                line = re.sub(WDIFF_REMOVED_RE, lambda x: '<span class="diff_sub">'+x.group(0)+'</span>', line)
+                yield line
 
     def _format_content(self, job_state, difftype):
         if job_state.verb == 'error':
