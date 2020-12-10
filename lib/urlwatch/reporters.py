@@ -653,6 +653,66 @@ class SlackReporter(TextReporter):
         return result
 
 
+class DiscordReporter(TextReporter):
+    """Send a message to a Discord channel"""
+
+    __kind__ = 'discord'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.max_length = self.config.get('max_message_length', 2000)
+
+    def submit(self):
+        webhook_url = self.config['webhook_url']
+        text = '\n'.join(super().submit())
+
+        if not text:
+            logger.debug('Not calling Discord API (no changes)')
+            return
+
+        result = None
+        for chunk in chunkstring(text, self.max_length, numbering=True):
+            res = self.submit_to_discord(webhook_url, chunk)
+            if res.status_code != requests.codes.ok or res is None:
+                result = res
+
+        return result
+
+    def submit_to_discord(self, webhook_url, text):
+        if 'embed' in self.config and self.config['embed']:
+            filtered_job_states = list(self.report.get_filtered_job_states(self.job_states))
+
+            subject_args = {
+                'count': len(filtered_job_states),
+                'jobs': ', '.join(job_state.job.pretty_name() for job_state in filtered_job_states),
+            }
+
+            subject = self.config['subject'].format(**subject_args)
+
+            post_data = {"content": subject,
+                         "embeds": [
+                             {
+                                 "type": "rich",
+                                 "description": text
+                             }
+                         ]
+                         }
+        else:
+            post_data = {"content": text}
+
+        logger.debug("Sending Discord request with post_data: {0}".format(post_data))
+
+        result = requests.post(webhook_url, json=post_data)
+        try:
+            if result.status_code == requests.codes.ok or result.status_code == requests.codes.no_content:
+                logger.info("Discord response: ok")
+            else:
+                logger.error("Discord error: {0}".format(result.text))
+        except ValueError:
+            logger.error("Failed to parse Discord response. HTTP status code: {0}, content: {1}".format(result.status_code, result.content))
+        return result
+
+
 class MarkdownReporter(ReporterBase):
     def submit(self):
         cfg = self.report.config['report']['markdown']

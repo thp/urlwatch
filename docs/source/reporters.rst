@@ -50,6 +50,7 @@ At the moment, the following reporters are built-in:
 - **pushbullet**: Send summary via pushbullet.com
 - **pushover**: Send summary via pushover.net
 - **slack**: Send a message to a Slack channel
+- **discord**: Send a message to a Discord channel
 - **telegram**: Send a message using Telegram
 - **ifttt**: Send summary via IFTTT
 - **xmpp**: Send a message using the XMPP Protocol
@@ -141,6 +142,24 @@ is a sample configuration:
 To set up Slack, from you Slack Team, create a new app and activate
 “Incoming Webhooks” on a channel, you’ll get a webhook URL, copy it into
 the configuration as seen above.
+
+Discord
+-----
+
+Discord notifications are configured using “Discord Incoming Webhooks”. Here
+is a sample configuration:
+
+.. code:: yaml
+
+   discord:
+      webhook_url: 'https://discordapp.com/api/webhooks/11111XXXXXXXXXXX/BBBBYYYYYYYYYYYYYYYYYYYYYYYyyyYYYYYYYYYYYYYY'
+      enabled: true
+      embed: true
+      subject: '{count} changes: {jobs}'
+      
+To set up Discord, from your Discord Server settings, select Integration and then create a "New Webhook", give the webhook a name to post under, select a channel, push "Copy Webhook URL" and paste it into the configuration as seen above.
+
+Embedded content might be easier to read and identify individual reports. subject preceeds the embedded report and is only used when embed is true.
 
 
 IFTTT
