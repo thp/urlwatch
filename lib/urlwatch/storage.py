@@ -221,6 +221,7 @@ class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
         if os.path.exists(self.filename):
             shutil.copy(self.filename, file_edit)
         elif example_file is not None and os.path.exists(example_file):
+            os.makedirs(os.path.dirname(file_edit) or '.', exist_ok=True)
             shutil.copy(example_file, file_edit)
 
         while True:
@@ -251,6 +252,7 @@ class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
 
     @classmethod
     def write_default_config(cls, filename):
+        os.makedirs(os.path.dirname(filename) or '.', exist_ok=True)
         config_storage = cls(None)
         config_storage.filename = filename
         config_storage.save()

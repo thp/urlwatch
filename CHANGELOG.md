@@ -25,6 +25,9 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Unique GUIDs for jobs are now enforced at load time, append "#1",
   "#2", ... to the URLs to make them unique if you have multiple
   different jobs that share the same request URL (Fixes #586)
+- When a config, urls file or hooks file does not exist and should be
+  edited or inited, its parent folders will be created (previously
+  only the urlwatch configuration folder was created; Fixes #594)
 
 ## [2.21] -- 2020-07-31
 

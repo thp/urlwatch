@@ -60,6 +60,7 @@ class UrlwatchCommand:
                 shutil.copy(self.urlwatch_config.hooks, hooks_edit)
             elif self.urlwatch_config.hooks_py_example is not None and os.path.exists(
                     self.urlwatch_config.hooks_py_example):
+                os.makedirs(os.path.dirname(hooks_edit) or '.', exist_ok=True)
                 shutil.copy(self.urlwatch_config.hooks_py_example, hooks_edit)
             edit_file(hooks_edit)
             import_module_from_source('hooks', hooks_edit)
