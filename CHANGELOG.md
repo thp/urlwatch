@@ -28,6 +28,9 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - When a config, urls file or hooks file does not exist and should be
   edited or inited, its parent folders will be created (previously
   only the urlwatch configuration folder was created; Fixes #594)
+- Auto-matched filters now always get `None` supplied as subfilter;
+  any custom filters must accept a `subfilter` parameter after the
+  existing `data` parameter
 
 ## [2.21] -- 2020-07-31
 

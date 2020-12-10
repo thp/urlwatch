@@ -217,7 +217,10 @@ class LegacyHooksPyFilter(FilterBase):
     def match(self):
         return self.hooks is not None
 
-    def filter(self, data):
+    def filter(self, data, subfilter):
+        if subfilter is not None:
+            logger.warning('Legacy hooks filter does not have any subfilter -- ignored')
+
         try:
             result = self.hooks.filter(self.job.get_location(), data)
             if result is None:
