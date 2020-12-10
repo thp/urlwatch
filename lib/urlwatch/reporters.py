@@ -679,7 +679,7 @@ class DiscordReporter(TextReporter):
         return result
 
     def submit_to_discord(self, webhook_url, text):
-        if 'embed' in self.config and self.config['embed']:
+        if self.config.get('embed', False):
             filtered_job_states = list(self.report.get_filtered_job_states(self.job_states))
 
             subject_args = {
@@ -689,14 +689,13 @@ class DiscordReporter(TextReporter):
 
             subject = self.config['subject'].format(**subject_args)
 
-            post_data = {"content": subject,
-                         "embeds": [
-                             {
-                                 "type": "rich",
-                                 "description": text
-                             }
-                         ]
-                         }
+            post_data = {
+                'content': subject,
+                'embeds': [{
+                    'type': 'rich',
+                    'description': text,
+                }]
+            }
         else:
             post_data = {"content": text}
 
@@ -704,7 +703,7 @@ class DiscordReporter(TextReporter):
 
         result = requests.post(webhook_url, json=post_data)
         try:
-            if result.status_code == requests.codes.ok or result.status_code == requests.codes.no_content:
+            if result.status_code in (requests.codes.ok, requests.codes.no_content):
                 logger.info("Discord response: ok")
             else:
                 logger.error("Discord error: {0}".format(result.text))

@@ -129,6 +129,8 @@ DEFAULT_CONFIG = {
         },
         'discord': {
             'enabled': False,
+            'embed': False,
+            'subject': '{count} changes: {jobs}',
             'webhook_url': '',
             'max_message_length': 2000,
         },
