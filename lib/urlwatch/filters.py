@@ -46,6 +46,39 @@ from lxml.cssselect import CSSSelector
 
 from .util import TrackSubClasses, import_module_from_source
 
+from .html2txt import html2text
+from .ical2txt import ical2text
+
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
+
+try:
+    import jsbeautifier
+except ImportError:
+    jsbeautifier = None
+
+try:
+    import cssbeautifier
+except ImportError:
+    cssbeautifier = None
+
+try:
+    import pdftotext
+except ImportError:
+    pdftotext = None
+
+try:
+    import pytesseract
+except ImportError:
+    pytesseract = None
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -239,14 +272,10 @@ class BeautifyFilter(FilterBase):
     __no_subfilter__ = True
 
     def filter(self, data, subfilter):
-        from bs4 import BeautifulSoup as bs
-        soup = bs(data, features="lxml")
+        if BeautifulSoup is None:
+            raise ImportError('Please install BeautifulSoup')
 
-        try:
-            import jsbeautifier
-        except ImportError:
-            logger.info('"jsbeautifier" is not installed, will not beautify <script> tags')
-            jsbeautifier = None
+        soup = BeautifulSoup(data, features="lxml")
 
         if jsbeautifier is not None:
             scripts = soup.find_all('script')
@@ -254,12 +283,8 @@ class BeautifyFilter(FilterBase):
                 if script.string is not None:
                     beautified_js = jsbeautifier.beautify(script.string)
                     script.string = beautified_js
-
-        try:
-            import cssbeautifier
-        except ImportError:
-            logger.info('"cssbeautifier" is not installed, will not beautify <style> tags')
-            cssbeautifier = None
+        else:
+            logger.info('"jsbeautifier" is not installed, will not beautify <script> tags')
 
         if cssbeautifier is not None:
             styles = soup.find_all('style')
@@ -267,6 +292,8 @@ class BeautifyFilter(FilterBase):
                 if style.string is not None:
                     beautified_css = cssbeautifier.beautify(style.string)
                     style.string = beautified_css
+        else:
+            logger.info('"cssbeautifier" is not installed, will not beautify <style> tags')
 
         return soup.prettify()
 
@@ -292,7 +319,6 @@ class Html2TextFilter(FilterBase):
             method = 're'
             options = {}
 
-        from .html2txt import html2text
         return html2text(data, baseurl=getattr(self.job, 'url', getattr(self.job, 'navigate', '')),
                          method=method, options=options)
 
@@ -316,7 +342,9 @@ class Pdf2TextFilter(FilterBase):
         if not isinstance(data, bytes):
             raise ValueError('The pdf2text filter needs bytes input (is it the first filter?)')
 
-        import pdftotext
+        if pdftotext is None:
+            raise ImportError('Please install pdftotext')
+
         return '\n\n'.join(pdftotext.PDF(io.BytesIO(data), password=subfilter.get('password', '')))
 
 
@@ -328,7 +356,6 @@ class Ical2TextFilter(FilterBase):
     __no_subfilter__ = True
 
     def filter(self, data, subfilter):
-        from .ical2txt import ical2text
         return ical2text(data)
 
 
@@ -821,6 +848,10 @@ class OCRFilter(FilterBase):
         language = subfilter.get('language', None)
         timeout = int(subfilter.get('timeout', 10))
 
-        import pytesseract
-        from PIL import Image
+        if pytesseract is None:
+            raise ImportError('Please install pytesseract')
+
+        if Image is None:
+            raise ImportError('Please install Pillow/PIL')
+
         return pytesseract.image_to_string(Image.open(io.BytesIO(data)), lang=language, timeout=timeout)

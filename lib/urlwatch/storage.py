@@ -50,6 +50,11 @@ try:
 except ImportError:
     redis = None
 
+try:
+    import pwd
+except ImportError:
+    pwd = None
+
 from .util import atomic_rename, edit_file
 from .jobs import JobBase, UrlJob, ShellJob
 from .filters import FilterBase
@@ -191,7 +196,6 @@ def get_current_user():
         # If there is no controlling terminal, because urlwatch is launched by
         # cron, or by a systemd.service for example, os.getlogin() fails with:
         # OSError: [Errno 25] Inappropriate ioctl for device
-        import pwd
         return pwd.getpwuid(os.getuid()).pw_name
 
 

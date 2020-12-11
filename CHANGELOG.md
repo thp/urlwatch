@@ -36,6 +36,13 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
   any custom filters must accept a `subfilter` parameter after the
   existing `data` parameter
 
+## Fixed
+
+- Make imports thread-safe: This might increase startup times a bit,
+  as dependencies are imported on bootup instead of when first used.
+  Importing in Python is not (yet) thread-safe, so we cannot import
+  new modules from the worker threads reliably (Fixes #559, #601)
+
 ## [2.21] -- 2020-07-31
 
 ### Added

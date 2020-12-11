@@ -67,6 +67,11 @@ try:
 except ImportError:
     Markdown = None
 
+try:
+    from colorama import AnsiToWin32
+except ImportError:
+    AnsiToWin32 = None
+
 logger = logging.getLogger(__name__)
 
 # Regular expressions that match the added/removed markers of GNU wdiff output
@@ -340,8 +345,7 @@ class StdoutReporter(TextReporter):
         return self._incolor(4, s)
 
     def _get_print(self):
-        if sys.platform == 'win32' and self._has_color:
-            from colorama import AnsiToWin32
+        if sys.platform == 'win32' and self._has_color and AnsiToWin32 is not None:
             return functools.partial(print, file=AnsiToWin32(sys.stdout).stream)
         return print
 
