@@ -47,6 +47,7 @@ At the moment, the following reporters are built-in:
 - **email**: Send summary via e-mail / SMTP
 - **mailgun**: Send e-mail via the Mailgun service
 - **matrix**: Send a message to a room using the Matrix protocol
+- **mattermost**: Send a message to a Mattermost channel
 - **pushbullet**: Send summary via pushbullet.com
 - **pushover**: Send summary via pushover.net
 - **slack**: Send a message to a Slack channel
@@ -142,6 +143,21 @@ is a sample configuration:
 To set up Slack, from you Slack Team, create a new app and activate
 “Incoming Webhooks” on a channel, you’ll get a webhook URL, copy it into
 the configuration as seen above.
+
+Mattermost
+----------
+
+Mattermost notifications are set up the same way as Slack notifications,
+the webhook URL is different:
+
+.. code:: yaml
+
+   mattermost:
+     webhook_url: 'http://{your-mattermost-site}/hooks/XXXXXXXXXXXXXXXXXXXXXX'
+     enabled: true
+
+See `Incoming Webooks <https://developers.mattermost.com/integrate/incoming-webhooks/>`__
+in the Mattermost documentation for details.
 
 Discord
 -----

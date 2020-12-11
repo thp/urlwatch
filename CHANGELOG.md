@@ -14,7 +14,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
   key that can be set, and will treat newly-found pages as changed,
   and display a diff from the empty string (useful for `diff_tool`
   or `diff_filter` with side effects)
-- New reporter: `discord`
+- New reporters: `discord`, `mattermost`
 - New key `user_visible_url` for URL jobs that can be used to show
   a different URL in reports (useful if the watched URL is a REST API
   endpoint, but the report should link to the corresponding web page)

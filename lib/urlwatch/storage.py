@@ -132,6 +132,11 @@ DEFAULT_CONFIG = {
             'webhook_url': '',
             'max_message_length': 40000,
         },
+        'mattermost': {
+            'enabled': False,
+            'webhook_url': '',
+            'max_message_length': 40000,
+        },
         'discord': {
             'enabled': False,
             'embed': False,
