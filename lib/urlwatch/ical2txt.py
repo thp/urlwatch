@@ -33,6 +33,7 @@ try:
 except ImportError:
     vobject = None
 
+
 def ical2text(ical_string):
     if vobject is None:
         raise ImportError('Please install vobject')
