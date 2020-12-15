@@ -4,6 +4,40 @@ Deprecated Features
 This page lists the features that are deprecated and steps to
 update your configuration to use the replacements (if any).
 
+
+Filters without subfilters (UNRELEASED)
+---------------------------------------
+
+In older urlwatch versions, it was possible to write custom
+filters that do not take a ``subfilter`` as argument.
+
+If you have written your own filter code like this:
+
+.. code:: python
+
+   class CustomFilter(filters.FilterBase):
+       """My old custom filter"""
+
+       __kind__ = 'foo'
+
+       def filter(self, data):
+           ...
+
+You have to update your filter to take an optional subfilter
+argument (if the filter configuration does not have a subfilter
+defined, the value of ``subfilter`` will be ``None``):
+
+.. code:: python
+
+   class CustomFilter(filters.FilterBase):
+       """My new custom filter"""
+
+       __kind__ = 'foo'
+
+       def filter(self, data, subfilter):
+           ...
+
+
 string-based filter definitions (since 2.19)
 --------------------------------------------
 

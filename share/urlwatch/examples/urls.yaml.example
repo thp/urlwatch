@@ -38,7 +38,9 @@ method: "PURGE"
 ---
 # You can do POST requests by providing data parameter.
 # POST data can be a URL-encoded string (see last example) or a dict.
-url: "http://example.com/search.cgi"
+# If you are using the URL multiple times, you need to append "#something" for
+# each different job, so that the URL string still uniquely identifies the job
+url: "http://example.com/search.cgi#alternative"
 data:
   button: Search
   q: something

@@ -74,6 +74,7 @@ If you have more than one job, per `YAML specifications <https://yaml.org/spec/>
 - ``email`` (using SMTP)
 - email using ``mailgun``
 - ``slack``
+- ``discord``
 - ``pushbullet``
 - ``telegram``
 - ``matrix``

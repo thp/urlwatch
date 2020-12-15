@@ -180,7 +180,7 @@ class JobBase(object, metaclass=TrackSubClasses):
 
 class Job(JobBase):
     __required__ = ()
-    __optional__ = ('name', 'filter', 'max_tries', 'diff_tool', 'compared_versions', 'diff_filter')
+    __optional__ = ('name', 'filter', 'max_tries', 'diff_tool', 'compared_versions', 'diff_filter', 'treat_new_as_changed')
 
     # determine if hyperlink "a" tag is used in HtmlReporter
     LOCATION_IS_URL = False
@@ -221,13 +221,13 @@ class UrlJob(Job):
     __required__ = ('url',)
     __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
                     'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding', 'timeout',
-                    'ignore_timeout_errors', 'ignore_too_many_redirects')
+                    'ignore_timeout_errors', 'ignore_too_many_redirects', 'user_visible_url')
 
     LOCATION_IS_URL = True
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
     def get_location(self):
-        return self.url
+        return self.user_visible_url or self.url
 
     def retrieve(self, job_state):
         headers = {
@@ -364,6 +364,8 @@ class BrowserJob(Job):
 
     __required__ = ('navigate',)
 
+    __optional__ = ('wait_until',)
+
     LOCATION_IS_URL = True
 
     def get_location(self):
@@ -377,4 +379,4 @@ class BrowserJob(Job):
         self.ctx.close()
 
     def retrieve(self, job_state):
-        return self.ctx.process(self.navigate)
+        return self.ctx.process(self.navigate, wait_until=self.wait_until)

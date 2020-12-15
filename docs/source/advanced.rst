@@ -258,3 +258,57 @@ a frontend (with GUI) to ``urlwatch``. The tool can be used to
 select a region of a web page. It then generates a configuration
 for ``urlwatch`` to run ``pyvisualcompare`` and generate a hash
 for the screen contents.
+
+
+Configuring how long browser jobs wait for pages to load
+--------------------------------------------------------
+
+For browser jobs, you can configure how long the headless browser will wait
+before a page is considered loaded by using the `wait_until` option. It can take one of four values:
+
+  - `load` will wait until the `load` browser event is fired (default).
+  - `documentloaded` will wait until the `DOMContentLoaded` browser event is fired.
+  - `networkidle0` will wait until there are no more than 0 network connections for at least 500 ms.
+  - `networkidle2` will wait until there are no more than 2 network connections for at least 500 ms.
+
+
+Treating ``NEW`` jobs as ``CHANGED``
+------------------------------------
+
+In some cases (e.g. when the ``diff_tool`` or ``diff_filter`` executes some
+external command as a side effect that should also run for the initial page
+state), you can set the ``treat_new_as_changed`` to ``true``, which will make
+the job report as ``CHANGED`` instead of ``NEW`` the first time it is retrieved
+(and the diff will be reported, too).
+
+.. code-block:: yaml
+
+   url: http://example.com/initialpage.html
+   treat_new_as_changed: true
+
+This option will also change the behavior of ``--test-diff-filter``, and allow
+testing the diff filter if only a single version of the page has been
+retrieved.
+
+
+Monitoring the same URL in multiple jobs
+----------------------------------------
+
+Because urlwatch uses the ``url``/``navigate`` (for URL/Browser jobs) and/or
+the ``command`` (for Shell jobs) key as unique identifier, each URL can only
+appear in a single job. If you want to monitor the same URL multiple times,
+you can append ``#1``, ``#2``, ... (or anything that makes them unique) to
+the URLs, like this:
+
+.. code-block:: yaml
+
+    name: "Looking for Thing A"
+    url: http://example.com/#1
+    filter:
+      - grep: "Thing A"
+    ---
+    name: "Looking for Thing B"
+    url: http://example.com/#2
+    filter:
+      - grep: "Thing B"
+

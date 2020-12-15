@@ -8,6 +8,16 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ### Added
 
+- Added 'wait_until' option to browser jobs to configure how long
+  the headless browser will wait for pages to load.
+- Jobs now have an optional `treat_new_as_changed` (default `false`)
+  key that can be set, and will treat newly-found pages as changed,
+  and display a diff from the empty string (useful for `diff_tool`
+  or `diff_filter` with side effects)
+- New reporters: `discord`, `mattermost`
+- New key `user_visible_url` for URL jobs that can be used to show
+  a different URL in reports (useful if the watched URL is a REST API
+  endpoint, but the report should link to the corresponding web page)
 - The Markdown reporter now supports limiting the report length via the
   `max_length` parameter of the `submit` method. The length limiting logic is
   smart in the sense that it will try trimming the details first, followed by
@@ -20,6 +30,24 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Diff output is now generated more uniformly, independent of whether
   the input data has a trailing newline or not; if this behavior is not
   intended, use an external `diff_tool` (PR#550, by Adam Goldsmith)
+- The `--test-diff-filter` output now properly reports timestamps from
+  the history entry instead of the current date and time (Fixes #573)
+- Unique GUIDs for jobs are now enforced at load time, append "#1",
+  "#2", ... to the URLs to make them unique if you have multiple
+  different jobs that share the same request URL (Fixes #586)
+- When a config, urls file or hooks file does not exist and should be
+  edited or inited, its parent folders will be created (previously
+  only the urlwatch configuration folder was created; Fixes #594)
+- Auto-matched filters now always get `None` supplied as subfilter;
+  any custom filters must accept a `subfilter` parameter after the
+  existing `data` parameter
+
+## Fixed
+
+- Make imports thread-safe: This might increase startup times a bit,
+  as dependencies are imported on bootup instead of when first used.
+  Importing in Python is not (yet) thread-safe, so we cannot import
+  new modules from the worker threads reliably (Fixes #559, #601)
 
 - The Matrix reporter was improved in several ways (PR#572, by Denis Kasak):
 

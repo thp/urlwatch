@@ -67,6 +67,11 @@ try:
 except ImportError:
     Markdown = None
 
+try:
+    from colorama import AnsiToWin32
+except ImportError:
+    AnsiToWin32 = None
+
 logger = logging.getLogger(__name__)
 
 # Regular expressions that match the added/removed markers of GNU wdiff output
@@ -203,7 +208,11 @@ class HtmlReporter(ReporterBase):
             elif line.startswith('-'):
                 yield SafeHtml('<span class="unified_sub">{line}</span>').format(line=line)
             else:
-                yield SafeHtml('<span class="unified_nor">{line}</span>').format(line=line)
+                # Basic colorization for wdiff-style differences
+                line = SafeHtml('<span class="unified_nor">{line}</span>').format(line=line)
+                line = re.sub(WDIFF_ADDED_RE, lambda x: '<span class="diff_add">' + x.group(0) + '</span>', line)
+                line = re.sub(WDIFF_REMOVED_RE, lambda x: '<span class="diff_sub">' + x.group(0) + '</span>', line)
+                yield line
 
     def _format_content(self, job_state, difftype):
         if job_state.verb == 'error':
@@ -336,8 +345,7 @@ class StdoutReporter(TextReporter):
         return self._incolor(4, s)
 
     def _get_print(self):
-        if sys.platform == 'win32' and self._has_color:
-            from colorama import AnsiToWin32
+        if sys.platform == 'win32' and self._has_color and AnsiToWin32 is not None:
             return functools.partial(print, file=AnsiToWin32(sys.stdout).stream)
         return print
 
@@ -610,39 +618,108 @@ class TelegramReporter(TextReporter):
 
 class SlackReporter(TextReporter):
     """Send a message to a Slack channel"""
-    MAX_LENGTH = 40000
 
     __kind__ = 'slack'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.max_length = self.config.get('max_message_length', 40000)
 
     def submit(self):
         webhook_url = self.config['webhook_url']
         text = '\n'.join(super().submit())
 
         if not text:
-            logger.debug('Not calling slack API (no changes)')
+            logger.debug('Not calling {} API (no changes)'.format(self.__kind__))
             return
 
         result = None
-        for chunk in chunkstring(text, self.MAX_LENGTH, numbering=True):
-            res = self.submit_to_slack(webhook_url, chunk)
+        for chunk in chunkstring(text, self.max_length, numbering=True):
+            res = self.submit_chunk(webhook_url, chunk)
             if res.status_code != requests.codes.ok or res is None:
                 result = res
 
         return result
 
-    def submit_to_slack(self, webhook_url, text):
-        logger.debug("Sending slack request with text:{0}".format(text))
+    def submit_chunk(self, webhook_url, text):
+        logger.debug("Sending {} request with text: {}".format(self.__kind__, text))
         post_data = {"text": text}
         result = requests.post(webhook_url, json=post_data)
         try:
             if result.status_code == requests.codes.ok:
-                logger.info("Slack response: ok")
+                logger.info("{} response: ok".format(self.__kind__))
             else:
-                logger.error("Slack error: {0}".format(result.text))
+                logger.error("{} error: {}".format(self.__kind__, result.text))
         except ValueError:
             logger.error(
-                "Failed to parse slack response. HTTP status code: {0}, content: {1}".format(result.status_code,
-                                                                                             result.content))
+                "Failed to parse {} response. HTTP status code: {}, content: {}".format(self.__kind__,
+                                                                                        result.status_code,
+                                                                                        result.content))
+        return result
+
+
+class MattermostReporter(SlackReporter):
+    """Send a message to a Mattermost channel"""
+
+    __kind__ = 'mattermost'
+
+
+class DiscordReporter(TextReporter):
+    """Send a message to a Discord channel"""
+
+    __kind__ = 'discord'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.max_length = self.config.get('max_message_length', 2000)
+
+    def submit(self):
+        webhook_url = self.config['webhook_url']
+        text = '\n'.join(super().submit())
+
+        if not text:
+            logger.debug('Not calling Discord API (no changes)')
+            return
+
+        result = None
+        for chunk in chunkstring(text, self.max_length, numbering=True):
+            res = self.submit_to_discord(webhook_url, chunk)
+            if res.status_code != requests.codes.ok or res is None:
+                result = res
+
+        return result
+
+    def submit_to_discord(self, webhook_url, text):
+        if self.config.get('embed', False):
+            filtered_job_states = list(self.report.get_filtered_job_states(self.job_states))
+
+            subject_args = {
+                'count': len(filtered_job_states),
+                'jobs': ', '.join(job_state.job.pretty_name() for job_state in filtered_job_states),
+            }
+
+            subject = self.config['subject'].format(**subject_args)
+
+            post_data = {
+                'content': subject,
+                'embeds': [{
+                    'type': 'rich',
+                    'description': text,
+                }]
+            }
+        else:
+            post_data = {"content": text}
+
+        logger.debug("Sending Discord request with post_data: {0}".format(post_data))
+
+        result = requests.post(webhook_url, json=post_data)
+        try:
+            if result.status_code in (requests.codes.ok, requests.codes.no_content):
+                logger.info("Discord response: ok")
+            else:
+                logger.error("Discord error: {0}".format(result.text))
+        except ValueError:
+            logger.error("Failed to parse Discord response. HTTP status code: {0}, content: {1}".format(result.status_code, result.content))
         return result
 
 

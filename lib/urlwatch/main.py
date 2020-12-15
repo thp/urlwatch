@@ -69,8 +69,6 @@ class Urlwatch(object):
             self.urlwatch_config.migrate_cache(self)
 
     def check_directories(self):
-        if not os.path.isdir(self.urlwatch_config.urlwatch_dir):
-            os.makedirs(self.urlwatch_config.urlwatch_dir)
         if not os.path.exists(self.urlwatch_config.config):
             self.config_storage.write_default_config(self.urlwatch_config.config)
             print("""

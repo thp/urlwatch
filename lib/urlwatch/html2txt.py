@@ -35,6 +35,16 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+try:
+    import html2text as pyhtml2text
+except ImportError:
+    pyhtml2text = None
+
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
+
 
 def html2text(data, baseurl, method, options):
     """
@@ -59,8 +69,10 @@ def html2text(data, baseurl, method, options):
         return d
 
     if method == 'pyhtml2text':
-        import html2text
-        parser = html2text.HTML2Text()
+        if pyhtml2text is None:
+            raise ImportError('Please install pyhtml2text')
+
+        parser = pyhtml2text.HTML2Text()
         parser.baseurl = baseurl
         for k, v in options.items():
             setattr(parser, k.lower(), v)
@@ -68,7 +80,8 @@ def html2text(data, baseurl, method, options):
         return d
 
     if method == 'bs4':
-        from bs4 import BeautifulSoup
+        if BeautifulSoup is None:
+            raise ImportError('Please install BeautifulSoup')
         parser = options.pop('parser', 'lxml')
         soup = BeautifulSoup(data, parser)
         d = soup.get_text(strip=True)

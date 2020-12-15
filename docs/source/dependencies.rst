@@ -52,8 +52,8 @@ Where ``<packagename>`` is one of the following:
 +-------------------------+---------------------------------------------------------------------+
 | Unit testing            | `pycodestyle <http://pycodestyle.pycqa.org/en/latest/>`__,          |
 |                         | `docutils <https://docutils.sourceforge.io>`__,                     |
-|                         | `Pygments <https://pygments.org>`__ and                             |
-|                         | dependencies for other features as needed                           |
++-------------------------+---------------------------------------------------------------------+
+| Documentation build     | `Sphinx <https://www.sphinx-doc.org/>`__                            |
 +-------------------------+---------------------------------------------------------------------+
 | `beautify` filter       | `beautifulsoup4 <https://pypi.org/project/beautifulsoup4/>`__;      |
 |                         | optional dependencies (for ``<script>`` and ``<style>`` tags):      |

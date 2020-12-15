@@ -32,6 +32,7 @@ import os
 import stat
 import copy
 import platform
+import collections
 from abc import ABCMeta, abstractmethod
 
 import shutil
@@ -48,6 +49,11 @@ try:
     import redis
 except ImportError:
     redis = None
+
+try:
+    import pwd
+except ImportError:
+    pwd = None
 
 from .util import atomic_rename, edit_file
 from .jobs import JobBase, UrlJob, ShellJob
@@ -124,6 +130,19 @@ DEFAULT_CONFIG = {
         'slack': {
             'enabled': False,
             'webhook_url': '',
+            'max_message_length': 40000,
+        },
+        'mattermost': {
+            'enabled': False,
+            'webhook_url': '',
+            'max_message_length': 40000,
+        },
+        'discord': {
+            'enabled': False,
+            'embed': False,
+            'subject': '{count} changes: {jobs}',
+            'webhook_url': '',
+            'max_message_length': 2000,
         },
         'matrix': {
             'enabled': False,
@@ -182,7 +201,6 @@ def get_current_user():
         # If there is no controlling terminal, because urlwatch is launched by
         # cron, or by a systemd.service for example, os.getlogin() fails with:
         # OSError: [Errno 25] Inappropriate ioctl for device
-        import pwd
         return pwd.getpwuid(os.getuid()).pw_name
 
 
@@ -219,6 +237,7 @@ class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
         if os.path.exists(self.filename):
             shutil.copy(self.filename, file_edit)
         elif example_file is not None and os.path.exists(example_file):
+            os.makedirs(os.path.dirname(file_edit) or '.', exist_ok=True)
             shutil.copy(example_file, file_edit)
 
         while True:
@@ -249,6 +268,7 @@ class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
 
     @classmethod
     def write_default_config(cls, filename):
+        os.makedirs(os.path.dirname(filename) or '.', exist_ok=True)
         config_storage = cls(None)
         config_storage.filename = filename
         config_storage.save()
@@ -349,14 +369,31 @@ class YamlConfigStorage(BaseYamlFileStorage):
 
 
 class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
+    @classmethod
+    def _parse(cls, fp):
+        jobs = [JobBase.unserialize(job) for job in yaml.load_all(fp, Loader=yaml.SafeLoader)
+                if job is not None]
+        jobs_by_guid = collections.defaultdict(list)
+        for job in jobs:
+            jobs_by_guid[job.get_guid()].append(job)
+
+        conflicting_jobs = []
+        for guid, guid_jobs in jobs_by_guid.items():
+            if len(guid_jobs) != 1:
+                conflicting_jobs.append(guid_jobs[0].get_location())
+
+        if conflicting_jobs:
+            raise ValueError('\n   '.join(['Each job must have a unique URL, append #1, #2, ... to make them unique:']
+                                          + conflicting_jobs))
+
+        return jobs
 
     @classmethod
     def parse(cls, *args):
         filename = args[0]
         if filename is not None and os.path.exists(filename):
             with open(filename) as fp:
-                return [JobBase.unserialize(job) for job in yaml.load_all(fp, Loader=yaml.SafeLoader)
-                        if job is not None]
+                return cls._parse(fp)
 
     def save(self, *args):
         jobs = args[0]
@@ -367,7 +404,7 @@ class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
 
     def load(self, *args):
         with open(self.filename) as fp:
-            return [JobBase.unserialize(job) for job in yaml.load_all(fp, Loader=yaml.SafeLoader) if job is not None]
+            return self._parse(fp)
 
 
 class UrlsTxt(BaseTxtFileStorage, UrlsBaseFileStorage):

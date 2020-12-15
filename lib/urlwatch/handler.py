@@ -55,6 +55,7 @@ class JobState(object):
         self.new_data = None
         self.history_data = {}
         self.timestamp = None
+        self.current_timestamp = None
         self.exception = None
         self.traceback = None
         self.tries = 0
@@ -103,6 +104,12 @@ class JobState(object):
         try:
             try:
                 self.load()
+
+                if self.old_data is None and getattr(self.job, 'treat_new_as_changed', False):
+                    # Force creation of a diff for "NEW"ly found items by pretending we had an empty page before
+                    self.old_data = ''
+                    self.timestamp = None
+
                 data = self.job.retrieve(self)
 
                 # Apply automatic filters first
@@ -160,7 +167,7 @@ class JobState(object):
                     raise subprocess.CalledProcessError(proc.returncode, cmdline)
 
         timestamp_old = email.utils.formatdate(self.timestamp, localtime=True)
-        timestamp_new = email.utils.formatdate(time.time(), localtime=True)
+        timestamp_new = email.utils.formatdate(self.current_timestamp or time.time(), localtime=True)
         return '\n'.join(difflib.unified_diff(self.old_data.splitlines(),
                                               self.new_data.splitlines(),
                                               '@', '@', timestamp_old, timestamp_new, lineterm=''))

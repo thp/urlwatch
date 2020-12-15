@@ -3,7 +3,7 @@
 Jobs
 ====
 
-Jobs are the kind of things that `urlwatch` can monitor. 
+Jobs are the kind of things that `urlwatch` can monitor.
 
 The list of jobs to run are contained in the configuration file ``urls.yaml``,
 accessed with the command ``urlwatch --edit``, each separated by a line
@@ -46,6 +46,7 @@ Job-specific optional keys:
 - ``ignore_http_error_codes``: List of HTTP errors to ignore (see :ref:`advanced_topics`)
 - ``ignore_timeout_errors``: Do not report errors when the timeout is hit
 - ``ignore_too_many_redirects``: Ignore redirect loops (see :ref:`advanced_topics`)
+- ``user_visible_url``: Different URL to show in reports (e.g. when watched URL is a REST API URL, and you want to show a webpage)
 
 (Note: ``url`` implies ``kind: url``)
 
@@ -80,7 +81,8 @@ Required keys:
 
 Job-specific optional keys:
 
-- none
+- ``wait_until``:  Either ``load``, ``domcontentloaded``, ``networkidle0``, or ``networkidle2`` (see :ref:`advanced_topics`)
+
 
 As this job uses `Pyppeteer <https://github.com/pyppeteer/pyppeteer>`__
 to render the page in a headless Chromium instance, it requires massively
@@ -125,6 +127,7 @@ Optional keys for all job types
 - ``max_tries``: Number of times to retry fetching the resource
 - ``diff_tool``: Command to a custom tool for generating diff text
 - ``diff_filter``: :ref:`filters` (if any) to apply to the diff result (can be tested with ``--test-diff-filter``)
+- ``treat_new_as_changed``: Will treat jobs that don't have any historic data as ``CHANGED`` instead of ``NEW`` (and create a diff for new jobs)
 - ``compared_versions``: Number of versions to compare for similarity
 - ``kind`` (redundant): Either ``url``, ``shell`` or ``browser``.  Automatically derived from the unique key (``url``, ``command`` or ``navigate``) of the job type
 

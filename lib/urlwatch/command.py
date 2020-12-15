@@ -60,6 +60,7 @@ class UrlwatchCommand:
                 shutil.copy(self.urlwatch_config.hooks, hooks_edit)
             elif self.urlwatch_config.hooks_py_example is not None and os.path.exists(
                     self.urlwatch_config.hooks_py_example):
+                os.makedirs(os.path.dirname(hooks_edit) or '.', exist_ok=True)
                 shutil.copy(self.urlwatch_config.hooks_py_example, hooks_edit)
             edit_file(hooks_edit)
             import_module_from_source('hooks', hooks_edit)
@@ -144,7 +145,12 @@ class UrlwatchCommand:
         job = self._get_job(id)
 
         history_data = self.urlwatcher.cache_storage.get_history_data(job.get_guid(), 10)
-        history_data = [key for key, value in sorted(history_data.items(), key=lambda kv: kv[1])]
+        history_data = sorted(history_data.items(), key=lambda kv: kv[1])
+
+        if len(history_data) and getattr(job, 'treat_new_as_changed', False):
+            # Insert empty history entry, so first snapshot is diffed against the empty string
+            _, first_timestamp = history_data[0]
+            history_data.insert(0, ('', first_timestamp))
 
         if len(history_data) < 2:
             print('Not enough historic data available (need at least 2 different snapshots)')
@@ -152,8 +158,8 @@ class UrlwatchCommand:
 
         for i in range(len(history_data) - 1):
             with JobState(self.urlwatcher.cache_storage, job) as job_state:
-                job_state.old_data = history_data[i]
-                job_state.new_data = history_data[i + 1]
+                job_state.old_data, job_state.timestamp = history_data[i]
+                job_state.new_data, job_state.current_timestamp = history_data[i + 1]
                 print('=== Filtered diff between state {} and state {} ==='.format(i, i + 1))
                 print(job_state.get_diff())
 

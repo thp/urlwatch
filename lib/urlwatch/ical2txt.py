@@ -28,8 +28,16 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-def ical2text(ical_string):
+try:
     import vobject
+except ImportError:
+    vobject = None
+
+
+def ical2text(ical_string):
+    if vobject is None:
+        raise ImportError('Please install vobject')
+
     result = []
     if isinstance(ical_string, str):
         parsedCal = vobject.readOne(ical_string)
