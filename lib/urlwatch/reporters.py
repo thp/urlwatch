@@ -702,8 +702,8 @@ class MarkdownReporter(ReporterBase):
         if summary and show_footer:
             yield from footer
 
-    @staticmethod
-    def _render(max_length, summary=None, details=None, footer=None):
+    @classmethod
+    def _render(cls, max_length, summary=None, details=None, footer=None):
         """Render the report components, trimming them if the available length is insufficient.
 
         Returns a tuple (trimmed, summary, details, footer).
@@ -760,7 +760,7 @@ class MarkdownReporter(ReporterBase):
                         # Calculate the available length for the body and render it
                         avail_length = body_len_per_details - 1
 
-                        body_trimmed, body = MarkdownReporter._format_details_body(body, avail_length)
+                        body_trimmed, body = cls._format_details_body(body, avail_length)
 
                         if body_trimmed:
                             details_trimmed = True
