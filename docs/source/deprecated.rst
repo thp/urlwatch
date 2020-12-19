@@ -5,7 +5,7 @@ This page lists the features that are deprecated and steps to
 update your configuration to use the replacements (if any).
 
 
-Filters without subfilters (UNRELEASED)
+Filters without subfilters (since 2.22)
 ---------------------------------------
 
 In older urlwatch versions, it was possible to write custom
