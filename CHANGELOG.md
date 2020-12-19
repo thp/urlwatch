@@ -41,6 +41,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Auto-matched filters now always get `None` supplied as subfilter;
   any custom filters must accept a `subfilter` parameter after the
   existing `data` parameter
+- Drop support for Python 3.5
 
 ## Fixed
 

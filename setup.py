@@ -10,8 +10,8 @@ main_py = open(os.path.join('lib', 'urlwatch', '__init__.py')).read()
 m = dict(re.findall("\n__([a-z]+)__ = '([^']+)'", main_py))
 docs = re.findall('"""(.*?)"""', main_py, re.DOTALL)
 
-if sys.version_info < (3, 5):
-    sys.exit('urlwatch requires Python 3.5 or newer')
+if sys.version_info < (3, 6):
+    sys.exit('urlwatch requires Python 3.6 or newer')
 
 m['name'] = 'urlwatch'
 m['author'], m['author_email'] = re.match(r'(.*) <(.*)>', m['author']).groups()
@@ -22,7 +22,7 @@ if sys.platform == 'win32':
 m['entry_points'] = {"console_scripts": ["urlwatch=urlwatch.cli:main"]}
 m['package_dir'] = {'': 'lib'}
 m['packages'] = ['urlwatch']
-m['python_requires'] = '>=3.5'
+m['python_requires'] = '>=3.6'
 m['data_files'] = [
     ('share/man/man1', ['share/man/man1/urlwatch.1']),
     ('share/urlwatch/examples', [
