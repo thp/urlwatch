@@ -18,6 +18,12 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - New key `user_visible_url` for URL jobs that can be used to show
   a different URL in reports (useful if the watched URL is a REST API
   endpoint, but the report should link to the corresponding web page)
+- The Markdown reporter now supports limiting the report length via the
+  `max_length` parameter of the `submit` method. The length limiting logic is
+  smart in the sense that it will try trimming the details first, followed by
+  omitting them completely, followed by omitting the summary. If a part of the
+  report is omitted, a note about this is added to the report. (PR#572, by
+  Denis Kasak)
 
 ### Changed
 
@@ -42,6 +48,17 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
   as dependencies are imported on bootup instead of when first used.
   Importing in Python is not (yet) thread-safe, so we cannot import
   new modules from the worker threads reliably (Fixes #559, #601)
+
+- The Matrix reporter was improved in several ways (PR#572, by Denis Kasak):
+
+  - The maximum length of the report was increase from 4096 to 16384.
+  - The report length limiting is now implemented via the new length limiting
+    functionality of the Markdown reporter. Previously, the report was simply
+    trimmed at the end which could break the diff blocks and make them render
+    incorrectly.
+  - The diff code blocks are now tagged as diffs which will allow the diffs to
+    be syntax highlighted as such. This doesn't yet work in Element, pending on
+    the resolution of trentm/python-markdown2#370.
 
 ## [2.21] -- 2020-07-31
 

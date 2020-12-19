@@ -724,7 +724,7 @@ class DiscordReporter(TextReporter):
 
 
 class MarkdownReporter(ReporterBase):
-    def submit(self):
+    def submit(self, max_length=None):
         cfg = self.report.config['report']['markdown']
         show_details = cfg['details']
         show_footer = cfg['footer']
@@ -745,18 +745,144 @@ class MarkdownReporter(ReporterBase):
             summary.extend(summary_part)
             details.extend(details_part)
 
+        if summary and show_footer:
+            footer = ('--- ',
+                      '%s %s, %s  ' % (urlwatch.pkgname, urlwatch.__version__, urlwatch.__copyright__),
+                      'Website: %s  ' % (urlwatch.__url__,),
+                      'watched %d URLs in %d seconds' % (len(self.job_states), self.duration.seconds))
+        else:
+            footer = None
+
+        if not show_details:
+            details = None
+
+        trimmed_msg = "*Parts of the report were omitted due to message length.*\n"
+        max_length -= len(trimmed_msg)
+
+        trimmed, summary, details, footer = MarkdownReporter._render(
+            max_length, summary, details, footer
+        )
+
         if summary:
-            yield from ('%d. %s' % (idx + 1, line) for idx, line in enumerate(summary))
+            yield from summary
             yield ''
 
         if show_details:
-            yield from details
+            for header, body in details:
+                yield header
+                yield body
+                yield ''
+
+        if trimmed:
+            yield trimmed_msg
 
         if summary and show_footer:
-            yield from ('--- ',
-                        '%s %s, %s  ' % (urlwatch.pkgname, urlwatch.__version__, urlwatch.__copyright__),
-                        'Website: %s  ' % (urlwatch.__url__,),
-                        'watched %d URLs in %d seconds' % (len(self.job_states), self.duration.seconds))
+            yield from footer
+
+    @classmethod
+    def _render(cls, max_length, summary=None, details=None, footer=None):
+        """Render the report components, trimming them if the available length is insufficient.
+
+        Returns a tuple (trimmed, summary, details, footer).
+
+        The first element of the tuple indicates whether any part of the report
+        was omitted due to message length. The other elements are the
+        potentially trimmed report components.
+        """
+
+        # The footer/summary lengths are the sum of the length of their parts
+        # plus the space taken up by newlines.
+        if summary:
+            summary = ['%d. %s' % (idx + 1, line) for idx, line in enumerate(summary)]
+            summary_len = sum(len(part) for part in summary) + len(summary) - 1
+        else:
+            summary_len = 0
+
+        if footer:
+            footer_len = sum(len(part) for part in footer) + len(footer) - 1
+        else:
+            footer_len = 0
+
+        if max_length is None:
+            return (False, summary, details, footer)
+        else:
+            if summary_len > max_length:
+                return (True, [], [], "")
+            elif footer_len > max_length - summary_len:
+                return (True, summary, [], footer[:max_length - summary_len])
+            elif not details:
+                return (False, summary, [], footer)
+            else:
+                # Determine the space remaining after taking into account
+                # summary and footer.
+                remaining_len = max_length - summary_len - footer_len
+                headers_len = sum(len(header) for header, _ in details)
+
+                details_trimmed = False
+
+                # First ensure we can show all the headers.
+                if headers_len > remaining_len:
+                    return (True, summary, [], footer)
+                else:
+                    remaining_len -= headers_len
+
+                    # Calculate approximate available length per item, shared
+                    # equally between all details components.
+                    body_len_per_details = remaining_len // len(details)
+
+                    trimmed_details = []
+                    unprocessed = len(details)
+
+                    for header, body in details:
+                        # Calculate the available length for the body and render it
+                        avail_length = body_len_per_details - 1
+
+                        body_trimmed, body = cls._format_details_body(body, avail_length)
+
+                        if body_trimmed:
+                            details_trimmed = True
+
+                        if len(body) <= body_len_per_details:
+                            trimmed_details.append((header, body))
+                        else:
+                            trimmed_details.append((header, ""))
+
+                        # If the current item's body did not use all of its
+                        # allocated space, distribute the unused space into
+                        # subsequent items, unless we're at the last item
+                        # already.
+                        unused = body_len_per_details - len(body)
+                        remaining_len -= body_len_per_details
+                        remaining_len += unused
+                        unprocessed -= 1
+
+                        if unprocessed > 0:
+                            body_len_per_details = remaining_len // unprocessed
+
+                    return (details_trimmed, summary, trimmed_details, footer)
+
+    @staticmethod
+    def _format_details_body(s, max_length):
+        wrapper_length = len("```diff\n\n```")
+
+        # Message to print when the diff is too long.
+        trim_message = "*diff trimmed*"
+        trim_message_length = len(trim_message)
+
+        if max_length is None or len(s) + wrapper_length <= max_length:
+            return False, "```diff\n{}\n```".format(s)
+        else:
+            target_max_length = max_length - trim_message_length - wrapper_length
+            pos = s.rfind("\n", 0, target_max_length)
+
+            if pos == -1:
+                # Just a single long line, so cut it short.
+                s = s[0:target_max_length]
+            else:
+                # Multiple lines, cut off extra lines.
+                s = s[0:pos]
+
+            return True, "{}\n```diff\n{}\n```".format(trim_message, s)
 
     def _format_content(self, job_state):
         if job_state.verb == 'error':
@@ -785,17 +911,15 @@ class MarkdownReporter(ReporterBase):
 
         summary_part.append(pretty_summary)
 
-        details_part.append('### ' + summary)
         if content is not None:
-            details_part.extend(('', '```', content, '```', ''))
-        details_part.extend(('', ''))
+            details_part.append(('### ' + summary, content))
 
         return summary_part, details_part
 
 
 class MatrixReporter(MarkdownReporter):
     """Send a message to a room using the Matrix protocol"""
-    MAX_LENGTH = 4096
+    MAX_LENGTH = 16384
 
     __kind__ = 'matrix'
 
@@ -807,19 +931,16 @@ class MatrixReporter(MarkdownReporter):
         access_token = self.config['access_token']
         room_id = self.config['room_id']
 
-        body_markdown = '\n'.join(super().submit())
+        body_markdown = '\n'.join(super().submit(MatrixReporter.MAX_LENGTH))
 
         if not body_markdown:
             logger.debug('Not calling Matrix API (no changes)')
             return
 
-        if len(body_markdown) > self.MAX_LENGTH:
-            body_markdown = body_markdown[:self.MAX_LENGTH]
-
         client_api = matrix_client.api.MatrixHttpApi(homeserver_url, access_token)
 
         if Markdown is not None:
-            body_html = Markdown().convert(body_markdown)
+            body_html = Markdown(extras=["fenced-code-blocks", "highlightjs-lang"]).convert(body_markdown)
 
             client_api.send_message_event(
                 room_id,
