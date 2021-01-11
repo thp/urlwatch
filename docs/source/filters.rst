@@ -271,7 +271,7 @@ item.
 Filtering PDF documents
 -----------------------
 
-To monitor the text of a PDF file, you use the `pdf2text` filter. It requires 
+To monitor the text of a PDF file, you use the `pdf2text` filter. It requires
 the installation of the `pdftotext`_ library and any of its
 `OS-specific dependencies`_.
 
@@ -381,7 +381,7 @@ project for the latest release version, to be notified of new releases:
 
    url: https://github.com/thp/urlwatch/releases
    filter:
-     - xpath: '(//div[contains(@class,"release-timeline-tags")]//h4)[1]/a'
+     - xpath: '(//div[contains(@class,"release-header")]//a)[1]'
      - html2text: re
      - strip
 
