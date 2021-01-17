@@ -202,17 +202,14 @@ class HtmlReporter(ReporterBase):
                     url=urlwatch.__url__, count=len(self.job_states), duration=self.duration.seconds)
 
     def _diff_to_html(self, unified_diff):
-        for line in unified_diff.splitlines():
-            if line.startswith('+'):
-                yield SafeHtml('<span class="unified_add">{line}</span>').format(line=line)
-            elif line.startswith('-'):
-                yield SafeHtml('<span class="unified_sub">{line}</span>').format(line=line)
-            else:
-                # Basic colorization for wdiff-style differences
-                line = SafeHtml('<span class="unified_nor">{line}</span>').format(line=line)
-                line = re.sub(WDIFF_ADDED_RE, lambda x: '<span class="diff_add">' + x.group(0) + '</span>', line)
-                line = re.sub(WDIFF_REMOVED_RE, lambda x: '<span class="diff_sub">' + x.group(0) + '</span>', line)
-                yield line
+        result = unified_diff
+        diff_mapping = {'+': 'unified_add', '-': 'unified_sub'}
+
+        result = re.sub(r'^([-+]).*$', lambda x: '<span class="' + diff_mapping[x.group(1)] + '">' + x.group(0) + '</span>', result, flags=re.MULTILINE)
+        result = re.sub(WDIFF_ADDED_RE, lambda x: '<span class="diff_add">' + x.group(0) + '</span>', result, flags=re.MULTILINE + re.DOTALL)
+        result = re.sub(WDIFF_REMOVED_RE, lambda x: '<span class="diff_sub">' + x.group(0) + '</span>', result, flags=re.MULTILINE + re.DOTALL)
+
+        return str(SafeHtml('<span class="unified_nor">' + result + '</span>')).splitlines()
 
     def _format_content(self, job_state, difftype):
         if job_state.verb == 'error':
