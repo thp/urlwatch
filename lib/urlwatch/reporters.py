@@ -57,9 +57,9 @@ except ImportError:
     Pushbullet = None
 
 try:
-    import matrix_client.api
+    import nio
 except ImportError:
-    matrix_client = None
+    nio = None
 
 try:
     # markdown2 is an optional dependency which provides better formatting for Matrix.
@@ -942,8 +942,8 @@ class MatrixReporter(MarkdownReporter):
     __kind__ = 'matrix'
 
     def submit(self):
-        if matrix_client is None:
-            raise ImportError('Python module "matrix_client" not installed')
+        if nio is None:
+            raise ImportError('Python module "matrix-nio" not installed')
 
         homeserver_url = self.config['homeserver']
         access_token = self.config['access_token']
@@ -955,24 +955,28 @@ class MatrixReporter(MarkdownReporter):
             logger.debug('Not calling Matrix API (no changes)')
             return
 
-        client_api = matrix_client.api.MatrixHttpApi(homeserver_url, access_token)
-
+        content = {
+            "msgtype": "m.text",
+            "body": body_markdown,
+        }
         if Markdown is not None:
             body_html = Markdown(extras=["fenced-code-blocks", "highlightjs-lang"]).convert(body_markdown)
 
-            client_api.send_message_event(
-                room_id,
-                "m.room.message",
-                content={
-                    "msgtype": "m.text",
-                    "format": "org.matrix.custom.html",
-                    "body": body_markdown,
-                    "formatted_body": body_html
-                }
-            )
+            content["format"] = "org.matrix.custom.html"
+            content["formatted_body"] = body_html
         else:
             logger.debug('Not formatting as Markdown; dependency on markdown2 not met?')
-            client_api.send_message(room_id, body_markdown)
+
+        async def send():
+            client = nio.AsyncClient(homeserver_url)
+            client.access_token = access_token
+            try:
+                await client.room_send(room_id, message_type="m.room.message", content=content)
+            finally:
+                await client.close()
+
+        asyncio.run(send())
+
 
 
 class XMPPReporter(TextReporter):
