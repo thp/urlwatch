@@ -231,21 +231,13 @@ You can have notifications sent to you through the `Matrix protocol`_.
 To achieve this, you first need to register a Matrix account for the bot
 on any homeserver.
 
-You then need to acquire an access token and room ID, using the
-following instructions adapted from `this
-guide <https://t2bot.io/docs/access_tokens/>`__:
+You then need to acquire room ID, using the following instructions:
 
-1. Open `Riot.im <https://riot.im/app/>`__ in a private browsing window
-2. Register/Log in as your bot, using its user ID and password.
-3. Set the display name and avatar, if desired.
-4. In the settings page, select the "Help & About" tab, scroll down to the bottom and click Access
-   Token: <click to reveal>.
-5. Copy the highlighted text to your configuration.
-6. Join the room that you wish to send notifications to.
-7. Go to the Room Settings (gear icon) and copy the *Internal Room ID*
-   from the bottom.
-8. Close the private browsing window **but do not log out, as this
-   invalidates the Access Token**.
+#. Open `Riot.im <https://riot.im/app/>`__ in a private browsing window
+#. Register/Log in as your bot, using its user ID and password.
+#. Set the display name and avatar, if desired.
+#. Join the room that you wish to send notifications to.
+#. Go to the Room Settings (gear icon) and copy the *Internal Room ID* from the bottom.
 
 Here is a sample configuration:
 
@@ -253,11 +245,21 @@ Here is a sample configuration:
 
    matrix:
      homeserver: https://matrix.org
-     access_token: "YOUR_TOKEN_HERE"
      room_id: "!roomroomroom:matrix.org"
+     user: @botusername:matrix.org
      enabled: true
 
-You will probably want to use the following configuration for the
+Then you need to manually trigger connection to the matrix from urlparse
+to obtain ``access_token`` and generate encryption keys.
+It is one time process which requires providing password for the bot account
+(password will not be stored).
+To manually trigger connection, run:
+
+.. code:: bash
+
+    $ urlwatch --test-reporter matrix
+
+You will probably also want to use the following configuration for the
 ``markdown`` reporter, if you intend to post change notifications to a
 public Matrix room, as the messages quickly become noisy:
 

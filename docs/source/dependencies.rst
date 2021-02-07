@@ -42,7 +42,7 @@ Where ``<packagename>`` is one of the following:
 +-------------------------+---------------------------------------------------------------------+
 | Pushbullet reporter     | `pushbullet.py <https://github.com/randomchars/pushbullet.py>`__    |
 +-------------------------+---------------------------------------------------------------------+
-| Matrix reporter         | `matrix_client <https://github.com/matrix-org/matrix-python-sdk>`__ |
+| Matrix reporter         | `matrix-nio <https://github.com/poljar/matrix-nio>`__               |
 |                         | and `markdown2 <https://github.com/trentm/python-markdown2>`__      |
 +-------------------------+---------------------------------------------------------------------+
 | `stdout` reporter with  | `colorama <https://github.com/tartley/colorama>`__                  |
