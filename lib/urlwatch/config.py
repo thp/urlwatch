@@ -40,9 +40,10 @@ logger = logging.getLogger(__name__)
 
 class BaseConfig(object):
 
-    def __init__(self, pkgname, urlwatch_dir, config, urls, cache, hooks, verbose):
+    def __init__(self, pkgname, urlwatch_dir, urlwatch_data_dir, config, urls, cache, hooks, verbose):
         self.pkgname = pkgname
         self.urlwatch_dir = urlwatch_dir
+        self.urlwatch_data_dir = urlwatch_data_dir
         self.config = config
         self.urls = urls
         self.cache = cache
@@ -52,8 +53,8 @@ class BaseConfig(object):
 
 class CommandConfig(BaseConfig):
 
-    def __init__(self, pkgname, urlwatch_dir, bindir, prefix, config, urls, hooks, cache, verbose):
-        super().__init__(pkgname, urlwatch_dir, config, urls, cache, hooks, verbose)
+    def __init__(self, pkgname, urlwatch_dir, urlwatch_data_dir, bindir, prefix, config, urls, hooks, cache, verbose):
+        super().__init__(pkgname, urlwatch_dir, urlwatch_data_dir, config, urls, cache, hooks, verbose)
         self.bindir = bindir
         self.prefix = prefix
         self.migrate_cache = migrate_cache

@@ -31,12 +31,15 @@ import asyncio
 import difflib
 import re
 import email.utils
+import getpass
 import itertools
+import json
 import logging
 import sys
 import time
 import html
 import functools
+from pathlib import Path
 
 import requests
 
@@ -935,6 +938,65 @@ class MarkdownReporter(ReporterBase):
         return summary_part, details_part
 
 
+if nio is not None:
+
+    class UrlwatchMatrixClient(nio.AsyncClient):
+        STORAGE_DIR = 'matrix_store'
+        CREDENTIALS_FILE = 'matrix-credentials.json'
+        DEFAULT_DEVICE_NAME = 'urlwatch'
+
+        def __init__(self, config, urlwatch_data_dir):
+            homeserver = config['homeserver']
+            user = config['user']
+            urlwatch_data_dir = Path(urlwatch_data_dir)
+            storage_dir = urlwatch_data_dir / self.STORAGE_DIR
+            storage_dir.mkdir(parents=True, exist_ok=True)
+            client_config = nio.AsyncClientConfig(max_limit_exceeded=0,
+                                                  max_timeouts=0,
+                                                  store_sync_tokens=True,
+                                                  encryption_enabled=True)
+            super().__init__(homeserver=homeserver,
+                             user=user,
+                             store_path=storage_dir,
+                             config=client_config)
+            self.urlwatch_data_dir = urlwatch_data_dir
+
+        async def login(self):
+            credentials_file = self.urlwatch_data_dir / self.CREDENTIALS_FILE
+            if credentials_file.is_file():
+                logger.debug("Reading stored credentials")
+                with credentials_file.open() as f:
+                    try:
+                        credentials = json.load(f)
+                        self.user_id = credentials['user_id']
+                        self.device_id = credentials['device_id']
+                        self.access_token = credentials['access_token']
+                    except json.JSONDecodeError:
+                        logger.warning(
+                            'Could not read cred json file, overwriting.')
+                self.load_store()
+
+            if not self.user_id or not self.device_id or not self.access_token:
+                logger.debug("Generating new credentials")
+                print("### Generating new Matrix credentials. ###")
+                device_name = input(f"Choose a name for this device: [{self.DEFAULT_DEVICE_NAME}] ")
+                if not device_name:
+                    device_name = self.DEFAULT_DEVICE_NAME
+                pw = getpass.getpass(f"Matrix password for {self.user} (it will not be stored): ")
+                resp = await super().login(pw, device_name=device_name)
+                if isinstance(resp, nio.LoginResponse):
+                    logger.debug(f'Saving credentials to "{credentials_file}"')
+                    with credentials_file.open('w') as f:
+                        credentials = {
+                            'user_id': self.user_id,
+                            'device_id': self.device_id,
+                            'access_token': self.access_token
+                        }
+                        json.dump(credentials, f)
+                else:
+                    raise Exception('Matrix login failed, wrong user/password?')
+
+
 class MatrixReporter(MarkdownReporter):
     """Send a message to a room using the Matrix protocol"""
     MAX_LENGTH = 16384
@@ -944,10 +1006,6 @@ class MatrixReporter(MarkdownReporter):
     def submit(self):
         if nio is None:
             raise ImportError('Python module "matrix-nio" not installed')
-
-        homeserver_url = self.config['homeserver']
-        access_token = self.config['access_token']
-        room_id = self.config['room_id']
 
         body_markdown = '\n'.join(super().submit(MatrixReporter.MAX_LENGTH))
 
@@ -960,23 +1018,33 @@ class MatrixReporter(MarkdownReporter):
             "body": body_markdown,
         }
         if Markdown is not None:
-            body_html = Markdown(extras=["fenced-code-blocks", "highlightjs-lang"]).convert(body_markdown)
+            body_html = Markdown(
+                extras=["fenced-code-blocks", "highlightjs-lang"]).convert(
+                    body_markdown)
 
             content["format"] = "org.matrix.custom.html"
             content["formatted_body"] = body_html
         else:
-            logger.debug('Not formatting as Markdown; dependency on markdown2 not met?')
+            logger.debug(
+                'Not formatting as Markdown; dependency on markdown2 not met?')
+
+        room_id = self.config['room_id']
 
         async def send():
-            client = nio.AsyncClient(homeserver_url)
-            client.access_token = access_token
+            client = UrlwatchMatrixClient(self.config, self.report.urlwatch_config.urlwatch_data_dir)
             try:
-                await client.room_send(room_id, message_type="m.room.message", content=content)
+                await client.login()
+                if client.should_upload_keys:
+                    await client.keys_upload()
+                await client.sync(timeout=30000, full_state=True)
+                await client.room_send(room_id,
+                                       message_type="m.room.message",
+                                       content=content,
+                                       ignore_unverified_devices=True)
             finally:
                 await client.close()
 
         asyncio.run(send())
-
 
 
 class XMPPReporter(TextReporter):

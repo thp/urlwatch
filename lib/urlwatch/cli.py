@@ -40,6 +40,7 @@ from appdirs import AppDirs
 pkgname = 'urlwatch'
 urlwatch_dir = os.path.expanduser(os.path.join('~', '.' + pkgname))
 urlwatch_cache_dir = AppDirs(pkgname).user_cache_dir
+urlwatch_data_dir = AppDirs(pkgname).user_data_dir
 
 if not os.path.exists(urlwatch_dir):
     urlwatch_dir = AppDirs(pkgname).user_config_dir
@@ -90,7 +91,7 @@ def main():
     if os.path.exists(old_cache_file) and not os.path.exists(new_cache_file):
         cache_file = old_cache_file
 
-    command_config = CommandConfig(pkgname, urlwatch_dir, bindir, prefix,
+    command_config = CommandConfig(pkgname, urlwatch_dir, urlwatch_data_dir, bindir, prefix,
                                    config_file, urls_file, hooks_file, cache_file, False)
     setup_logger(command_config.verbose)
 
