@@ -1034,6 +1034,9 @@ class MatrixReporter(MarkdownReporter):
             client = UrlwatchMatrixClient(self.config, self.report.urlwatch_config.urlwatch_data_dir)
             try:
                 await client.login()
+                if room_id not in client.rooms:
+                    await client.join(room_id)
+                    logger.debug(f'joined room {room_id}')
                 if client.should_upload_keys:
                     await client.keys_upload()
                 await client.sync(timeout=30000, full_state=True)
