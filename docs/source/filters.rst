@@ -544,10 +544,10 @@ Use of this filter requires the optional `jq Python module`_ to be installed.
 
 .. code-block:: yaml
 
-   url: https://jobs.github.com/positions.json?description=python&page=1
+   url: https://example.net/jobs.json
    filter:
       - jq: 
-         query: '.[0].title'
+         query: '.[].title'
 
 The subfilter ``query`` is optional:
 

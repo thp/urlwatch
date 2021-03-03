@@ -347,3 +347,23 @@ https://example.net/css-skip-maxitems.html:
     <div class="cpu">Pentium</div>
 
     <div class="cpu">Pentium MMX</div>
+https://example.net/jobs.json:
+  input: |
+    [
+      {
+        "title": "Senior Data Scientist",
+        "company": "Boogle"
+      },
+      {
+        "title": "Python Developer",
+        "company": "Tack-trest"
+      },
+      {
+        "title": "TPS Report Analyst",
+        "company": "Initech"
+      }
+    ]
+  output: |
+      "Senior Data Scientist"
+      "Python Developer"
+      "TPS Report Analyst"
