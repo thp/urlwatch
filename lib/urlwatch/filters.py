@@ -886,4 +886,3 @@ class JQFilter(FilterBase):
             raise ImportError('Please install jq')
 
         return jq.text(subfilter['query'], json.loads(data))
-
