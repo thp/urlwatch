@@ -527,7 +527,7 @@ consumes binary data and outputs text data.
          language: eng
      - strip
 
-The sub-filters ``timeout`` and ``language`` are optional:
+The subfilters ``timeout`` and ``language`` are optional:
 
 * ``timeout``: Timeout for the recognition, in seconds (default: 10 seconds)
 * ``language``: Text language (e.g. ``fra`` or ``eng+fra``, default: ``eng``)
