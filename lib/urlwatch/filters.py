@@ -79,6 +79,11 @@ try:
 except ImportError:
     Image = None
 
+try:
+    import jq
+except ImportError:
+    jq = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -855,3 +860,29 @@ class OCRFilter(FilterBase):
             raise ImportError('Please install Pillow/PIL')
 
         return pytesseract.image_to_string(Image.open(io.BytesIO(data)), lang=language, timeout=timeout)
+
+
+class JQFilter(FilterBase):
+    """Parse, transform, and extract data from json as text using `jq`"""
+
+    __kind__ = 'jq'
+
+    __supported_subfilters__ = {
+        'query': 'jq query function to execute on data',
+    }
+
+    __default_subfilter__ = 'query'
+
+    def filter(self, data, subfilter):
+        try:
+            json.loads(data)
+        except ValueError:
+            raise ValueError('The url response contained invalid JSON')
+
+        if 'query' not in subfilter:
+            raise ValueError('{} filter needs a query'.format(self.__kind__))
+
+        if jq is None:
+            raise ImportError('Please install jq')
+
+        return jq.text(subfilter['query'], json.loads(data))
