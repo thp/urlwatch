@@ -6,6 +6,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## [UNRELEASED]
 
+### Added
+
+- New reporter: '[prowl](https://prowlapp.com)' (by nitz).
+
 ## [2.22] -- 2020-12-19
 
 ### Added
