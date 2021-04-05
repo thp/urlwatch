@@ -262,6 +262,11 @@ https://github.com/thp/urlwatch/releases:
     </div>
   output: |-
     2.18
+https://gitlab.com/chinstrap/gammastep/-/tags:
+  input: |-
+    <a class="item-title ref-name" href="/chinstrap/gammastep/-/tags/v2.0.7">v2.0.7</a>
+  output: |-
+    v2.0.7
 https://example.com/regex-substitute.html:
   input: |-
     <div>
