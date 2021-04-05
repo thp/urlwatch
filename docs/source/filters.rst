@@ -372,7 +372,7 @@ are separated by an empty line):
 
 
 Watching Github releases and Gitlab tags
-------------------------
+----------------------------------------
 
 This is an example how to watch the GitHub “releases” page for a given
 project for the latest release version, to be notified of new releases:
