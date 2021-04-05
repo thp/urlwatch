@@ -61,6 +61,7 @@ At the moment, the following filters are built-in:
 - **hexdump**: Convert binary data to hex dump format
 - **html2text**: Convert HTML to plaintext
 - **pdf2text**: Convert PDF to plaintext
+- **pretty-xml**: Pretty-print XML
 - **ical2text**: Convert `iCalendar`_ to plaintext
 - **ocr**: Convert text in images to plaintext using Tesseract OCR
 - **re.sub**: Replace text with regular expressions using Python's re.sub
