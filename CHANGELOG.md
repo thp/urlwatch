@@ -6,6 +6,11 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Proper multi-line highlighting for wdiff (PR#615, by kongomongo)
+- Fix command-line generation for html2text (PR#619, by Eloy Paris)
+
 ## [2.22] -- 2020-12-19
 
 ### Added
