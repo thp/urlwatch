@@ -98,7 +98,7 @@ def html2text(data, baseurl, method, options):
 
     for k, v in options.items():
         if v is not None:
-            cmd.append('-{} {}'.format(k, v))
+            cmd.extend(['-{}'.format(k), '{}'.format(v)])
         else:
             cmd.append('-{}'.format(k))
 
