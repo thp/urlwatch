@@ -44,6 +44,8 @@ from enum import Enum
 from lxml import etree
 from lxml.cssselect import CSSSelector
 
+from xml.dom import minidom
+
 from .util import TrackSubClasses, import_module_from_source
 
 from .html2txt import html2text
@@ -374,6 +376,22 @@ class JsonFormatFilter(FilterBase):
         indentation = int(subfilter.get('indentation', 4))
         parsed_json = json.loads(data)
         return json.dumps(parsed_json, ensure_ascii=False, sort_keys=True, indent=indentation, separators=(',', ': '))
+
+
+class PrettyXMLFilter(FilterBase):
+    """Pretty-print XML"""
+
+    __kind__ = 'pretty-xml'
+
+    __supported_subfilters__ = {
+        'indentation': 'Indentation level for pretty-printing',
+    }
+
+    __default_subfilter__ = 'indentation'
+
+    def filter(self, data, subfilter):
+        indentation = int(subfilter.get('indentation', 2))
+        return minidom.parseString(data).toprettyxml(indent=' ' * indentation)
 
 
 class GrepFilter(FilterBase):
