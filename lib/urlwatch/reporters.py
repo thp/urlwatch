@@ -976,7 +976,8 @@ class XMPPReporter(TextReporter):
         for chunk in chunkstring(text, self.MAX_LENGTH, numbering=True):
             asyncio.run(xmpp.send(chunk))
 
-class ProwlReport(TextReporter):
+
+class ProwlReporter(TextReporter):
     """Send a detailed notification via prowlapp.com"""
 
     __kind__ = 'prowl'
@@ -985,10 +986,7 @@ class ProwlReport(TextReporter):
         super().__init__(*args, **kwargs)
 
     def submit(self):
-        api_base = 'https://api.prowlapp.com/publicapi/'
-        api = {
-            'add': api_base + 'add'
-        }
+        api_add = 'https://api.prowlapp.com/publicapi/add'
 
         text = '\n'.join(super().submit())
 
@@ -1009,11 +1007,11 @@ class ProwlReport(TextReporter):
         # 'application' is prepended to the message in prowl,
         # to show the source of the notification. this too,
         # is user configurable, and may reference subject args
-        application = self.config['application'].format(**subject_args)
-
-        # if the user didn't set application, just use the package name and version.
-        if not application:
-            application = ('{0} v{1}'.format(urlwatch.pkgname, urlwatch.__version__))[:256].encode('utf8')
+        application = self.config.get('application')
+        if application is not None:
+            application = application.format(**subject_args)
+        else:
+            application = '{0} v{1}'.format(urlwatch.pkgname, urlwatch.__version__)
 
         # build the data to post
         post_data = {
@@ -1025,7 +1023,7 @@ class ProwlReport(TextReporter):
         }
 
         # all set up, add the notification!
-        result = requests.post(api['add'], data=post_data)
+        result = requests.post(api_add, data=post_data)
 
         try:
             if result.status_code in (requests.codes.ok, requests.codes.no_content):
