@@ -892,8 +892,9 @@ class JQFilter(FilterBase):
     __default_subfilter__ = 'query'
 
     def filter(self, data, subfilter):
+
         try:
-            json.loads(data)
+            jsondata = json.loads(data)
         except ValueError:
             raise ValueError('The url response contained invalid JSON')
 
@@ -903,4 +904,4 @@ class JQFilter(FilterBase):
         if jq is None:
             raise ImportError('Please install jq')
 
-        return jq.text(subfilter['query'], json.loads(data))
+        return jq.text(subfilter['query'], jsondata)

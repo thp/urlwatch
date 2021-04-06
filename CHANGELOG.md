@@ -9,6 +9,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Added
 
 - New filter: `pretty-xml` to indent/pretty-print XML documents
+- New filter: `jq` to parse, transform, and extract JSON data
 
 ### Fixed
 
