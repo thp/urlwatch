@@ -71,6 +71,7 @@ At the moment, the following filters are built-in:
 - **sort**: Sort input items
 - **strip**: Strip leading and trailing whitespace
 - **xpath**: Filter XML/HTML using XPath expressions
+- **jq**: Filter, transform and extract values from JSON
 
 .. To convert the "urlwatch --features" output, use:
    sed -e 's/^  \* \(.*\) - \(.*\)$/- **\1**: \2/'
@@ -536,7 +537,33 @@ consumes binary data and outputs text data.
          language: eng
      - strip
 
-The sub-filters ``timeout`` and ``language`` are optional:
+The subfilters ``timeout`` and ``language`` are optional:
 
 * ``timeout``: Timeout for the recognition, in seconds (default: 10 seconds)
 * ``language``: Text language (e.g. ``fra`` or ``eng+fra``, default: ``eng``)
+
+
+Filtering JSON response data using ``jq`` selectors
+--------------------------------
+
+The ``jq`` filter uses the Python bindings for `jq`_, a lightweight JSON processor.
+Use of this filter requires the optional `jq Python module`_ to be installed.
+
+.. _jq: https://stedolan.github.io/jq/
+.. _jq Python module: https://github.com/mwilliamson/jq.py
+
+.. code-block:: yaml
+
+   url: https://example.net/jobs.json
+   filter:
+      - jq: 
+         query: '.[].title'
+
+The subfilter ``query`` is optional:
+
+* ``query``: A valid ``jq`` filter string.
+
+Supports aggregations, selections, and the built-in operators like ``length``.  For
+more information on the operations permitted, see the `jq Manual`_.
+
+.. _jq Manual: https://stedolan.github.io/jq/manual/
