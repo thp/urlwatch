@@ -262,6 +262,11 @@ https://github.com/thp/urlwatch/releases:
     </div>
   output: |-
     2.18
+https://gitlab.com/chinstrap/gammastep/-/tags:
+  input: |-
+    <a class="item-title ref-name" href="/chinstrap/gammastep/-/tags/v2.0.7">v2.0.7</a>
+  output: |-
+    v2.0.7
 https://example.com/regex-substitute.html:
   input: |-
     <div>
@@ -347,3 +352,23 @@ https://example.net/css-skip-maxitems.html:
     <div class="cpu">Pentium</div>
 
     <div class="cpu">Pentium MMX</div>
+https://example.net/jobs.json:
+  input: |
+    [
+      {
+        "title": "Senior Data Scientist",
+        "company": "Boogle"
+      },
+      {
+        "title": "Python Developer",
+        "company": "Tack-trest"
+      },
+      {
+        "title": "TPS Report Analyst",
+        "company": "Initech"
+      }
+    ]
+  output: |
+      "Senior Data Scientist"
+      "Python Developer"
+      "TPS Report Analyst"

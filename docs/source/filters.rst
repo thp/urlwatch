@@ -71,6 +71,7 @@ At the moment, the following filters are built-in:
 - **sort**: Sort input items
 - **strip**: Strip leading and trailing whitespace
 - **xpath**: Filter XML/HTML using XPath expressions
+- **jq**: Filter, transform and extract values from JSON
 
 .. To convert the "urlwatch --features" output, use:
    sed -e 's/^  \* \(.*\) - \(.*\)$/- **\1**: \2/'
@@ -372,8 +373,8 @@ are separated by an empty line):
          separator: "\n\n"
 
 
-Watching Github releases
-------------------------
+Watching Github releases and Gitlab tags
+----------------------------------------
 
 This is an example how to watch the GitHub “releases” page for a given
 project for the latest release version, to be notified of new releases:
@@ -385,6 +386,15 @@ project for the latest release version, to be notified of new releases:
      - xpath: '(//div[contains(@class,"release-timeline-tags")]//h4)[1]/a'
      - html2text: re
      - strip
+
+This is the corresponding version for Gitlab tags:
+
+.. code:: yaml
+
+   url: https://gitlab.com/chinstrap/gammastep/-/tags
+   filter:
+     - xpath: (//a[contains(@class,"item-title ref-name")])[1]
+     - html2text
 
 
 Remove or replace text using regular expressions
@@ -527,7 +537,33 @@ consumes binary data and outputs text data.
          language: eng
      - strip
 
-The sub-filters ``timeout`` and ``language`` are optional:
+The subfilters ``timeout`` and ``language`` are optional:
 
 * ``timeout``: Timeout for the recognition, in seconds (default: 10 seconds)
 * ``language``: Text language (e.g. ``fra`` or ``eng+fra``, default: ``eng``)
+
+
+Filtering JSON response data using ``jq`` selectors
+--------------------------------
+
+The ``jq`` filter uses the Python bindings for `jq`_, a lightweight JSON processor.
+Use of this filter requires the optional `jq Python module`_ to be installed.
+
+.. _jq: https://stedolan.github.io/jq/
+.. _jq Python module: https://github.com/mwilliamson/jq.py
+
+.. code-block:: yaml
+
+   url: https://example.net/jobs.json
+   filter:
+      - jq: 
+         query: '.[].title'
+
+The subfilter ``query`` is optional:
+
+* ``query``: A valid ``jq`` filter string.
+
+Supports aggregations, selections, and the built-in operators like ``length``.  For
+more information on the operations permitted, see the `jq Manual`_.
+
+.. _jq Manual: https://stedolan.github.io/jq/manual/
