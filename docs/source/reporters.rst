@@ -55,6 +55,7 @@ At the moment, the following reporters are built-in:
 - **telegram**: Send a message using Telegram
 - **ifttt**: Send summary via IFTTT
 - **xmpp**: Send a message using the XMPP Protocol
+- **prowl**: Send a message via prowlapp.com
 
 .. To convert the "urlwatch --features" output, use:
    sed -e 's/^  \* \(.*\) - \(.*\)$/- **\1**: \2/'
@@ -365,3 +366,37 @@ If for whatever reason you cannot use a keyring to store your password
 you can also set the ``insecure_password`` option in the XMPP config.
 For more information about the security implications, see
 :ref:`smtp-login-without-keyring`.
+
+Prowl
+-----
+
+You can have notifications sent to you through the `Prowl` push
+notification service, to recieve the notification on iOS.
+
+To achieve this, you should register a new Prowl account, and have
+the Prowl application installed on your iOS device.
+
+To create an API key for urlwatch:
+
+1. Log into the Prowl website at https://prowlapp.com/
+2. Navigate to the “API Keys” tab.
+3. Scroll to the “Generate a new API key” section.
+4. Give the key a note that will remind you you've used it for urlwatch.
+5. Press “Generate Key”
+6. Copy the resulting key.
+
+Here is a sample configuration:
+
+.. code:: yaml
+
+   prowl:
+     enabled: true
+     api_key: '<your api key here>'
+     priority: 2
+     application: 'urlwatch example'
+     subject: '{count} changes: {jobs}'
+
+The “subject" field is similar to the subject field in the email, and
+will be used as the name of the Prowl event. The application is prepended
+to the event and shown as the source of the event in the Prowl App.
+

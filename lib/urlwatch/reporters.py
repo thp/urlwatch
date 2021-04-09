@@ -975,3 +975,63 @@ class XMPPReporter(TextReporter):
 
         for chunk in chunkstring(text, self.MAX_LENGTH, numbering=True):
             asyncio.run(xmpp.send(chunk))
+
+
+class ProwlReporter(TextReporter):
+    """Send a detailed notification via prowlapp.com"""
+
+    __kind__ = 'prowl'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def submit(self):
+        api_add = 'https://api.prowlapp.com/publicapi/add'
+
+        text = '\n'.join(super().submit())
+
+        if not text:
+            logger.debug('Not calling Prowl API (no changes)')
+            return
+
+        filtered_job_states = list(self.report.get_filtered_job_states(self.job_states))
+        subject_args = {
+            'count': len(filtered_job_states),
+            'jobs': ', '.join(job_state.job.pretty_name() for job_state in filtered_job_states),
+        }
+
+        # 'subject' used in the config file, but the API
+        # uses what might be called the subject as the 'event'
+        event = self.config['subject'].format(**subject_args)
+
+        # 'application' is prepended to the message in prowl,
+        # to show the source of the notification. this too,
+        # is user configurable, and may reference subject args
+        application = self.config.get('application')
+        if application is not None:
+            application = application.format(**subject_args)
+        else:
+            application = '{0} v{1}'.format(urlwatch.pkgname, urlwatch.__version__)
+
+        # build the data to post
+        post_data = {
+            'event': event[:1024].encode('utf8'),
+            'description': text[:10000].encode('utf8'),
+            'application': application[:256].encode('utf8'),
+            'apikey': self.config['api_key'],
+            'priority': self.config['priority']
+        }
+
+        # all set up, add the notification!
+        result = requests.post(api_add, data=post_data)
+
+        try:
+            if result.status_code in (requests.codes.ok, requests.codes.no_content):
+                logger.info("Prowl response: ok")
+            else:
+                logger.error("Prowl error: {0}".format(result.text))
+        except ValueError:
+            logger.error("Failed to parse Prowl response. HTTP status code: {0}, content: {1}".format(
+                result.status_code, result.content))
+
+        return result
