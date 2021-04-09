@@ -372,8 +372,8 @@ are separated by an empty line):
          separator: "\n\n"
 
 
-Watching Github releases
-------------------------
+Watching Github releases and Gitlab tags
+----------------------------------------
 
 This is an example how to watch the GitHub “releases” page for a given
 project for the latest release version, to be notified of new releases:
@@ -385,6 +385,15 @@ project for the latest release version, to be notified of new releases:
      - xpath: '(//div[contains(@class,"release-timeline-tags")]//h4)[1]/a'
      - html2text: re
      - strip
+
+This is the corresponding version for Gitlab tags:
+
+.. code:: yaml
+
+   url: https://gitlab.com/chinstrap/gammastep/-/tags
+   filter:
+     - xpath: (//a[contains(@class,"item-title ref-name")])[1]
+     - html2text
 
 
 Remove or replace text using regular expressions
