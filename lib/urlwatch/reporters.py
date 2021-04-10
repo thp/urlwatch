@@ -88,6 +88,17 @@ class ReporterBase(object, metaclass=TrackSubClasses):
         self.job_states = job_states
         self.duration = duration
 
+    def get_signature(self):
+        return (
+            '{pkgname} {version}, {copyright}'.format(pkgname=urlwatch.pkgname,
+                                                      version=urlwatch.__version__,
+                                                      copyright=urlwatch.__copyright__),
+            'Website: {url}'.format(url=urlwatch.__url__),
+            'Buy me a coffee: https://ko-fi.com/thpx86',
+            'watched {count} URLs in {duration} seconds'.format(count=len(self.job_states),
+                                                                duration=self.duration.seconds),
+        )
+
     def convert(self, othercls):
         if hasattr(othercls, '__kind__'):
             config = self.report.config['report'][othercls.__kind__]
@@ -190,16 +201,13 @@ class HtmlReporter(ReporterBase):
 
             yield SafeHtml('<hr>')
 
-        yield SafeHtml("""
-        <address>
-        {pkgname} {version}, {copyright}<br>
-        Website: {url}<br>
-        watched {count} URLs in {duration} seconds
-        </address>
+        yield SafeHtml('<address>')
+        for part in self.get_signature():
+            yield SafeHtml('{}<br>').format(part)
+        yield SafeHtml("""</address>
         </body>
         </html>
-        """).format(pkgname=urlwatch.pkgname, version=urlwatch.__version__, copyright=urlwatch.__copyright__,
-                    url=urlwatch.__url__, count=len(self.job_states), duration=self.duration.seconds)
+        """)
 
     def _diff_to_html(self, unified_diff):
         result = unified_diff
@@ -273,10 +281,8 @@ class TextReporter(ReporterBase):
             yield from details
 
         if summary and show_footer:
-            yield from ('-- ',
-                        '%s %s, %s' % (urlwatch.pkgname, urlwatch.__version__, urlwatch.__copyright__),
-                        'Website: %s' % (urlwatch.__url__,),
-                        'watched %d URLs in %d seconds' % (len(self.job_states), self.duration.seconds))
+            yield '-- '
+            yield from self.get_signature()
 
     def _format_content(self, job_state):
         if job_state.verb == 'error':
@@ -743,10 +749,7 @@ class MarkdownReporter(ReporterBase):
             details.extend(details_part)
 
         if summary and show_footer:
-            footer = ('--- ',
-                      '%s %s, %s  ' % (urlwatch.pkgname, urlwatch.__version__, urlwatch.__copyright__),
-                      'Website: %s  ' % (urlwatch.__url__,),
-                      'watched %d URLs in %d seconds' % (len(self.job_states), self.duration.seconds))
+            footer = ('--- ',) + self.get_signature()
         else:
             footer = None
 
