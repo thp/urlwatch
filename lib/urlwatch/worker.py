@@ -53,7 +53,7 @@ def run_parallel(func, items):
 def run_jobs(urlwatcher):
     cache_storage = urlwatcher.cache_storage
     jobs = [job.with_defaults(urlwatcher.config_storage.config)
-            for (idx,job) in enumerate(urlwatcher.jobs) if ((idx+1) in urlwatcher.urlwatch_config.joblist or (len(urlwatcher.urlwatch_config.joblist) == 0))]
+            for (idx, job) in enumerate(urlwatcher.jobs) if ((idx + 1) in urlwatcher.urlwatch_config.joblist or (len(urlwatcher.urlwatch_config.joblist) == 0))]
     report = urlwatcher.report
 
     logger.debug('Processing %d jobs (out of %d)', len(jobs), len(urlwatcher.jobs))
