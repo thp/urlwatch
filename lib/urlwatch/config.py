@@ -75,6 +75,7 @@ class CommandConfig(BaseConfig):
 
         parser = argparse.ArgumentParser(description=urlwatch.__doc__,
                                          formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument('joblist', metavar='JOB', type=int, nargs="*", help='index of job(s) to run, as numbered according to the --list command. If none specified, then all jobs will be run.')
         parser.add_argument('--version', action='version', version='%(prog)s {}'.format(urlwatch.__version__))
         parser.add_argument('-v', '--verbose', action='store_true', help='show debug output')
         group = parser.add_argument_group('files and directories')
