@@ -126,6 +126,8 @@ DEFAULT_CONFIG = {
             'enabled': False,
             'bot_token': '',
             'chat_id': '',
+            'monospaced': False,
+            'disable_notification': False,
         },
         'slack': {
             'enabled': False,

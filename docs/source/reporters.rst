@@ -106,6 +106,16 @@ https://core.telegram.org/bots). Sample configuration:
      chat_id: '88888888' # the chat id where the messages should be sent
      enabled: true
 
+Messages can be sent silently (``disable_notification``) if you prefer
+notifications with no sounds, and monospace formatted (``monospaced``).
+By default notifications are not silent and no formatting is done.
+
+.. code:: yaml
+   telegram:
+     # ...
+     disable_notification: true # message is sent silently
+     monospaced: true # display message as pre-formatted code block
+
 To set up Telegram, from your Telegram app, chat up BotFather (New
 Message, Search, “BotFather”), then say ``/newbot`` and follow the
 instructions. Eventually it will tell you the bot token (in the form
@@ -128,6 +138,8 @@ file as ``chat_id``. You may add multiple chat IDs as a YAML list:
      enabled: true
 
 Don’t forget to also enable the reporter.
+
+
 
 Slack
 -----
@@ -173,7 +185,7 @@ is a sample configuration:
       enabled: true
       embed: true
       subject: '{count} changes: {jobs}'
-      
+
 To set up Discord, from your Discord Server settings, select Integration and then create a "New Webhook", give the webhook a name to post under, select a channel, push "Copy Webhook URL" and paste it into the configuration as seen above.
 
 Embedded content might be easier to read and identify individual reports. subject preceeds the embedded report and is only used when embed is true.
