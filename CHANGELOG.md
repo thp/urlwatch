@@ -6,6 +6,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## [UNRELEASED]
 
+### Changed
+
+- Migrated CI pipeline from Travis CI to Github Actions
+
 ## [2.23] -- 2021-04-10
 
 ### Added
