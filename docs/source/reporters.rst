@@ -106,15 +106,15 @@ https://core.telegram.org/bots). Sample configuration:
      chat_id: '88888888' # the chat id where the messages should be sent
      enabled: true
 
-Messages can be sent silently (``disable_notification``) if you prefer
-notifications with no sounds, and monospace formatted (``monospaced``).
+Messages can be sent silently (``silent``) if you prefer notifications
+with no sounds, and monospace formatted (``monospace``).
 By default notifications are not silent and no formatting is done.
 
 .. code:: yaml
    telegram:
      # ...
-     disable_notification: true # message is sent silently
-     monospaced: true # display message as pre-formatted code block
+     silent: true # message is sent silently
+     monospace: true # display message as pre-formatted code block
 
 To set up Telegram, from your Telegram app, chat up BotFather (New
 Message, Search, “BotFather”), then say ``/newbot`` and follow the
@@ -138,8 +138,6 @@ file as ``chat_id``. You may add multiple chat IDs as a YAML list:
      enabled: true
 
 Don’t forget to also enable the reporter.
-
-
 
 Slack
 -----
