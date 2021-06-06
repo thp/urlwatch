@@ -7,9 +7,10 @@ on:
   pull_request:
     branches:
       - master
-      
+
 jobs:
   build:
+    name: Python
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
