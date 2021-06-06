@@ -600,11 +600,29 @@ class TelegramReporter(TextReporter):
 
         return result
 
+    @staticmethod
+    def _format_body(text: str) -> str:
+        return "```diff\n{}\n```".format(
+            text.translate(str.maketrans({'`': r'\`', '\\': r'\\'})))
+
     def submitToTelegram(self, bot_token, chat_id, text):
         logger.debug("Sending telegram request to chat id:'{0}'".format(chat_id))
-        result = requests.post(
-            "https://api.telegram.org/bot{0}/sendMessage".format(bot_token),
-            data={"chat_id": chat_id, "text": text, "disable_web_page_preview": "true"})
+
+        data = {"chat_id": chat_id,
+                "text": text,
+                "disable_notification": self.config.get('silent', False),
+                "disable_web_page_preview": True}
+
+        if self.config.get('monospace', False):
+            # all "`" and "\" characters are escaped and text is put inside
+            # a markdown code block. API docs on formatting messages:
+            # https://core.telegram.org/bots/api#formatting-options
+            data.update({
+                "text": self._format_body(text),
+                "parse_mode": "MarkdownV2"
+            })
+
+        result = requests.post("https://api.telegram.org/bot{0}/sendMessage".format(bot_token), json=data)
         try:
             json_res = result.json()
 
