@@ -610,10 +610,10 @@ class TelegramReporter(TextReporter):
 
         data = {"chat_id": chat_id,
                 "text": text,
-                "disable_notification": self.config['disable_notification'],
+                "disable_notification": self.config.get('silent', False),
                 "disable_web_page_preview": True}
 
-        if self.config['monospaced']:
+        if self.config.get('monospace', False):
             # all "`" and "\" characters are escaped and text is put inside
             # a markdown code block. API docs on formatting messages:
             # https://core.telegram.org/bots/api#formatting-options
