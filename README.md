@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/thp/urlwatch.svg)](https://travis-ci.org/thp/urlwatch)
+[![Unit Tests](https://github.com/thp/urlwatch/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/thp/urlwatch/actions/workflows/unit-tests.yml)
 [![Packaging status](https://repology.org/badge/tiny-repos/urlwatch.svg)](https://repology.org/metapackage/urlwatch/versions)
 [![PyPI version](https://badge.fury.io/py/urlwatch.svg)](https://badge.fury.io/py/urlwatch)
 
