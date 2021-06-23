@@ -250,14 +250,16 @@ Here is a sample configuration:
      enabled: true
 
 Then you need to manually trigger connection to the matrix from urlparse
-to obtain ``access_token`` and generate encryption keys.
-It is one time process which requires providing password for the bot account
-(password will not be stored).
-To manually trigger connection, run:
+to obtain ``access_token`` and generate encryption keys:
 
 .. code:: bash
 
     $ urlwatch --test-reporter matrix
+
+This is one time process during which you will be prompted for a password
+to the bot account (password will not be stored).
+Obtained credentials and encryption keys will be stored in user data directory
+approprite for your system (e.g. ``~/.local/share/urlwatch/`` on linux).
 
 You will probably also want to use the following configuration for the
 ``markdown`` reporter, if you intend to post change notifications to a

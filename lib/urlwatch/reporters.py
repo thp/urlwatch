@@ -1031,6 +1031,19 @@ class MatrixReporter(MarkdownReporter):
         room_id = self.config['room_id']
 
         async def send():
+            if 'access_token' in self.config and not self.config['user']:
+                logger.warning("Using legacy credentials with no encryption support. "
+                               "To encrypt your reports, update matrix reporter configuration. "
+                               "For details check documentation "
+                               "(`matrix_client` section in the `Deprecated Features`)")
+                client = nio.AsyncClient(self.config['homeserver'])
+                client.access_token = self.config['access_token']
+                try:
+                    await client.room_send(room_id, message_type="m.room.message", content=content)
+                finally:
+                    await client.close()
+                return
+
             client = UrlwatchMatrixClient(self.config, self.report.urlwatch_config.urlwatch_data_dir)
             try:
                 await client.login()

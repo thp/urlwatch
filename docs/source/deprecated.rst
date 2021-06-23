@@ -5,6 +5,48 @@ This page lists the features that are deprecated and steps to
 update your configuration to use the replacements (if any).
 
 
+matrix_client optional dependency (since 2.24)
+----------------------------------------------
+In older versions ``matrix_client`` was used as matrix provider.
+This optional dependency is now replaced with ``matrix-nio`` which is both
+more featureful (support encrypted rooms) and more actively maintained.
+
+Configuration is backwards compatible so after updating to 2.23 you
+only need to install ``matrix-nio`` and everything should work as previously.
+
+To use encryption you need to update configuration in following ways:
+
+#. Remove ``access_token`` field
+#. Add ``user`` field
+
+Here is a sample configuration after update:
+
+.. code:: yaml
+
+    matrix:
+      homeserver: https://matrix.org
+      room_id: "!roomroomroom:matrix.org"
+      user: @botusername:matrix.org
+      enabled: true
+
+Then you need to manually trigger connection to obtain credentials and
+generate encryption keys:
+
+.. code:: bash
+
+    $ urlwatch --test-reporter matrix
+
+This is one time process during which you will be prompted for a password
+to the bot account (password will not be stored).
+Obtained credentials and encryption keys will be stored in user data directory
+approprite for your system (e.g. ``~/.local/share/urlwatch/`` on linux).
+
+Note that it is now not recommended to store ``access_token`` in configuration
+file and it will be only used if ``urlwatch`` recognizes configuration
+compatible with ``matrix_client`` (missing ``user`` field and containing
+``access_token`` field).
+
+
 Filters without subfilters (since 2.22)
 ---------------------------------------
 
