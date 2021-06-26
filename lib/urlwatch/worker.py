@@ -51,9 +51,11 @@ def run_parallel(func, items):
 
 
 def run_jobs(urlwatcher):
+    if not all(1 <= idx <= len(urlwatcher.jobs) for idx in urlwatcher.urlwatch_config.joblist):
+        raise ValueError(f'All job indices must be between 1 and {len(urlwatcher.jobs)}: {urlwatcher.urlwatch_config.joblist}')
     cache_storage = urlwatcher.cache_storage
     jobs = [job.with_defaults(urlwatcher.config_storage.config)
-            for (idx, job) in enumerate(urlwatcher.jobs) if ((idx + 1) in urlwatcher.urlwatch_config.joblist or (len(urlwatcher.urlwatch_config.joblist) == 0))]
+            for (idx, job) in enumerate(urlwatcher.jobs) if ((idx + 1) in urlwatcher.urlwatch_config.joblist or (not urlwatcher.urlwatch_config.joblist))]
     report = urlwatcher.report
 
     logger.debug('Processing %d jobs (out of %d)', len(jobs), len(urlwatcher.jobs))
