@@ -312,3 +312,14 @@ the URLs, like this:
     filter:
       - grep: "Thing B"
 
+
+Running a subset of jobs
+------------------------
+
+To run one or more specific jobs instead of all known jobs, provide
+the job index numbers to the urlwatch command. For example, to run
+jobs with index 2, 4, and 7:
+
+.. code-block:: bash
+
+   urlwatch 2 4 7
