@@ -7,7 +7,9 @@ Jobs are the kind of things that `urlwatch` can monitor.
 
 The list of jobs to run are contained in the configuration file ``urls.yaml``,
 accessed with the command ``urlwatch --edit``, each separated by a line
-containing only ``---``.
+containing only ``---``. The command ``urlwatch --list`` prints the name
+of each job, along with its index number (1,2,3,...) which gets assigned
+automatically according to its position in the configuration file.
 
 While optional, it is recommended that each job starts with a ``name`` entry:
 

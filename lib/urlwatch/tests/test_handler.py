@@ -11,7 +11,7 @@ import tempfile
 import os
 
 from urlwatch import storage
-from urlwatch.config import BaseConfig
+from urlwatch.config import CommandConfig
 from urlwatch.storage import YamlConfigStorage, CacheMiniDBStorage
 from urlwatch.main import Urlwatch
 from urlwatch.util import import_module_from_source
@@ -87,12 +87,10 @@ def test_pep8_conformance():
     assert result.total_errors == 0, "Found #{0} code style errors".format(result.total_errors)
 
 
-class ConfigForTest(BaseConfig):
+class ConfigForTest(CommandConfig):
     def __init__(self, config, urls, cache, hooks, verbose):
         (prefix, bindir) = os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))
-        super().__init__('urlwatch', os.path.dirname(__file__), config, urls, cache, hooks, verbose)
-        self.edit = False
-        self.edit_hooks = False
+        super().__init__('urlwatch', os.path.dirname(__file__), bindir, prefix, config, urls, hooks, cache, verbose)
 
 
 @contextlib.contextmanager
