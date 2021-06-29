@@ -11,6 +11,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - The Telegram reporter has gained two new options:
   - `silent`: Receive message notification without sound
   - `monospace`: Format message in monospace style
+- Support for running a subset of jobs by specifying their index on the command line
 
 ### Changed
 
