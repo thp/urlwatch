@@ -40,15 +40,18 @@ logger = logging.getLogger(__name__)
 
 
 class BrowserLoop(object):
-    def __init__(self):
+    def __init__(self, no_sandbox=False):
         self._event_loop = asyncio.new_event_loop()
-        self._browser = self._event_loop.run_until_complete(self._launch_browser())
+        self._browser = self._event_loop.run_until_complete(self._launch_browser(no_sandbox=no_sandbox))
         self._loop_thread = threading.Thread(target=self._event_loop.run_forever)
         self._loop_thread.start()
 
     @asyncio.coroutine
-    def _launch_browser(self):
-        browser = yield from pyppeteer.launch()
+    def _launch_browser(self, no_sandbox=False):
+        opts = {}
+        if no_sandbox:
+            opts['args'] = ['--no-sandbox']
+        browser = yield from pyppeteer.launch(options=opts)
         for p in (yield from browser.pages()):
             yield from p.close()
         return browser
@@ -83,11 +86,11 @@ class BrowserContext(object):
     _BROWSER_LOCK = threading.Lock()
     _BROWSER_REFCNT = 0
 
-    def __init__(self):
+    def __init__(self, no_sandbox=False):
         with BrowserContext._BROWSER_LOCK:
             if BrowserContext._BROWSER_REFCNT == 0:
                 logger.info('Creating browser main loop')
-                BrowserContext._BROWSER_LOOP = BrowserLoop()
+                BrowserContext._BROWSER_LOOP = BrowserLoop(no_sandbox=no_sandbox)
             BrowserContext._BROWSER_REFCNT += 1
 
     def process(self, url, wait_until=None):
@@ -113,12 +116,14 @@ def main():
                         dest='wait_until',
                         choices=['load', 'domcontentloaded', 'networkidle0', 'networkidle2'],
                         help='When to consider a pageload finished')
+    parser.add_argument('--no-sandbox', dest='no_sandbox', action='store_true',
+                        help='Disable Chromium sandbox')
     args = parser.parse_args()
 
     setup_logger(args.verbose)
 
     try:
-        ctx = BrowserContext()
+        ctx = BrowserContext(no_sandbox=args.no_sandbox)
         print(ctx.process(args.url, wait_until=args.wait_until))
     finally:
         ctx.close()

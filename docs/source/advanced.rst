@@ -272,6 +272,12 @@ before a page is considered loaded by using the `wait_until` option. It can take
   - `networkidle2` will wait until there are no more than 2 network connections for at least 500 ms.
 
 
+Disabling Chromium's sandbox
+----------------------------
+
+For browser jobs, you can disable the Chromium sandbox to isolate processes. BEWARE: This is a less secure method of loading web pages and should be used carefully. See https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/design/sandbox.md for details.
+
+
 Treating ``NEW`` jobs as ``CHANGED``
 ------------------------------------
 

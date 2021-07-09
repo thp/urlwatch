@@ -364,7 +364,7 @@ class BrowserJob(Job):
 
     __required__ = ('navigate',)
 
-    __optional__ = ('wait_until',)
+    __optional__ = ('wait_until','no_sandbox',)
 
     LOCATION_IS_URL = True
 
@@ -373,7 +373,7 @@ class BrowserJob(Job):
 
     def main_thread_enter(self):
         from .browser import BrowserContext
-        self.ctx = BrowserContext()
+        self.ctx = BrowserContext(no_sandbox=self.no_sandbox)
 
     def main_thread_exit(self):
         self.ctx.close()
