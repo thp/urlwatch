@@ -364,7 +364,7 @@ class BrowserJob(Job):
 
     __required__ = ('navigate',)
 
-    __optional__ = ('wait_until','no_sandbox',)
+    __optional__ = ('wait_until', 'no_sandbox',)
 
     LOCATION_IS_URL = True
 
