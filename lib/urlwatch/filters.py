@@ -809,6 +809,24 @@ class SortFilter(FilterBase):
         return separator.join(sorted(data.split(separator), key=str.casefold, reverse=reverse))
 
 
+class UniqFilter(FilterBase):
+    """Uniq input items"""
+
+    __kind__ = 'uniq'
+
+    __default_subfilter__ = 'separator'
+
+    def filter(self, data, subfilter):
+        separator = subfilter.get('separator', '\n')
+        data_lines = data.split(separator)
+        uniq_lines = []
+        for line in data_lines:
+            if line not in uniq_lines:
+                uniq_lines.append(line)
+
+        return separator.join(uniq_lines)
+
+
 class ReverseFilter(FilterBase):
     """Reverse input items"""
 
