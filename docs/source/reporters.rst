@@ -231,7 +231,7 @@ You can have notifications sent to you through the `Matrix protocol`_.
 To achieve this, you first need to register a Matrix account for the bot
 on any homeserver.
 
-You then need to acquire room ID, using the following instructions:
+You then need to acquire the room ID, using the following instructions:
 
 #. Open `Riot.im <https://riot.im/app/>`__ in a private browsing window
 #. Register/Log in as your bot, using its user ID and password.
@@ -259,7 +259,7 @@ to obtain ``access_token`` and generate encryption keys:
 This is one time process during which you will be prompted for a password
 to the bot account (password will not be stored).
 Obtained credentials and encryption keys will be stored in user data directory
-approprite for your system (e.g. ``~/.local/share/urlwatch/`` on linux).
+appropriate for your system (relative to urlwatch's configuration directory).
 
 You will probably also want to use the following configuration for the
 ``markdown`` reporter, if you intend to post change notifications to a

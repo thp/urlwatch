@@ -9,7 +9,7 @@ matrix_client optional dependency (since 2.24)
 ----------------------------------------------
 In older versions ``matrix_client`` was used as matrix provider.
 This optional dependency is now replaced with ``matrix-nio`` which is both
-more featureful (support encrypted rooms) and more actively maintained.
+more featureful (supports encrypted rooms) and more actively maintained.
 
 Configuration is backwards compatible so after updating to 2.23 you
 only need to install ``matrix-nio`` and everything should work as previously.

@@ -1026,7 +1026,7 @@ class MatrixReporter(MarkdownReporter):
             content["formatted_body"] = body_html
         else:
             logger.debug(
-                'Not formatting as Markdown; dependency on markdown2 not met?')
+                'markdown2 could not be imported, skipping Markdown formatting')
 
         room_id = self.config['room_id']
 
