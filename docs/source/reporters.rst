@@ -250,7 +250,7 @@ Here is a sample configuration:
      user: @botusername:matrix.org
      enabled: true
 
-Then you need to manually trigger connection to the matrix from urlparse
+Then you need to manually trigger connection to the ``Matrix`` from urlparse
 to obtain ``access_token`` and generate encryption keys:
 
 .. code:: bash
