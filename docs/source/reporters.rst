@@ -220,6 +220,7 @@ The event will contain three values in the posted JSON:
 
 These values will be passed on to the Action in your Recipe.
 
+.. _matrix_reporter:
 
 Matrix
 ------

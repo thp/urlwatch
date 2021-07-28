@@ -29,23 +29,7 @@ Here is a sample configuration after update:
       user: @botusername:matrix.org
       enabled: true
 
-Then you need to manually trigger connection to obtain credentials and
-generate encryption keys:
-
-.. code:: bash
-
-    $ urlwatch --test-reporter matrix
-
-This is one time process during which you will be prompted for a password
-to the bot account (password will not be stored).
-Obtained credentials and encryption keys will be stored in user data directory
-approprite for your system (e.g. ``~/.local/share/urlwatch/`` on linux).
-
-Note that it is now not recommended to store ``access_token`` in configuration
-file and it will be only used if ``urlwatch`` recognizes configuration
-compatible with ``matrix_client`` (missing ``user`` field and containing
-``access_token`` field).
-
+For more details, check :ref:`Matrix reporter documentation<matrix_reporter>`
 
 Filters without subfilters (since 2.22)
 ---------------------------------------
