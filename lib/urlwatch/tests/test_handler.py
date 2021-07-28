@@ -88,9 +88,9 @@ def test_pep8_conformance():
 
 
 class ConfigForTest(CommandConfig):
-    def __init__(self, config, urls, cache, hooks, verbose):
+    def __init__(self, config, urlwatch_data_dir, urls, cache, hooks, verbose):
         (prefix, bindir) = os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))
-        super().__init__('urlwatch', os.path.dirname(__file__), os.path.dirname(__file__), bindir, prefix, config, urls, hooks, cache, verbose)
+        super().__init__('urlwatch', os.path.dirname(__file__), urlwatch_data_dir, bindir, prefix, config, urls, hooks, cache, verbose)
 
 
 @contextlib.contextmanager
@@ -100,14 +100,18 @@ def teardown_func():
     finally:
         "tear down test fixtures"
         cache = os.path.join(here, 'data', 'cache.db')
+        data_dir = os.path.join(here, 'data_dir')
         if os.path.exists(cache):
             os.remove(cache)
+        if os.path.exists(data_dir):
+            os.remove(data_dir)
 
 
 def test_run_watcher():
     with teardown_func():
         urls = os.path.join(root, 'share', 'urlwatch', 'examples', 'urls.yaml.example')
         config = os.path.join(here, 'data', 'urlwatch.yaml')
+        data_dir = os.path.join(here, 'data_dir')
         cache = os.path.join(here, 'data', 'cache.db')
         hooks = ''
 
@@ -115,7 +119,7 @@ def test_run_watcher():
         urls_storage = UrlsYaml(urls)
         cache_storage = CacheMiniDBStorage(cache)
         try:
-            urlwatch_config = ConfigForTest(config, urls, cache, hooks, True)
+            urlwatch_config = ConfigForTest(config, data_dir, urls, cache, hooks, True)
 
             urlwatcher = Urlwatch(urlwatch_config, config_storage, cache_storage, urls_storage)
             urlwatcher.run_jobs()
@@ -142,6 +146,7 @@ def test_unserialize_with_unknown_key():
 def prepare_retry_test():
     urls = os.path.join(here, 'data', 'invalid-url.yaml')
     config = os.path.join(here, 'data', 'urlwatch.yaml')
+    data_dir = os.path.join(here, 'data_dir')
     cache = os.path.join(here, 'data', 'cache.db')
     hooks = ''
 
@@ -149,7 +154,7 @@ def prepare_retry_test():
     cache_storage = CacheMiniDBStorage(cache)
     urls_storage = UrlsYaml(urls)
 
-    urlwatch_config = ConfigForTest(config, urls, cache, hooks, True)
+    urlwatch_config = ConfigForTest(config, data_dir, urls, cache, hooks, True)
     urlwatcher = Urlwatch(urlwatch_config, config_storage, cache_storage, urls_storage)
 
     return urlwatcher, cache_storage
