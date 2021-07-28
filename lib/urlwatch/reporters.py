@@ -1044,7 +1044,7 @@ class MatrixReporter(MarkdownReporter):
                     await client.close()
                 return
 
-            client = UrlwatchMatrixClient(self.config, self.report.urlwatch_config.urlwatch_data_dir)
+            client = UrlwatchMatrixClient(self.config, self.report.urlwatch_data_dir)
             try:
                 await client.login()
                 if room_id not in client.rooms:

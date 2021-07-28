@@ -176,7 +176,7 @@ class JobState(object):
 class Report(object):
     def __init__(self, urlwatch_obj):
         self.config = urlwatch_obj.config_storage.config
-        self.urlwatch_config = urlwatch_obj.urlwatch_config
+        self.urlwatch_data_dir = urlwatch_obj.urlwatch_config.urlwatch_data_dir
 
         self.job_states = []
         self.start = datetime.datetime.now()
