@@ -89,15 +89,18 @@ class ReporterBase(object, metaclass=TrackSubClasses):
         self.duration = duration
 
     def get_signature(self):
-        return (
-            '{pkgname} {version}, {copyright}'.format(pkgname=urlwatch.pkgname,
-                                                      version=urlwatch.__version__,
-                                                      copyright=urlwatch.__copyright__),
-            'Website: {url}'.format(url=urlwatch.__url__),
-            'Buy me a coffee: https://ko-fi.com/thpx86',
-            'watched {count} URLs in {duration} seconds'.format(count=len(self.job_states),
-                                                                duration=self.duration.seconds),
-        )
+        if self.report.config['display']['signature']:
+            return (
+                '{pkgname} {version}, {copyright}'.format(pkgname=urlwatch.pkgname,
+                                                          version=urlwatch.__version__,
+                                                          copyright=urlwatch.__copyright__),
+                'Website: {url}'.format(url=urlwatch.__url__),
+                'Buy me a coffee: https://ko-fi.com/thpx86',
+                'watched {count} URLs in {duration} seconds'.format(count=len(self.job_states),
+                                                                    duration=self.duration.seconds),
+            )
+
+        return []
 
     def convert(self, othercls):
         if hasattr(othercls, '__kind__'):

@@ -66,6 +66,7 @@ DEFAULT_CONFIG = {
         'new': True,
         'error': True,
         'unchanged': False,
+        'signature': True,
     },
 
     'report': {

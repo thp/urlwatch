@@ -26,9 +26,13 @@ You can change this behavior in the ``display`` section of the configuration:
      new: true
      error: true
      unchanged: false
+     signature: true
 
 If you set ``unchanged`` to ``true``, urlwatch will always report all pages
 that are checked but have not changed.
+
+``signature``, which is on by default, is a small blurb about urlwatch and ways
+to support it.
 
 
 Filter changes are not applied for ``unchanged``
