@@ -116,7 +116,7 @@ Required keys:
 
 Job-specific optional keys:
 
-- none
+- ``user_visible_url``: Visible URL to show in reports (e.g. when command is grabbing data from a URL, and you want to show that webpage)
 
 (Note: ``command`` implies ``kind: shell``)
 

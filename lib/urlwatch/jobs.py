@@ -195,10 +195,10 @@ class ShellJob(Job):
     __kind__ = 'shell'
 
     __required__ = ('command',)
-    __optional__ = ()
+    __optional__ = ('user_visible_url',)
 
     def get_location(self):
-        return self.command
+        return self.user_visible_url or self.command
 
     def retrieve(self, job_state):
         process = subprocess.Popen(self.command, stdout=subprocess.PIPE, shell=True)
