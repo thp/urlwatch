@@ -180,10 +180,11 @@ class JobBase(object, metaclass=TrackSubClasses):
 
 class Job(JobBase):
     __required__ = ()
-    __optional__ = ('name', 'filter', 'max_tries', 'diff_tool', 'compared_versions', 'diff_filter', 'treat_new_as_changed')
+    __optional__ = ('name', 'filter', 'max_tries', 'diff_tool', 'compared_versions', 'diff_filter', 'treat_new_as_changed', 'user_visible_url')
 
     # determine if hyperlink "a" tag is used in HtmlReporter
-    LOCATION_IS_URL = False
+    def location_is_url(self):
+        return re.match("^([a-zA-Z0-9+.-]+)://", self.get_location())
 
     def pretty_name(self):
         return self.name if self.name else self.get_location()
@@ -198,7 +199,7 @@ class ShellJob(Job):
     __optional__ = ()
 
     def get_location(self):
-        return self.command
+        return self.user_visible_url or self.command
 
     def retrieve(self, job_state):
         process = subprocess.Popen(self.command, stdout=subprocess.PIPE, shell=True)
@@ -221,9 +222,8 @@ class UrlJob(Job):
     __required__ = ('url',)
     __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
                     'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding', 'timeout',
-                    'ignore_timeout_errors', 'ignore_too_many_redirects', 'user_visible_url')
+                    'ignore_timeout_errors', 'ignore_too_many_redirects')
 
-    LOCATION_IS_URL = True
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
     def get_location(self):
@@ -366,10 +366,8 @@ class BrowserJob(Job):
 
     __optional__ = ('wait_until',)
 
-    LOCATION_IS_URL = True
-
     def get_location(self):
-        return self.navigate
+        return self.user_visible_url or self.navigate
 
     def main_thread_enter(self):
         from .browser import BrowserContext
