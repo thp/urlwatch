@@ -111,6 +111,7 @@ with no sounds, and monospace formatted (``monospace``).
 By default notifications are not silent and no formatting is done.
 
 .. code:: yaml
+
    telegram:
      # ...
      silent: true # message is sent silently
