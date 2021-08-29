@@ -135,9 +135,7 @@ Filtering based on an XPath expression
 
 To filter based on an
 `XPath <https://www.w3.org/TR/1999/REC-xpath-19991116/>`__ expression,
-you can use the ``xpath`` filter like so (see Microsoft’s `XPath
-Examples <https://msdn.microsoft.com/en-us/library/ms256086(v=vs.110).aspx>`__
-page for some other examples):
+you can use the ``xpath`` filter like so:
 
 .. code:: yaml
 
@@ -148,6 +146,9 @@ page for some other examples):
 This filters only the ``<marquee>`` elements directly below the ``<body>``
 element, which in turn must be below the ``<html>`` element of the document,
 stripping out everything else.
+
+See Microsoft’s `XPath Examples <https://msdn.microsoft.com/en-us/library/ms256086(v=vs.110).aspx>`__ page for some other examples.
+You can also find an XPath of an ``<html>`` node in the Chromium/Google Chrome developer tools by right clicking on the node and selecting ``copy XPath``.
 
 
 Filtering based on CSS selectors
