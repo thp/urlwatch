@@ -809,6 +809,31 @@ class SortFilter(FilterBase):
         return separator.join(sorted(data.split(separator), key=str.casefold, reverse=reverse))
 
 
+class RemoveDuplicateLinesFilter(FilterBase):
+    """Remove duplicate lines"""
+
+    __kind__ = 'remove-duplicate-lines'
+
+    __supported_subfilters__ = {
+        'separator': 'Item separator (default: newline)',
+    }
+
+    __default_subfilter__ = 'separator'
+
+    def filter(self, data, subfilter):
+        separator = subfilter.get('separator', '\n')
+        data_lines = data.split(separator)
+
+        def get_unique_lines(lines):
+            seen = set()
+            for line in lines:
+                if line not in seen:
+                    yield line
+                    seen.add(line)
+
+        return separator.join(get_unique_lines(data_lines))
+
+
 class ReverseFilter(FilterBase):
     """Reverse input items"""
 

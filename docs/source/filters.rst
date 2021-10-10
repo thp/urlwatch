@@ -69,6 +69,7 @@ At the moment, the following filters are built-in:
 - **sha1sum**: Calculate the SHA-1 checksum of the content
 - **shellpipe**: Filter using a shell command
 - **sort**: Sort input items
+- **remove-duplicate-lines**: Remove duplicate lines (case sensitive)
 - **strip**: Strip leading and trailing whitespace
 - **xpath**: Filter XML/HTML using XPath expressions
 - **jq**: Filter, transform and extract values from JSON

@@ -17,6 +17,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - Migrated CI pipeline from Travis CI to Github Actions
 - `user_visible_url` can now be specified for all job types (#654, by kongomongo)
+- Added a `remove-duplicate-lines` filter. 
 
 ## [2.23] -- 2021-04-10
 
