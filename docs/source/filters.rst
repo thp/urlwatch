@@ -302,6 +302,25 @@ If the PDF file is password protected, you can specify its password:
          password: urlwatchsecret
      - strip
 
+Dealing with CSV input
+----------------------
+
+`csv2text` filter can be used to turn CSV data to a prettier textual representation. This is done by
+supplying a `format_string` which is a [python format string](https://docs.python.org/3/library/string.html#format-string-syntax).
+If the CSV has a header, the format string should use the header names (**lowercased**). Example:
+
+| Name  | Company |
+|--|--|
+| Smith | Initech |
+| Doe   | Initech |
+
+Format string for the above CSV: `Mr {name} works at {company}` (Note the lowercase).
+If there is no header row, you will need to use the numeric array notation:
+`Mr {0} works at {1}`.
+You can also use numeric array on CSV with headers with the flag `ignore_header`.
+`has_header` can be used to force use the first line or first ignore the first line as header,
+otherwise [csv.Sniffer](https://docs.python.org/3/library/csv.html#csv.Sniffer)
+would be used.
 
 Sorting of webpage content
 --------------------------
