@@ -20,6 +20,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Added a `remove-duplicate-lines` filter. 
 - Added a `csv2text` filter.
 - Set envelope from (`-f` option) when sending emails using `sendmail`
+- It is now possible to override the HTTP `method` when `data` is set on a URL job
 
 ## [2.23] -- 2021-04-10
 

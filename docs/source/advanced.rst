@@ -323,3 +323,38 @@ jobs with index 2, 4, and 7:
 .. code-block:: bash
 
    urlwatch 2 4 7
+
+
+Sending HTML form data using POST
+---------------------------------
+
+To simulate submitting a HTML form using the POST method, you can pass
+the form fields in the ``data`` field of the job description:
+
+.. code-block:: yaml
+
+    name: "My POST Job"
+    url: http://example.com/foo
+    data:
+      username: "foo"
+      password: "bar"
+      submit: "Send query"
+
+By default, the request will use the HTTP ``POST`` method, and the
+``Content-type`` will be set to ``application/x-www-form-urlencoded``.
+
+
+Sending arbitrary data using HTTP PUT
+-------------------------------------
+
+It is possible to customize the HTTP method and ``Content-type`` header,
+allowing you to send arbitrary requests to the server:
+
+.. code-block:: yaml
+
+    name: "My PUT Request"
+    url: http://example.com/item/new
+    method: PUT
+    headers:
+      Content-type: application/json
+    data: '{"foo": true}'

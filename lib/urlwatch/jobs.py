@@ -251,12 +251,14 @@ class UrlJob(Job):
             headers['Cache-Control'] = 'max-age=172800'
             headers['Expires'] = email.utils.formatdate()
 
+        if self.data is not None:
+            if self.method is None:
+                self.method = "POST"
+            headers['Content-type'] = 'application/x-www-form-urlencoded'
+            logger.info('Sending %s request to %s', self.method, self.url)
+
         if self.method is None:
             self.method = "GET"
-        if self.data is not None:
-            self.method = "POST"
-            headers['Content-type'] = 'application/x-www-form-urlencoded'
-            logger.info('Sending POST request to %s', self.url)
 
         if self.http_proxy is not None:
             proxies['http'] = self.http_proxy
