@@ -95,6 +95,8 @@ class SMTPMailer(Mailer):
                 if passwd is None:
                     raise ValueError('No password available in keyring for {}, {}'
                                      .format(self.smtp_server, self.smtp_user))
+            else:
+                raise ValueError('SMTP auth is enabled, but insecure_password is not set and keyring is not available')
             s.login(self.smtp_user, passwd)
 
         s.sendmail(msg['From'], msg['To'].split(','), msg.as_string())
