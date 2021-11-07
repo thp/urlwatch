@@ -417,6 +417,13 @@ This is the corresponding version for Gitlab tags:
      - xpath: (//a[contains(@class,"item-title ref-name")])[1]
      - html2text
 
+Alternatively, ``jq`` can be used for filtering:
+
+.. code:: yaml
+
+   url: https://api.github.com/repos/voxpupuli/puppet-rundeck/tags
+   filter:
+     - jq: '.[0].name'
 
 Remove or replace text using regular expressions
 ------------------------------------------------
