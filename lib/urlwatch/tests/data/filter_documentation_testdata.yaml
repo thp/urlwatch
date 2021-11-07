@@ -368,7 +368,33 @@ https://example.net/jobs.json:
         "company": "Initech"
       }
     ]
-  output: |
+  output: |-
       "Senior Data Scientist"
       "Python Developer"
       "TPS Report Analyst"
+https://api.github.com/repos/voxpupuli/puppet-rundeck/tags:
+  input: |
+    [
+      {
+        "name": "v6.0.0",
+        "zipball_url": "https://api.github.com/repos/voxpupuli/puppet-rundeck/zipball/refs/tags/v6.0.0",
+        "tarball_url": "https://api.github.com/repos/voxpupuli/puppet-rundeck/tarball/refs/tags/v6.0.0",
+        "commit": {
+          "sha": "f539fb125f8fe56cec4f134dd5ef4b5c9be961c5",
+          "url": "https://api.github.com/repos/voxpupuli/puppet-rundeck/commits/f539fb125f8fe56cec4f134dd5ef4b5c9be961c5"
+        },
+        "node_id": "MDM6UmVmMTgyMDczMjM6cmVmcy90YWdzL3Y2LjAuMA=="
+      },
+      {
+        "name": "v5.4.0",
+        "zipball_url": "https://api.github.com/repos/voxpupuli/puppet-rundeck/zipball/refs/tags/v5.4.0",
+        "tarball_url": "https://api.github.com/repos/voxpupuli/puppet-rundeck/tarball/refs/tags/v5.4.0",
+        "commit": {
+          "sha": "4689cde2189ac38a36c81275fb13925f5c4a8ca2",
+          "url": "https://api.github.com/repos/voxpupuli/puppet-rundeck/commits/4689cde2189ac38a36c81275fb13925f5c4a8ca2"
+        },
+        "node_id": "MDM6UmVmMTgyMDczMjM6cmVmcy90YWdzL3Y1LjQuMA=="
+      }
+    ]
+  output: |-
+    "v6.0.0"
