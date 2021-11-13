@@ -6,7 +6,8 @@ import os
 import re
 import sys
 
-main_py = open(os.path.join('lib', 'urlwatch', '__init__.py')).read()
+with open(os.path.join('lib', 'urlwatch', '__init__.py')) as f:
+    main_py = f.read()
 m = dict(re.findall("\n__([a-z]+)__ = '([^']+)'", main_py))
 docs = re.findall('"""(.*?)"""', main_py, re.DOTALL)
 
