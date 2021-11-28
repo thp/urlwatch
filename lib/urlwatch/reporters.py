@@ -711,6 +711,9 @@ class DiscordReporter(TextReporter):
         return result
 
     def submit_to_discord(self, webhook_url, text):
+        if self.config.get('colored', True):
+            text = "```diff\n" + text + "```"
+
         if self.config.get('embed', False):
             filtered_job_states = list(self.report.get_filtered_job_states(self.job_states))
 
