@@ -6,6 +6,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## [UNRELEASED]
 
+### Changed
+
+- Require minidb 2.0.6; issue `VACUUM` only with `--gc-cache` (fixes #690)
+
 ## [2.24] -- 2021-11-07
 
 ### Added

@@ -585,6 +585,7 @@ class CacheMiniDBStorage(CacheStorage):
         if keep_id is not None:
             result = CacheEntry.delete_where(self.db, (CacheEntry.c.guid == guid) & (CacheEntry.c.id != keep_id))
             self.db.commit()
+            self.db.vacuum()
             return result
 
         return 0

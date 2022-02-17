@@ -1,5 +1,5 @@
 pyyaml
-minidb
+minidb >= 2.0.6
 requests
 keyring
 appdirs
