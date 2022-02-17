@@ -6,6 +6,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## [UNRELEASED]
 
+### Added
+
+- Add a `colored` setting for the Discord reporter, enabled by default (PR#683 by Michał Ciołek)
+
 ### Changed
 
 - Require minidb 2.0.6; issue `VACUUM` only with `--gc-cache` (fixes #690)
