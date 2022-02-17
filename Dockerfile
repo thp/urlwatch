@@ -1,4 +1,4 @@
-FROM python:3.8.2
+FROM python:3.10.0
 
 RUN python3 -m pip install --no-cache-dir pyyaml minidb requests keyring appdirs lxml cssselect beautifulsoup4 jsbeautifier cssbeautifier aioxmpp
 
