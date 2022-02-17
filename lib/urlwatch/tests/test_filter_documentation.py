@@ -39,7 +39,8 @@ class YAMLCodeBlockVisitor(docutils.nodes.NodeVisitor):
 
 
 def load_filter_testdata():
-    doc = parse_rst(open(os.path.join(root, 'docs/source/filters.rst')).read())
+    with open(os.path.join(root, 'docs/source/filters.rst')) as f:
+        doc = parse_rst(f.read())
     visitor = YAMLCodeBlockVisitor(doc)
     doc.walk(visitor)
 
@@ -56,10 +57,12 @@ FILTER_DOC_URLS = load_filter_testdata()
 
 @pytest.mark.parametrize('url, job', FILTER_DOC_URLS.items())
 def test_url(url, job):
-    testdata = yaml.safe_load(open(os.path.join(here, 'data/filter_documentation_testdata.yaml')).read())
+    with open(os.path.join(here, 'data/filter_documentation_testdata.yaml')) as f:
+        testdata = yaml.safe_load(f)
     d = testdata[url]
     if 'filename' in d:
-        input_data = open(os.path.join(here, 'data', d['filename']), 'rb').read()
+        with open(os.path.join(here, 'data', d['filename']), 'rb') as f:
+            input_data = f.read()
     else:
         input_data = d['input']
 

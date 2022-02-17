@@ -268,7 +268,8 @@ class UrlJob(Job):
         file_scheme = 'file://'
         if self.url.startswith(file_scheme):
             logger.info('Using local filesystem (%s URI scheme)', file_scheme)
-            return open(self.url[len(file_scheme):], 'rt').read()
+            with open(self.url[len(file_scheme):], 'rt') as f:
+                return f.read()
 
         if self.headers:
             self.add_custom_headers(headers)
