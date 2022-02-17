@@ -534,7 +534,7 @@ class CacheMiniDBStorage(CacheStorage):
         if dirname and not os.path.isdir(dirname):
             os.makedirs(dirname)
 
-        self.db = minidb.Store(self.filename, debug=True)
+        self.db = minidb.Store(self.filename, debug=True, vacuum_on_close=False)
         self.db.register(CacheEntry)
 
     def close(self):
