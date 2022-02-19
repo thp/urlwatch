@@ -71,6 +71,7 @@ At the moment, the following filters are built-in:
 - **sort**: Sort input items
 - **remove-duplicate-lines**: Remove duplicate lines (case sensitive)
 - **strip**: Strip leading and trailing whitespace
+- **striplines**: Strip leading and trailing whitespace in each line
 - **xpath**: Filter XML/HTML using XPath expressions
 - **jq**: Filter, transform and extract values from JSON
 
