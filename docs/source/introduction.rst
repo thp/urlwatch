@@ -40,7 +40,7 @@ Finally, you often use the ``filter`` key to select one or more :ref:`filters` t
 - make iCal more readable: ``ical2text``
 - make binary readable: ``hexdump``
 - just detect changes: ``sha1sum``
-- edit text: ``grep``, ``grepi``, ``strip``, ``sort``
+- edit text: ``grep``, ``grepi``, ``strip``, ``sort``, ``striplines``
 
 These :ref:`filters` can be chained. As an example, after retrieving an HTML document by using the ``url`` key, you can extract a selection with the ``xpath`` filter, convert this to text with ``html2text``, use ``grep`` to extract only lines matching a specific regular expression, and then ``sort`` them:
 

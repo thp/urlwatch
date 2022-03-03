@@ -496,6 +496,17 @@ class StripFilter(FilterBase):
         return data.strip()
 
 
+class StripLinesFilter(FilterBase):
+    """Strip leading and trailing whitespace in every line"""
+
+    __kind__ = 'striplines'
+
+    __no_subfilter__ = True
+
+    def filter(self, data, subfilter=None):
+        return '\n'.join(line.strip() for line in data.splitlines())
+
+
 class FilterBy(Enum):
     ATTRIBUTE = 1
     TAG = 2

@@ -326,3 +326,11 @@ re_sub_multiline:
     One Line
     
     Another Line
+strip:
+  filter: strip
+  data: "  The rose is red;   \n\nthe violet's blue.\nSugar is sweet,       \nand so are you.   "
+  expected_result: "The rose is red;   \n\nthe violet's blue.\nSugar is sweet,       \nand so are you."
+striplines:
+  filter: striplines
+  data: "  The rose is red;   \n\nthe violet's blue.\nSugar is sweet,       \nand so are you.   "
+  expected_result: "The rose is red;\n\nthe violet's blue.\nSugar is sweet,\nand so are you."
