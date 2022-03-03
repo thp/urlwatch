@@ -9,6 +9,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Added
 
 - Add a `colored` setting for the Discord reporter, enabled by default (PR#683 by Michał Ciołek)
+- Add a `splitlines` filter for trimming leading/trailing whitespace in each line (PR#693 by Lukas Anzinger)
 
 ### Changed
 
