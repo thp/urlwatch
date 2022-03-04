@@ -52,10 +52,10 @@ def load_filter_testdata():
     return jobs
 
 
-FILTER_DOC_URLS = load_filter_testdata()
+FILTER_DOC_URLS = list(load_filter_testdata().items())
 
 
-@pytest.mark.parametrize('url, job', FILTER_DOC_URLS.items())
+@pytest.mark.parametrize('url, job', FILTER_DOC_URLS, ids=[v[0] for v in FILTER_DOC_URLS])
 def test_url(url, job):
     with open(os.path.join(here, 'data/filter_documentation_testdata.yaml')) as f:
         testdata = yaml.safe_load(f)
