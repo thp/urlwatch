@@ -10,10 +10,14 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - Add a `colored` setting for the Discord reporter, enabled by default (PR#683 by Michał Ciołek)
 - Add a `splitlines` filter for trimming leading/trailing whitespace in each line (PR#693 by Lukas Anzinger)
+- If a shell job fails, the job's `stdout` and `stderr` are added to the error message (fixes #689)
+- `shell` job: Add optional `stderr` key to customize how output on `stderr` is treated
 
 ### Changed
 
 - Require minidb 2.0.6; issue `VACUUM` only with `--gc-cache` (fixes #690)
+- For shell jobs, `stderr` output isn't sent to urlwatch's stdout anymore; add `stdout: urlwatch`
+  to your shell job definition if you depend on the old default behavior
 
 ## [2.24] -- 2021-11-07
 

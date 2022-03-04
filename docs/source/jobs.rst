@@ -115,9 +115,45 @@ Required keys:
 
 Job-specific optional keys:
 
-- none
+- ``stderr``: Change how standard error is treated, see below
 
 (Note: ``command`` implies ``kind: shell``)
+
+Configuring ``stderr`` behavior for shell jobs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default urlwatch captures ``stderr`` for error reporting (non-zero exit
+code), but ignores the output when the shell job exits with exit code 0.
+
+This behavior can be customized using the ``stderr`` key:
+
+- ``ignore``: Capture ``stderr``, report on non-zero exit code, ignore otherwise (default)
+- ``urlwatch``: ``stderr`` of the shell job is sent to ``stderr`` of the ``urlwatch`` process;
+  any error message on ``stderr`` will not be visible in the error message from the reporter
+  (legacy default behavior of urlwatch 2.24 and older)
+- ``fail``: Treat the job as failed if there is *any* output on ``stderr``, even with exit status 0
+- ``stdout``: Merge ``stderr`` output into ``stdout``, which means stderr output is also considered
+  for the change detection/diff part of urlwatch (this is similar to ``2>&1`` in a shell)
+
+For example, this job definition will make the job appear as failed,
+even though the script exits with exit code 0:
+
+.. code-block:: yaml
+
+    command: |
+      echo "Normal standard output."
+      echo "Something goes to stderr, which makes this job fail." 1>&2
+      exit 0
+    stderr: fail
+
+On the other hand, if you want to diff both stdout and stderr of the job, use this:
+
+.. code-block:: yaml
+
+    command: |
+      echo "An important line on stdout."
+      echo "Another important line on stderr." 1>&2
+    stderr: stdout
 
 
 Optional keys for all job types

@@ -50,12 +50,23 @@ logger = logging.getLogger(__name__)
 class ShellError(Exception):
     """Exception for shell commands with non-zero exit code"""
 
-    def __init__(self, result):
+    def __init__(self, result, stdout_data, stderr_data, stderr_config):
         Exception.__init__(self)
         self.result = result
+        self.stdout_data = stdout_data
+        self.stderr_data = stderr_data
+        self.stderr_config = stderr_config
 
     def __str__(self):
-        return '%s: Exit status %d' % (self.__class__.__name__, self.result)
+        stdout = '\n'.join(('=' * 30, 'stdout from failed process:', repr(self.stdout_data), '=' * 30))
+        stderr = '\n'.join(('=' * 30, 'stderr from failed process:', repr(self.stderr_data), '=' * 30))
+        return '%s: Exit status %d\nstderr behavior: %r\n%s\n%s' % (
+            self.__class__.__name__,
+            self.result,
+            self.stderr_config,
+            stdout,
+            stderr,
+        )
 
 
 class NotModifiedError(Exception):
@@ -196,17 +207,36 @@ class ShellJob(Job):
     __kind__ = 'shell'
 
     __required__ = ('command',)
-    __optional__ = ()
+    __optional__ = ('stderr',)
 
     def get_location(self):
         return self.user_visible_url or self.command
 
     def retrieve(self, job_state):
-        process = subprocess.Popen(self.command, stdout=subprocess.PIPE, shell=True)
+        if not self.stderr or self.stderr == 'ignore':
+            # Report stderr output for non-zero exit code,
+            # but ignore stderr output with zero exit code
+            stderr = subprocess.PIPE
+        elif self.stderr == 'urlwatch':
+            # Legacy behavior, forward stderr output to urlwatch's stderr
+            stderr = None
+        elif self.stderr == 'fail':
+            # Treat any output on stderr as failure (even with zero exit code)
+            stderr = subprocess.PIPE
+        elif self.stderr == 'stdout':
+            # Combine stderr into stdout (kind of like "2>&1" on the shell)
+            stderr = subprocess.STDOUT
+        else:
+            raise ValueError('Invalid value for "stderr": %s' % (self.stderr,))
+
+        process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=stderr, shell=True)
         stdout_data, stderr_data = process.communicate()
         result = process.wait()
         if result != 0:
-            raise ShellError(result)
+            raise ShellError(result, stdout_data, stderr_data, self.stderr)
+        elif self.stderr == 'fail' and stderr_data:
+            # Exit code zero, but stderr contains data, and we want to fail
+            raise ShellError(result, stdout_data, stderr_data, self.stderr)
 
         if FilterBase.filter_chain_needs_bytes(self.filter):
             return stdout_data
