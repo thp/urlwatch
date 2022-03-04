@@ -2,6 +2,7 @@ display:
   error: true
   new: true
   unchanged: false
+  empty-diff: true
 report:
   email:
     enabled: false

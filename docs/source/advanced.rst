@@ -208,6 +208,50 @@ More sophisticated diff filtering is possibly by combining existing
 filters, writing a new filter or using ``shellpipe`` to delegate the
 filtering/processing of the diff output to an external tool.
 
+Read the next section if you want to disable empty notifications.
+
+
+Disable empty notifications
+---------------------------
+
+As an extension to the previous example, let's say you want to only
+get notified with all lines added, but receive no notifications at all
+if lines are removed.
+
+A diff usually looks like this:
+
+.. code-block::
+
+    --- @	Fri, 04 Mar 2022 19:58:14 +0100
+    +++ @	Fri, 04 Mar 2022 19:58:22 +0100
+    @@ -1,3 +1,3 @@
+     someline
+    -someotherlines
+    +someotherline
+     anotherline
+
+We want to filter all lines starting with "+" only, but because of
+the headers we also want to filter lines that start with "+++",
+which can be accomplished like so:
+
+.. code-block:: yaml
+
+    url: http://example.com/only-added.html
+    diff_filter:
+      - grep: '^[+]'      # Include all lines starting with "+"
+      - grepi: '^[+]{3}'  # Exclude the line starting with "+++"
+
+This deals with all diff lines now, but since urlwatch reports
+"changed" pages even when the ``diff_filter`` returns an empty string
+(which might be useful in some cases), you have to explicitly opt out
+by using ``urlwatch --edit-config`` and setting the ``empty-diff``
+option to ``false`` in the ``display`` category:
+
+.. code-block:: yaml
+
+    display:
+      empty-diff: false
+
 
 Pass diff output to a custom script
 -----------------------------------

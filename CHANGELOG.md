@@ -13,6 +13,8 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - If a shell job fails, the job's `stdout` and `stderr` are added to the error message (fixes #689)
 - `shell` job: Add optional `stderr` key to customize how output on `stderr` is treated
 - Add `--dump-history JOB` command-line option to print historic job outputs (fixes #681)
+- Add `display` / `empty-diff` configuration option to skip reports when diffs are empty
+  due to `diff_filter` (fixes #692)
 
 ### Changed
 

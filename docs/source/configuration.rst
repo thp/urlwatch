@@ -26,9 +26,15 @@ You can change this behavior in the ``display`` section of the configuration:
      new: true
      error: true
      unchanged: false
+     empty-diff: true
 
 If you set ``unchanged`` to ``true``, urlwatch will always report all pages
 that are checked but have not changed.
+
+The ``empty-diff`` settings control what happens if a page is ``changed``, but
+due to e.g. a ``diff_filter`` the diff is reduced to the empty string. If set
+to ``true``, urlwatch will report an (empty) change. If set to ``false``, the
+change will not be included in the report.
 
 
 Filter changes are not applied for ``unchanged``
