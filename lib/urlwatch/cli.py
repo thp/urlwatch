@@ -90,7 +90,7 @@ def main():
     if os.path.exists(old_cache_file) and not os.path.exists(new_cache_file):
         cache_file = old_cache_file
 
-    command_config = CommandConfig(pkgname, urlwatch_dir, bindir, prefix,
+    command_config = CommandConfig(sys.argv[1:], pkgname, urlwatch_dir, bindir, prefix,
                                    config_file, urls_file, hooks_file, cache_file, False)
     setup_logger(command_config.verbose)
 

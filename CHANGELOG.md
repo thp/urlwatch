@@ -22,6 +22,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - For shell jobs, `stderr` output isn't sent to urlwatch's stdout anymore; add `stdout: urlwatch`
   to your shell job definition if you depend on the old default behavior
 
+### Fixed
+
+- `pytest` command-line arguments are not wrongly interpreted by `CommandConfig` anymore (fixes #677)
+
 ## [2.24] -- 2021-11-07
 
 ### Added

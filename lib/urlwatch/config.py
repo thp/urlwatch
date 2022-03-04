@@ -52,7 +52,7 @@ class BaseConfig(object):
 
 class CommandConfig(BaseConfig):
 
-    def __init__(self, pkgname, urlwatch_dir, bindir, prefix, config, urls, hooks, cache, verbose):
+    def __init__(self, args, pkgname, urlwatch_dir, bindir, prefix, config, urls, hooks, cache, verbose):
         super().__init__(pkgname, urlwatch_dir, config, urls, cache, hooks, verbose)
         self.bindir = bindir
         self.prefix = prefix
@@ -69,9 +69,9 @@ class CommandConfig(BaseConfig):
         self.urls_yaml_example = os.path.join(self.examples_dir, 'urls.yaml.example')
         self.hooks_py_example = os.path.join(self.examples_dir, 'hooks.py.example')
 
-        self.parse_args()
+        self.parse_args(args)
 
-    def parse_args(self):
+    def parse_args(self, cmdline_args):
 
         parser = argparse.ArgumentParser(description=urlwatch.__doc__,
                                          formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -110,7 +110,7 @@ class CommandConfig(BaseConfig):
         group.add_argument('--features', action='store_true', help='list supported jobs/filters/reporters')
         group.add_argument('--gc-cache', action='store_true', help='remove old cache entries')
 
-        args = parser.parse_args()
+        args = parser.parse_args(cmdline_args)
 
         for i, arg in enumerate(vars(args)):
             argval = getattr(args, arg)
