@@ -34,6 +34,7 @@ import shutil
 import sys
 import requests
 import traceback
+import datetime
 
 from .filters import FilterBase
 from .handler import JobState, Report
@@ -141,11 +142,16 @@ class UrlwatchCommand:
         # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
         return 0
 
-    def test_diff_filter(self, id):
+    def _resolve_job_history(self, id, max_entries=10):
         job = self._get_job(id)
 
-        history_data = self.urlwatcher.cache_storage.get_history_data(job.get_guid(), 10)
+        history_data = self.urlwatcher.cache_storage.get_history_data(job.get_guid(), max_entries)
         history_data = sorted(history_data.items(), key=lambda kv: kv[1])
+
+        return job, history_data
+
+    def test_diff_filter(self, id):
+        job, history_data = self._resolve_job_history(id)
 
         if len(history_data) and getattr(job, 'treat_new_as_changed', False):
             # Insert empty history entry, so first snapshot is diffed against the empty string
@@ -165,6 +171,21 @@ class UrlwatchCommand:
 
         # We do not save the job state or job on purpose here, since we are possibly modifying the job
         # (ignore_cached) and we do not want to store the newly-retrieved data yet (filter testing)
+        return 0
+
+    def dump_history(self, id):
+        job, history_data = self._resolve_job_history(id)
+
+        for entry_data, entry_timestamp in history_data:
+            print('=' * 30)
+            dt = datetime.datetime.fromtimestamp(entry_timestamp)
+            print(dt.strftime('%Y-%m-%d %H:%M'))
+            print('-' * 30)
+            print(entry_data)
+            print('=' * 30, '\n')
+
+        print('{} historic snapshot(s) available'.format(len(history_data)))
+
         return 0
 
     def modify_urls(self):
@@ -210,6 +231,8 @@ class UrlwatchCommand:
             sys.exit(self.test_filter(self.urlwatch_config.test_filter))
         if self.urlwatch_config.test_diff_filter:
             sys.exit(self.test_diff_filter(self.urlwatch_config.test_diff_filter))
+        if self.urlwatch_config.dump_history:
+            sys.exit(self.dump_history(self.urlwatch_config.dump_history))
         if self.urlwatch_config.list:
             sys.exit(self.list_urls())
         if self.urlwatch_config.add is not None or self.urlwatch_config.delete is not None:

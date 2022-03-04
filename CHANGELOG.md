@@ -12,6 +12,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Add a `splitlines` filter for trimming leading/trailing whitespace in each line (PR#693 by Lukas Anzinger)
 - If a shell job fails, the job's `stdout` and `stderr` are added to the error message (fixes #689)
 - `shell` job: Add optional `stderr` key to customize how output on `stderr` is treated
+- Add `--dump-history JOB` command-line option to print historic job outputs (fixes #681)
 
 ### Changed
 
