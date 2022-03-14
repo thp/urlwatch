@@ -251,17 +251,30 @@ http://example.org/reverse-paragraphs.txt:
 
     When there are multiple
     paragraphs like this.
-https://github.com/thp/urlwatch/releases:
+https://github.com/tulir/gomuks/releases:
   input: |-
-    <div class="release-timeline-tags release-entry">
-      <h4 class="flex-auto min-width-0 pr-2 pb-1 commit-title">
-        <a href="/thp/urlwatch/releases/tag/2.18">
-          2.18
+    <div class="d-flex flex-column flex-md-row my-5 flex-justify-center">
+      <h1 data-view-component="true" class="d-inline mr-3">
+        <a href="/tulir/gomuks/releases/tag/v0.2.4" data-view-component="true" class="Link--primary">
+          v0.2.4
         </a>
-      </h4>
+      </h1>
     </div>
   output: |-
-    2.18
+    v0.2.4
+https://github.com/thp/urlwatch/tags:
+  input: |-
+    <div class="commit js-details-container Details">
+      <div class="d-flex">
+        <h4 class="flex-auto min-width-0 pr-2 pb-1 commit-title" data-test-selector="tag-title">
+          <a href="/thp/urlwatch/releases/tag/2.24">
+            2.24
+          </a>
+        </h4>
+      </div>
+    </div>
+  output: |-
+    2.24
 https://gitlab.com/chinstrap/gammastep/-/tags:
   input: |-
     <a class="item-title ref-name" href="/chinstrap/gammastep/-/tags/v2.0.7">v2.0.7</a>

@@ -403,13 +403,23 @@ project for the latest release version, to be notified of new releases:
 
 .. code:: yaml
 
-   url: https://github.com/thp/urlwatch/releases
+   url: https://github.com/tulir/gomuks/releases
    filter:
-     - xpath: '(//div[contains(@class,"release-timeline-tags")]//h4)[1]/a'
+     - xpath: '(//div[contains(@class,"d-flex flex-column flex-md-row my-5 flex-justify-center")]//h1//a)[1]'
      - html2text: re
      - strip
 
-This is the corresponding version for Gitlab tags:
+This is the corresponding version for Github tags:
+
+.. code:: yaml
+
+   url: https://github.com/thp/urlwatch/tags
+   filter:
+     - xpath: (//div[contains(@class,"commit js-details-container Details")]//h4//a)[1]
+     - html2text
+     - strip
+
+and for Gitlab tags:
 
 .. code:: yaml
 
