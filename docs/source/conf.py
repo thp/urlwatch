@@ -22,7 +22,7 @@ copyright = '2022 Thomas Perl'
 author = 'Thomas Perl'
 
 # The full version, including alpha/beta/rc tags
-release = '2.24'
+release = '2.25'
 
 
 # -- General configuration ---------------------------------------------------
