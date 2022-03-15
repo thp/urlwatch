@@ -1,0 +1,232 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "URLWATCH-INTRO" "7" "Mar 15, 2022" "urlwatch 2.24" "urlwatch 2.24 Documentation"
+.SH NAME
+urlwatch-intro \- Introduction to basic urlwatch usage
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH QUICK START
+.INDENT 0.0
+.IP 1. 3
+Run \fBurlwatch\fP once to migrate your old data or start fresh
+.IP 2. 3
+Use \fBurlwatch \-\-edit\fP to customize jobs and filters (\fBurls.yaml\fP)
+.IP 3. 3
+Use \fBurlwatch \-\-edit\-config\fP to customize settings and reporters (\fBurlwatch.yaml\fP)
+.IP 4. 3
+Add \fBurlwatch\fP to your crontab (\fBcrontab \-e\fP) to monitor webpages periodically
+.UNINDENT
+.sp
+The checking interval is defined by how often you run \fBurlwatch\fP\&. You
+can use e.g.\ \fI\%crontab.guru\fP <\fBhttps://crontab.guru\fP> to figure out the
+schedule expression for the checking interval, we recommend not more
+often than 30 minutes (this would be \fB*/30 * * * *\fP). If you have
+never used cron before, check out the \fI\%crontab command
+help\fP <\fBhttps://www.computerhope.com/unix/ucrontab.htm\fP>\&.
+.sp
+On Windows, \fBcron\fP is not installed by default. Use the \fI\%Windows Task
+Scheduler\fP <\fBhttps://en.wikipedia.org/wiki/Windows_Task_Scheduler\fP>
+instead, or see \fI\%this StackOverflow
+question\fP <\fBhttps://stackoverflow.com/q/132971/1047040\fP> for
+alternatives.
+.SH HOW IT WORKS
+.sp
+Every time you run \fBurlwatch(1)\fP, it:
+.INDENT 0.0
+.IP \(bu 2
+retrieves the output of each job and filters it
+.IP \(bu 2
+compares it with the version retrieved the previous time ("diffing")
+.IP \(bu 2
+if it finds any differences, it invokes enabled reporters (e.g.
+text reporter, e\-mail reporter, ...) to notify you of the changes
+.UNINDENT
+.SH JOBS AND FILTERS
+.sp
+Each website or shell command to be monitored constitutes a "job".
+.sp
+The instructions for each such job are contained in a config file in the \fI\%YAML
+format\fP <\fBhttps://yaml.org/spec/\fP>\&. If you have more than one job, you separate them with a line
+containing only \fB\-\-\-\fP\&.
+.sp
+You can edit the job and filter configuration file using:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+urlwatch \-\-edit
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+If you get an error, set your \fB$EDITOR\fP (or \fB$VISUAL\fP) environment
+variable in your shell, for example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+export EDITOR=/bin/nano
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+While you can edit the YAML file manually, using \fB\-\-edit\fP will
+do sanity checks before activating the new configuration file.
+.SS Kinds of Jobs
+.sp
+Each job must have exactly one of the following keys, which also
+defines the kind of job:
+.INDENT 0.0
+.IP \(bu 2
+\fBurl\fP retrieves what is served by the web server (HTTP GET by default),
+.IP \(bu 2
+\fBnavigate\fP uses a headless browser to load web pages requiring JavaScript, and
+.IP \(bu 2
+\fBcommand\fP runs a shell command.
+.UNINDENT
+.sp
+Each job can have an optional \fBname\fP key to define a user\-visible name for the job.
+.sp
+You can then use optional keys to finely control various job\(aqs parameters.
+.sp
+See \fBurlwatch\-jobs(5)\fP for detailed information on job configuration.
+.SS Filters
+.sp
+You may use the \fBfilter\fP key to select one or more filters to apply to
+the data after it is retrieved, for example to:
+.INDENT 0.0
+.IP \(bu 2
+select HTML: \fBcss\fP, \fBxpath\fP, \fBelement\-by\-class\fP, \fBelement\-by\-id\fP, \fBelement\-by\-style\fP, \fBelement\-by\-tag\fP
+.IP \(bu 2
+make HTML more readable: \fBhtml2text\fP, \fBbeautify\fP
+.IP \(bu 2
+make PDFs readable: \fBpdf2text\fP
+.IP \(bu 2
+make JSON more readable: \fBformat\-json\fP
+.IP \(bu 2
+make iCal more readable: \fBical2text\fP
+.IP \(bu 2
+make binary readable: \fBhexdump\fP
+.IP \(bu 2
+just detect changes: \fBsha1sum\fP
+.IP \(bu 2
+edit text: \fBgrep\fP, \fBgrepi\fP, \fBstrip\fP, \fBsort\fP, \fBstriplines\fP
+.UNINDENT
+.sp
+These filters can be chained. As an example, after retrieving an HTML
+document by using the \fBurl\fP key, you can extract a selection with the
+\fBxpath\fP filter, convert this to text with \fBhtml2text\fP, use \fBgrep\fP to
+extract only lines matching a specific regular expression, and then \fBsort\fP
+them:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+name: "Sample urlwatch job definition"
+url: "https://example.dummy/"
+https_proxy: "http://dummy.proxy/"
+max_tries: 2
+filter:
+  \- xpath: \(aq//section[@role="main"]\(aq
+  \- html2text:
+      method: pyhtml2text
+      unicode_snob: true
+      body_width: 0
+      inline_links: false
+      ignore_links: true
+      ignore_images: true
+      pad_tables: false
+      single_line_break: true
+  \- grep: "lines I care about"
+  \- sort:
+\-\-\-
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+See \fBurlwatch\-filters(5)\fP for detailed information on filter configuration.
+.SH REPORTERS
+.sp
+\fIurlwatch\fP can be configured to do something with its report besides
+(or in addition to) the default of displaying it on the console.
+.sp
+reporters are configured in the global configuration file:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+urlwatch \-\-edit\-config
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Examples of reporters:
+.INDENT 0.0
+.IP \(bu 2
+\fBemail\fP (using SMTP)
+.IP \(bu 2
+email using \fBmailgun\fP
+.IP \(bu 2
+\fBslack\fP
+.IP \(bu 2
+\fBdiscord\fP
+.IP \(bu 2
+\fBpushbullet\fP
+.IP \(bu 2
+\fBtelegram\fP
+.IP \(bu 2
+\fBmatrix\fP
+.IP \(bu 2
+\fBpushover\fP
+.IP \(bu 2
+\fBstdout\fP
+.IP \(bu 2
+\fBxmpp\fP
+.UNINDENT
+.sp
+See \fBurlwatch\-reporters(5)\fP for reporter configuration options.
+.SH SEE ALSO
+.sp
+\fBurlwatch(1)\fP,
+\fBurlwatch\-jobs(5)\fP,
+\fBurlwatch\-filters(5)\fP,
+\fBurlwatch\-config(5)\fP,
+\fBurlwatch\-reporters(5)\fP,
+\fBcron(8)\fP
+.SH COPYRIGHT
+2022 Thomas Perl
+.\" Generated by docutils manpage writer.
+.

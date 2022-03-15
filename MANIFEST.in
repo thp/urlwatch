@@ -1,4 +1,4 @@
-include CHANGELOG.md COPYING
+include CHANGELOG.md COPYING update-manpages.sh
 graft docs
 graft lib/urlwatch/tests
 graft share

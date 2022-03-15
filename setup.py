@@ -25,7 +25,20 @@ m['package_dir'] = {'': 'lib'}
 m['packages'] = ['urlwatch']
 m['python_requires'] = '>=3.6'
 m['data_files'] = [
-    ('share/man/man1', ['share/man/man1/urlwatch.1']),
+    ('share/man/man1', [
+        'share/man/man1/urlwatch.1',
+    ]),
+    ('share/man/man5', [
+        'share/man/man5/urlwatch-config.5',
+        'share/man/man5/urlwatch-filters.5',
+        'share/man/man5/urlwatch-jobs.5',
+        'share/man/man5/urlwatch-reporters.5',
+    ]),
+    ('share/man/man7', [
+        'share/man/man7/urlwatch-cookbook.7',
+        'share/man/man7/urlwatch-deprecated.7',
+        'share/man/man7/urlwatch-intro.7',
+    ]),
     ('share/urlwatch/examples', [
         'share/urlwatch/examples/hooks.py.example',
         'share/urlwatch/examples/urls.yaml.example',

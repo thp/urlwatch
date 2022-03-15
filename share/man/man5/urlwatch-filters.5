@@ -1,0 +1,869 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "URLWATCH-FILTERS" "5" "Mar 15, 2022" "urlwatch 2.24" "urlwatch 2.24 Documentation"
+.SH NAME
+urlwatch-filters \- Filtering output and diff data of urlwatch jobs
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH SYNOPSIS
+.sp
+urlwatch \-\-edit
+.SH DESCRIPTION
+.sp
+Each job can have two filter stages configured, with one or more
+filters processed after each other:
+.INDENT 0.0
+.IP \(bu 2
+Applied to the downloaded page before diffing the changes (\fBfilter\fP)
+.IP \(bu 2
+Applied to the diff result before reporting the changes (\fBdiff_filter\fP)
+.UNINDENT
+.sp
+While creating your filter pipeline, you might want to preview what the
+filtered output looks like. You can do so by first configuring your job
+and then running urlwatch with the \fB\-\-test\-filter\fP command, passing in
+the index (from \fB\-\-list\fP) or the URL/location of the job to be tested:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+urlwatch \-\-test\-filter 1   # Test the first job in the list
+urlwatch \-\-test\-filter https://example.net/  # Test the job with the given URL
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The output of this command will be the filtered plaintext of the job,
+this is the output that will (in a real urlwatch run) be the input to
+the diff algorithm.
+.sp
+The \fBfilter\fP is only applied to new content, the old content was
+already filtered when it was retrieved. This means that changes to
+\fBfilter\fP are not visible when reporting unchanged contents
+(see configuration_display for details), and the diff output
+will be between (old content with filter at the time old content was
+retrieved) and (new content with current filter).
+.sp
+Once urlwatch has collected at least 2 historic snapshots of a job
+(two different states of a webpage) you can use the command\-line
+option \fB\-\-test\-diff\-filter\fP to test your \fBdiff_filter\fP settings;
+this will use historic data cached locally.
+.SH BUILT-IN FILTERS
+.sp
+The list of built\-in filters can be retrieved using:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+urlwatch \-\-features
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+At the moment, the following filters are built\-in:
+.INDENT 0.0
+.IP \(bu 2
+\fBbeautify\fP: Beautify HTML
+.IP \(bu 2
+\fBcss\fP: Filter XML/HTML using CSS selectors
+.IP \(bu 2
+\fBcsv2text\fP: Convert CSV to plaintext
+.IP \(bu 2
+\fBelement\-by\-class\fP: Get all HTML elements by class
+.IP \(bu 2
+\fBelement\-by\-id\fP: Get an HTML element by its ID
+.IP \(bu 2
+\fBelement\-by\-style\fP: Get all HTML elements by style
+.IP \(bu 2
+\fBelement\-by\-tag\fP: Get an HTML element by its tag
+.IP \(bu 2
+\fBformat\-json\fP: Convert to formatted json
+.IP \(bu 2
+\fBgrep\fP: Filter only lines matching a regular expression
+.IP \(bu 2
+\fBgrepi\fP: Remove lines matching a regular expression
+.IP \(bu 2
+\fBhexdump\fP: Convert binary data to hex dump format
+.IP \(bu 2
+\fBhtml2text\fP: Convert HTML to plaintext
+.IP \(bu 2
+\fBpdf2text\fP: Convert PDF to plaintext
+.IP \(bu 2
+\fBpretty\-xml\fP: Pretty\-print XML
+.IP \(bu 2
+\fBical2text\fP: Convert \fI\%iCalendar\fP <\fBhttps://en.wikipedia.org/wiki/ICalendar\fP> to plaintext
+.IP \(bu 2
+\fBocr\fP: Convert text in images to plaintext using Tesseract OCR
+.IP \(bu 2
+\fBre.sub\fP: Replace text with regular expressions using Python\(aqs re.sub
+.IP \(bu 2
+\fBreverse\fP: Reverse input items
+.IP \(bu 2
+\fBsha1sum\fP: Calculate the SHA\-1 checksum of the content
+.IP \(bu 2
+\fBshellpipe\fP: Filter using a shell command
+.IP \(bu 2
+\fBsort\fP: Sort input items
+.IP \(bu 2
+\fBremove\-duplicate\-lines\fP: Remove duplicate lines (case sensitive)
+.IP \(bu 2
+\fBstrip\fP: Strip leading and trailing whitespace
+.IP \(bu 2
+\fBstriplines\fP: Strip leading and trailing whitespace in each line
+.IP \(bu 2
+\fBxpath\fP: Filter XML/HTML using XPath expressions
+.IP \(bu 2
+\fBjq\fP: Filter, transform and extract values from JSON
+.UNINDENT
+.SH PICKING OUT ELEMENTS FROM A WEBPAGE
+.sp
+You can pick only a given HTML element with the built\-in filter, for
+example to extract \fB<div id="something">.../<div>\fP from a page, you
+can use the following in your \fBurls.yaml\fP:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.org/idtest.html
+filter:
+  \- element\-by\-id: something
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Also, you can chain filters, so you can run html2text on the result:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.net/id2text.html
+filter:
+  \- element\-by\-id: something
+  \- html2text
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH CHAINING MULTIPLE FILTERS
+.sp
+The example urls.yaml file also demonstrates the use of built\-in
+filters, here 3 filters are used: html2text, line\-grep and whitespace
+removal to get just a certain info field from a webpage:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.net/version.html
+filter:
+  \- html2text
+  \- grep: "Current.*version"
+  \- strip
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH EXTRACTING ONLY THE <BODY> TAG OF A PAGE
+.sp
+If you want to extract only the body tag you can use this filter:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.org/bodytag.html
+filter:
+  \- element\-by\-tag: body
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH FILTERING BASED ON AN XPATH EXPRESSION
+.sp
+To filter based on an
+\fI\%XPath\fP <\fBhttps://www.w3.org/TR/1999/REC-xpath-19991116/\fP> expression,
+you can use the \fBxpath\fP filter like so:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.net/xpath.html
+filter:
+  \- xpath: /html/body/marquee
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This filters only the \fB<marquee>\fP elements directly below the \fB<body>\fP
+element, which in turn must be below the \fB<html>\fP element of the document,
+stripping out everything else.
+.sp
+See Microsoft’s \fI\%XPath Examples\fP <\fBhttps://msdn.microsoft.com/en-us/library/ms256086(v=vs.110).aspx\fP> page for some other examples.
+You can also find an XPath of an \fB<html>\fP node in the Chromium/Google Chrome developer tools by right clicking on the node and selecting \fBcopy XPath\fP\&.
+.SH FILTERING BASED ON CSS SELECTORS
+.sp
+To filter based on a \fI\%CSS
+selector\fP <\fBhttps://www.w3.org/TR/2011/REC-css3-selectors-20110929/\fP>,
+you can use the \fBcss\fP filter like so:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.net/css.html
+filter:
+  \- css: ul#groceries > li.unchecked
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This would filter only \fB<li class="unchecked">\fP tags directly
+below \fB<ul id="groceries">\fP elements.
+.sp
+Some limitations and extensions exist as explained in \fI\%cssselect’s
+documentation\fP <\fBhttps://cssselect.readthedocs.io/en/latest/#supported-selectors\fP>\&.
+.SH USING XPATH AND CSS FILTERS WITH XML AND EXCLUSIONS
+.sp
+By default, XPath and CSS filters are set up for HTML documents.
+However, it is possible to use them for XML documents as well (these
+examples parse an RSS feed and filter only the titles and publication
+dates):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.com/blog/xpath\-index.rss
+filter:
+  \- xpath:
+      path: \(aq//item/title/text()|//item/pubDate/text()\(aq
+      method: xml
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.com/blog/css\-index.rss
+filter:
+  \- css:
+      selector: \(aqitem > title, item > pubDate\(aq
+      method: xml
+  \- html2text: re
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+To match an element in an \fI\%XML
+namespace\fP <\fBhttps://www.w3.org/TR/xml-names/\fP>, use a namespace prefix
+before the tag name. Use a \fB:\fP to separate the namespace prefix and
+the tag name in an XPath expression, and use a \fB|\fP in a CSS selector.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.net/feed/xpath\-namespace.xml
+filter:
+  \- xpath:
+      path: \(aq//item/media:keywords/text()\(aq
+      method: xml
+      namespaces:
+        media: http://search.yahoo.com/mrss/
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.org/feed/css\-namespace.xml
+filter:
+  \- css:
+      selector: \(aqitem > media|keywords\(aq
+      method: xml
+      namespaces:
+        media: http://search.yahoo.com/mrss/
+  \- html2text
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Alternatively, use the XPath expression \fB//*[name()=\(aq<tag_name>\(aq]\fP to
+bypass the namespace entirely.
+.sp
+Another useful option with XPath and CSS filters is \fBexclude\fP\&.
+Elements selected by this \fBexclude\fP expression are removed from the
+final result. For example, the following job will not have any \fB<a>\fP
+tag in its results:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.org/css\-exclude.html
+filter:
+  \- css:
+      selector: body
+      exclude: a
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH LIMITING THE RETURNED ITEMS FROM A CSS SELECTOR OR XPATH
+.sp
+If you only want to return a subset of the items returned by a CSS
+selector or XPath filter, you can use two additional subfilters:
+.INDENT 0.0
+.IP \(bu 2
+\fBskip\fP: How many elements to skip from the beginning (default: 0)
+.IP \(bu 2
+\fBmaxitems\fP: How many elements to return at most (default: no limit)
+.UNINDENT
+.sp
+For example, if the page has multiple elements, but you only want
+to select the second and third matching element (skip the first, and
+return at most two elements), you can use this filter:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.net/css\-skip\-maxitems.html
+filter:
+  \- css:
+      selector: div.cpu
+      skip: 1
+      maxitems: 2
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SS Dealing with duplicated results
+.sp
+If you get multiple results on one page, but you only expected one
+(e.g. because the page contains both a mobile and desktop version in
+the same HTML document, and shows/hides one via CSS depending on the
+viewport size), you can use \fBmaxitems: 1\fP to only return the first
+item.
+.SH FILTERING PDF DOCUMENTS
+.sp
+To monitor the text of a PDF file, you use the \fIpdf2text\fP filter. It requires
+the installation of the \fI\%pdftotext\fP <\fBhttps://github.com/jalan/pdftotext/blob/master/README.md#pdftotext\fP> library and any of its
+\fI\%OS\-specific dependencies\fP <\fBhttps://github.com/jalan/pdftotext/blob/master/README.md#os-dependencies\fP>\&.
+.sp
+This filter \fImust\fP be the first filter in a chain of filters, since it
+consumes binary data and outputs text data.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.net/pdf\-test.pdf
+filter:
+  \- pdf2text
+  \- strip
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+If the PDF file is password protected, you can specify its password:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.net/pdf\-test\-password.pdf
+filter:
+  \- pdf2text:
+      password: urlwatchsecret
+  \- strip
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH DEALING WITH CSV INPUT
+.sp
+The \fBcsv2text\fP filter can be used to turn CSV data to a prettier textual representation
+This is done by supplying a \fBformat_string\fP which is a \fI\%python format string\fP <\fBhttps://docs.python.org/3/library/string.html#format-string-syntax\fP>\&.
+.sp
+If the CSV has a header, the format string should use the header names lowercased.
+For example, let\(aqs say we have a CSV file containing data like this:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+Name;Company
+Smith;Initech
+Doe;Initech
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+A possible format string for the above CSV (note the lowercase keys):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+Mr {name} works at {company}
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+If there is no header row, you will need to use the numeric array notation:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+Mr {0} works at {1}
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+You can force the use of numeric indices with the flag \fBignore_header\fP\&.
+.sp
+The key \fBhas_header\fP can be used to force use the first line or first
+ignore the first line as header, otherwise \fI\%csv.Sniffer\fP <\fBhttps://docs.python.org/3/library/csv.html#csv.Sniffer\fP> will be used.
+.SH SORTING OF WEBPAGE CONTENT
+.sp
+Sometimes a web page can have the same data between comparisons but it
+appears in random order. If that happens, you can choose to sort before
+the comparison.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.net/sorting.txt
+filter:
+  \- sort
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The sort filter takes an optional \fBseparator\fP parameter that defines
+the item separator (by default sorting is line\-based), for example to
+sort text paragraphs (text separated by an empty line):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.org/paragraphs.txt
+filter:
+  \- sort:
+      separator: "\en\en"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This can be combined with a boolean \fBreverse\fP option, which is useful
+for sorting and reversing with the same separator (using \fB%\fP as
+separator, this would turn \fB3%2%4%1\fP into \fB4%3%2%1\fP):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.org/sort\-reverse\-percent.txt
+filter:
+  \- sort:
+      separator: \(aq%\(aq
+      reverse: true
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH REVERSING OF LINES OR SEPARATED ITEMS
+.sp
+To reverse the order of items without sorting, the \fBreverse\fP filter
+can be used. By default it reverses lines:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.com/reverse\-lines.txt
+filter:
+  \- reverse
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This behavior can be changed by using an optional separator string
+argument (e.g. items separated by a pipe (\fB|\fP) symbol,
+as in \fB1|4|2|3\fP, which would be reversed to \fB3|2|4|1\fP):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.net/reverse\-separator.txt
+filter:
+  \- reverse: \(aq|\(aq
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Alternatively, the filter can be specified more verbose with a dict.
+In this example \fB"\en\en"\fP is used to separate paragraphs (items that
+are separated by an empty line):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.org/reverse\-paragraphs.txt
+filter:
+  \- reverse:
+      separator: "\en\en"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH WATCHING GITHUB RELEASES AND GITLAB TAGS
+.sp
+This is an example how to watch the GitHub “releases” page for a given
+project for the latest release version, to be notified of new releases:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://github.com/tulir/gomuks/releases
+filter:
+  \- xpath: \(aq(//div[contains(@class,"d\-flex flex\-column flex\-md\-row my\-5 flex\-justify\-center")]//h1//a)[1]\(aq
+  \- html2text: re
+  \- strip
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This is the corresponding version for Github tags:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://github.com/thp/urlwatch/tags
+filter:
+  \- xpath: (//div[contains(@class,"commit js\-details\-container Details")]//h4//a)[1]
+  \- html2text
+  \- strip
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+and for Gitlab tags:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://gitlab.com/chinstrap/gammastep/\-/tags
+filter:
+  \- xpath: (//a[contains(@class,"item\-title ref\-name")])[1]
+  \- html2text
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Alternatively, \fBjq\fP can be used for filtering:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://api.github.com/repos/voxpupuli/puppet\-rundeck/tags
+filter:
+  \- jq: \(aq.[0].name\(aq
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH REMOVE OR REPLACE TEXT USING REGULAR EXPRESSIONS
+.sp
+Just like Python’s \fBre.sub\fP function, there’s the possibility to apply
+a regular expression and either remove of replace the matched text. The
+following example applies the filter 3 times:
+.INDENT 0.0
+.IP 1. 3
+Just specifying a string as the value will replace the matches with
+the empty string.
+.IP 2. 3
+Simple patterns can be replaced with another string using “pattern”
+as the expression and “repl” as the replacement.
+.IP 3. 3
+You can use groups (\fB()\fP) and back\-reference them with \fB\e1\fP
+(etc..) to put groups into the replacement string.
+.UNINDENT
+.sp
+All features are described in Python’s
+\fI\%re.sub\fP <\fBhttps://docs.python.org/3/library/re.html#re.sub\fP>
+documentation (the \fBpattern\fP and \fBrepl\fP values are passed to this
+function as\-is, with the value of \fBrepl\fP defaulting to the empty
+string).
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.com/regex\-substitute.html
+filter:
+    \- re.sub: \(aq\es*href="[^"]*"\(aq
+    \- re.sub:
+        pattern: \(aq<h1>\(aq
+        repl: \(aqHEADING 1: \(aq
+    \- re.sub:
+        pattern: \(aq</([^>]*)>\(aq
+        repl: \(aq<END OF TAG \e1>\(aq
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+If you want to enable certain flags (e.g. \fBre.MULTILINE\fP) in the
+call, this is possible by inserting an "inline flag" documented in
+\fI\%flags in re.compile\fP <\fBhttps://docs.python.org/3/library/re.html#re.compile\fP>, here are some examples:
+.INDENT 0.0
+.IP \(bu 2
+\fBre.MULTILINE\fP: \fB(?m)\fP (Makes \fB^\fP match start\-of\-line and \fB$\fP match end\-of\-line)
+.IP \(bu 2
+\fBre.DOTALL\fP: \fB(?s)\fP (Makes \fB\&.\fP also match a newline)
+.IP \(bu 2
+\fBre.IGNORECASE\fP: \fB(?i)\fP (Perform case\-insensitive matching)
+.UNINDENT
+.sp
+This allows you, for example, to remove all leading spaces (only
+space character and tab):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.com/leading\-spaces.txt
+filter:
+  \- re.sub: \(aq(?m)^[ \et]*\(aq
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH USING A SHELL SCRIPT AS A FILTER
+.sp
+While the built\-in filters are powerful for processing markup such as
+HTML and XML, in some cases you might already know how you would filter
+your content using a shell command or shell script. The \fBshellpipe\fP
+filter allows you to start a shell and run custom commands to filter
+the content.
+.sp
+The text data to be filtered will be written to the standard input
+(\fBstdin\fP) of the shell process and the filter output will be taken
+from the shell\(aqs standard output (\fBstdout\fP).
+.sp
+For example, if you want to use \fBgrep\fP tool with the case insensitive
+matching option (\fB\-i\fP) and printing only the matching part of
+the line (\fB\-o\fP), you can specify this as \fBshellpipe\fP filter:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.net/shellpipe\-grep.txt
+filter:
+  \- shellpipe: "grep \-i \-o \(aqprice: <span>.*</span>\(aq"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This feature also allows you to use \fBsed(1)\fP, \fBawk(1)\fP and \fBperl(1)\fP
+one\-liners for text processing (of course, any text tool that
+works in a shell can be used). For example, this \fBawk(1)\fP one\-liner
+prepends the line number to each line:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.net/shellpipe\-awk\-oneliner.txt
+filter:
+  \- shellpipe: awk \(aq{ print FNR " " $0 }\(aq
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+You can also use a multi\-line command for a more sophisticated
+shell script (\fB|\fP in YAML denotes the start of a text block):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.org/shellpipe\-multiline.txt
+filter:
+  \- shellpipe: |
+      FILENAME=\(gamktemp\(ga
+      # Copy the input to a temporary file, then pipe through awk
+      tee $FILENAME | awk \(aq/The numbers for (.*) are:/,/The next draw is on (.*)./\(aq
+      # Analyze the input file in some other way
+      echo "Input lines: $(wc \-l $FILENAME | awk \(aq{ print $1 }\(aq)"
+      rm \-f $FILENAME
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Within the \fBshellpipe\fP script, two environment variables will
+be set for further customization (this can be useful if you have
+an external shell script file that is used as filter for multiple
+jobs, but needs to treat each job in a slightly different way):
+.TS
+center;
+|l|l|.
+_
+T{
+Environment variable
+T}	T{
+Contents
+T}
+_
+T{
+\fB$URLWATCH_JOB_NAME\fP
+T}	T{
+The name of the job (\fBname\fP key in jobs YAML)
+T}
+_
+T{
+\fB$URLWATCH_JOB_LOCATION\fP
+T}	T{
+The URL of the job, or command line (for shell jobs)
+T}
+_
+.TE
+.SH CONVERTING TEXT IN IMAGES TO PLAINTEXT
+.sp
+The \fBocr\fP filter uses the \fI\%Tesseract OCR engine\fP <\fBhttps://github.com/tesseract-ocr\fP> to convert text in images
+to plain text. It requires two Python modules to be installed:
+\fI\%pytesseract\fP <\fBhttps://github.com/madmaze/pytesseract\fP> and \fI\%Pillow\fP <\fBhttps://python-pillow.org\fP>\&. Any file formats supported by Pillow (PIL) are
+supported.
+.sp
+This filter \fImust\fP be the first filter in a chain of filters, since it
+consumes binary data and outputs text data.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.net/ocr\-test.png
+filter:
+  \- ocr:
+      timeout: 5
+      language: eng
+  \- strip
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The subfilters \fBtimeout\fP and \fBlanguage\fP are optional:
+.INDENT 0.0
+.IP \(bu 2
+\fBtimeout\fP: Timeout for the recognition, in seconds (default: 10 seconds)
+.IP \(bu 2
+\fBlanguage\fP: Text language (e.g. \fBfra\fP or \fBeng+fra\fP, default: \fBeng\fP)
+.UNINDENT
+.SH FILTERING JSON RESPONSE DATA USING JQ SELECTORS
+.sp
+The \fBjq\fP filter uses the Python bindings for \fI\%jq\fP <\fBhttps://stedolan.github.io/jq/\fP>, a lightweight JSON processor.
+Use of this filter requires the optional \fI\%jq Python module\fP <\fBhttps://github.com/mwilliamson/jq.py\fP> to be installed.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.net/jobs.json
+filter:
+   \- jq:
+      query: \(aq.[].title\(aq
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The subfilter \fBquery\fP is optional:
+.INDENT 0.0
+.IP \(bu 2
+\fBquery\fP: A valid \fBjq\fP filter string.
+.UNINDENT
+.sp
+Supports aggregations, selections, and the built\-in operators like \fBlength\fP\&.  For
+more information on the operations permitted, see the \fI\%jq Manual\fP <\fBhttps://stedolan.github.io/jq/manual/\fP>\&.
+.SH FILES
+.sp
+\fB$XDG_CONFIG_HOME/urlwatch/urls.yaml\fP
+.SH SEE ALSO
+.sp
+\fBurlwatch(1)\fP,
+\fBurlwatch\-intro(5)\fP,
+\fBurlwatch\-jobs(5)\fP
+.SH COPYRIGHT
+2022 Thomas Perl
+.\" Generated by docutils manpage writer.
+.

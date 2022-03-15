@@ -1,87 +1,183 @@
-.TH URLWATCH "1" "January 2019" "urlwatch 2.16" "User Commands"
+.\" Man page generated from reStructuredText.
+.
+.TH "URLWATCH" "1" "Mar 15, 2022" "urlwatch 2.24" "urlwatch 2.24 Documentation"
 .SH NAME
-urlwatch \- monitors webpages for you
+urlwatch \- Monitor webpages and command output for changes
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
 .SH SYNOPSIS
-.B urlwatch [options]
+.sp
+urlwatch [options] [JOB ...]
 .SH DESCRIPTION
-urlwatch is intended to help you watch changes in webpages and get notified
-(via e\-mail, in your terminal or through various third party services) of any
-changes. The change notification will include the URL that has changed and
-a unified diff of what has changed.
-.SS "optional arguments:"
+.sp
+urlwatch is intended to help you watch changes in webpages and get
+notified (via e\-mail, in your terminal or through various third party
+services) of any changes. The change notification will include the URL
+that has changed and a unified diff of what has changed.
+.sp
+See \fBurlwatch\-intro(7)\fP for a quick start guide and tutorial,
+and \fBurlwatch\-cookbook(7)\fP for usage recipes and tricks.
+.sp
+This manpage describes the CLI tool.
+.INDENT 0.0
 .TP
-\fB\-h\fR, \fB\-\-help\fR
+.B positional arguments:
+.INDENT 7.0
+.TP
+.B JOB
+index of job(s) to run, as numbered according to the \-\-list command.
+If none are specified, then all jobs will be run.
+.UNINDENT
+.TP
+.B optional arguments:
+.INDENT 7.0
+.TP
+.B \-h\fP,\fB  \-\-help
 show this help message and exit
 .TP
-\fB\-\-version\fR
-show program's version number and exit
+.B \-\-version
+show program\(aqs version number and exit
 .TP
-\fB\-v\fR, \fB\-\-verbose\fR
+.B \-v\fP,\fB  \-\-verbose
 show debug output
-.SS "files and directories:"
+.UNINDENT
 .TP
-\fB\-\-urls\fR FILE
+.B files and directories:
+.INDENT 7.0
+.TP
+.BI \-\-urls \ FILE
 read job list (URLs) from FILE
 .TP
-\fB\-\-config\fR FILE
+.BI \-\-config \ FILE
 read configuration from FILE
 .TP
-\fB\-\-hooks\fR FILE
+.BI \-\-hooks \ FILE
 use FILE as hooks.py module
 .TP
-\fB\-\-cache\fR FILE
+.BI \-\-cache \ FILE
 use FILE as cache database
-.SS "Authentication:"
+.UNINDENT
 .TP
-\fB\-\-smtp\-login\fR
+.B Authentication:
+.INDENT 7.0
+.TP
+.B \-\-smtp\-login
 Enter password for SMTP (store in keyring)
 .TP
-\fB\-\-telegram\-chats\fR
+.B \-\-xmpp\-login
+Enter password for XMPP (store in keyring)
+.TP
+.B \-\-telegram\-chats
 List telegram chats the bot is joined to
 .TP
-\fB\-\-test\-slack\fR
-Send a test notification to Slack
-.SS "job list management:"
+.BI \-\-test\-reporter \ REPORTER
+Send a test notification
+.UNINDENT
 .TP
-\fB\-\-list\fR
+.B job list management:
+.INDENT 7.0
+.TP
+.B \-\-list
 list jobs
 .TP
-\fB\-\-add\fR JOB
+.BI \-\-add \ JOB
 add job (key1=value1,key2=value2,...)
 .TP
-\fB\-\-delete\fR JOB
+.BI \-\-delete \ JOB
 delete job by location or index
 .TP
-\fB\-\-test\-filter\fR JOB
+.BI \-\-test\-filter \ JOB
 test filter output of job by location or index
-.SS "interactive commands ($EDITOR/$VISUAL):"
 .TP
-\fB\-\-edit\fR
+.BI \-\-test\-diff\-filter \ JOB
+test diff filter output of job by location or index (needs at least 2 snapshots)
+.TP
+.BI \-\-dump\-history \ JOB
+dump historical cached data for a job
+.UNINDENT
+.TP
+.B interactive commands ($EDITOR/$VISUAL):
+.INDENT 7.0
+.TP
+.B \-\-edit
 edit URL/job list
 .TP
-\fB\-\-edit\-config\fR
+.B \-\-edit\-config
 edit configuration file
 .TP
-\fB\-\-edit\-hooks\fR
+.B \-\-edit\-hooks
 edit hooks script
-.SS "miscellaneous:"
+.UNINDENT
 .TP
-\fB\-\-features\fR
+.B miscellaneous:
+.INDENT 7.0
+.TP
+.B \-\-features
 list supported jobs/filters/reporters
 .TP
-\fB\-\-gc\-cache\fR
+.B \-\-gc\-cache
 remove old cache entries
-.SH "FILES"
+.UNINDENT
+.UNINDENT
+.SH FILES
+.INDENT 0.0
 .TP
-.B $XDG_CONFIG_HOME/urlwatch/urls.yaml
-A list of URLs, commands and other jobs to watch
+.B \fB$XDG_CONFIG_HOME/urlwatch/urls.yaml\fP
+Configured job and filter list, see \fBurlwatch\-jobs(5)\fP and \fBurlwatch\-filters(5)\fP
 .TP
-.B $XDG_CONFIG_HOME/urlwatch/hooks.py
-A Python module that can implement new job types, filters and reporters
+.B \fB$XDG_CONFIG_HOME/urlwatch/urlwatch.yaml\fP
+Global and reporter settings, see \fBurlwatch\-config(5)\fP and \fBurlwatch\-reporters(5)\fP
 .TP
-.B $XDG_CACHE_HOME/urlwatch/cache.db
-A SQLite 3 database that contains the state history of jobs (for diffing)
+.B \fB$XDG_CONFIG_HOME/urlwatch/hooks.py\fP
+A Python 3 module that can implement new job types, filters and reporters
+.TP
+.B \fB$XDG_CACHE_HOME/urlwatch/cache.db\fP
+A SQLite 3 database (minidb) that contains the state history of jobs (for diffing)
+.UNINDENT
+.SH SEE ALSO
+.sp
+\fBurlwatch\-intro(7)\fP,
+\fBurlwatch\-cookbook(7)\fP,
+\fBurlwatch\-deprecated(7)\fP,
+\fBurlwatch\-jobs(5)\fP,
+\fBurlwatch\-filters(5)\fP,
+\fBurlwatch\-config(5)\fP,
+\fBurlwatch\-reporters(5)\fP
 .SH AUTHOR
-Thomas Perl <thp.io/about>
+.sp
+Thomas Perl <\fI\%https://thp.io/\fP>
+.SH BUG TRACKER
+.sp
+\fI\%https://github.com/thp/urlwatch/issues\fP
 .SH WEBSITE
-https://thp.io/2008/urlwatch/
+.sp
+\fI\%https://thp.io/2008/urlwatch/\fP
+.SH COPYRIGHT
+2022 Thomas Perl
+.\" Generated by docutils manpage writer.
+.

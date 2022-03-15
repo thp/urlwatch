@@ -1,0 +1,579 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "URLWATCH-REPORTERS" "5" "Mar 15, 2022" "urlwatch 2.24" "urlwatch 2.24 Documentation"
+.SH NAME
+urlwatch-reporters \- Reporters for change notifications
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH SYNOPSIS
+.sp
+urlwatch \-\-edit\-config
+.SH DESCRIPTION
+.sp
+By default \fBurlwatch(1)\fP prints out information about changes to standard
+output, which is your terminal if you run it interactively. If running
+via \fBcron(8)\fP or another scheduler service, it depends on how the scheduler
+is configured.
+.sp
+You can enable one or more additional reporters that are used to send
+change notifications. Please note that most reporters need additional
+dependencies installed.
+.sp
+See \fBurlwatch\-config(5)\fP for generic config settings.
+.sp
+To send a test notification, use the \fB\-\-test\-reporter\fP command\-line option
+with the name of the reporter:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+urlwatch \-\-test\-reporter stdout
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This will create a test report with \fBnew\fP, \fBchanged\fP, \fBunchanged\fP and
+\fBerror\fP notifications (only the ones configured in \fBdisplay\fP in the
+configuration will be shown in the report) and send it via the
+\fBstdout\fP reporter (if it is enabled).
+.sp
+To test if your e\-mail reporter is configured correctly, you can use:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+urlwatch \-\-test\-reporter email
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Any reporter that is configured and enabled can be tested.
+.sp
+If the notification does not work, check your configuration and/or add
+the \fB\-\-verbose\fP command\-line option to show detailed debug logs.
+.SH BUILT-IN REPORTERS
+.sp
+The list of built\-in reporters can be retrieved using:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+urlwatch \-\-features
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+At the moment, the following reporters are built\-in:
+.INDENT 0.0
+.IP \(bu 2
+\fBstdout\fP: Print summary on stdout (the console)
+.IP \(bu 2
+\fBemail\fP: Send summary via e\-mail / SMTP
+.IP \(bu 2
+\fBmailgun\fP: Send e\-mail via the Mailgun service
+.IP \(bu 2
+\fBmatrix\fP: Send a message to a room using the Matrix protocol
+.IP \(bu 2
+\fBmattermost\fP: Send a message to a Mattermost channel
+.IP \(bu 2
+\fBpushbullet\fP: Send summary via pushbullet.com
+.IP \(bu 2
+\fBpushover\fP: Send summary via pushover.net
+.IP \(bu 2
+\fBslack\fP: Send a message to a Slack channel
+.IP \(bu 2
+\fBdiscord\fP: Send a message to a Discord channel
+.IP \(bu 2
+\fBtelegram\fP: Send a message using Telegram
+.IP \(bu 2
+\fBifttt\fP: Send summary via IFTTT
+.IP \(bu 2
+\fBxmpp\fP: Send a message using the XMPP Protocol
+.IP \(bu 2
+\fBprowl\fP: Send a message via prowlapp.com
+.UNINDENT
+.SH PUSHOVER
+.sp
+You can configure urlwatch to send real time notifications about changes
+via \fI\%Pushover\fP <\fBhttps://pushover.net/\fP>\&. To enable this, ensure you have the
+\fBchump\fP python package installed (see dependencies). Then edit your config
+(\fBurlwatch \-\-edit\-config\fP) and enable pushover. You will also need to
+add to the config your Pushover user key and a unique app key (generated
+by registering urlwatch as an application on your \fI\%Pushover account\fP <\fBhttps://pushover.net/apps/build\fP>\&.
+.sp
+You can send to a specific device by using the device name, as indicated
+when you add or view your list of devices in the Pushover console. For
+example \fBdevice:  \(aqMyPhone\(aq\fP, or \fBdevice: \(aqMyLaptop\(aq\fP\&. To send to
+\fIall\fP of your devices, set \fBdevice: null\fP in your config
+(\fBurlwatch \-\-edit\-config\fP) or leave out the device configuration
+completely.
+.sp
+Setting the priority is possible via the \fBpriority\fP config option, which
+can be \fBlowest\fP, \fBlow\fP, \fBnormal\fP, \fBhigh\fP or \fBemergency\fP\&. Any
+other setting (including leaving the option unset) maps to \fBnormal\fP\&.
+.SH PUSHBULLET
+.sp
+Pushbullet notifications are configured similarly to Pushover (see
+above). You’ll need to add to the config your Pushbullet Access Token,
+which you can generate at \fI\%https://www.pushbullet.com/#settings\fP
+.SH TELEGRAM
+.sp
+Telegram notifications are configured using the Telegram Bot API. For
+this, you’ll need a Bot API token and a chat id (see
+\fI\%https://core.telegram.org/bots\fP). Sample configuration:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+telegram:
+  bot_token: \(aq999999999:3tOhy2CuZE0pTaCtszRfKpnagOG8IQbP5gf\(aq # your bot api token
+  chat_id: \(aq88888888\(aq # the chat id where the messages should be sent
+  enabled: true
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Messages can be sent silently (\fBsilent\fP) if you prefer notifications
+with no sounds, and monospace formatted (\fBmonospace\fP).
+By default notifications are not silent and no formatting is done.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+telegram:
+  # ...
+  silent: true # message is sent silently
+  monospace: true # display message as pre\-formatted code block
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+To set up Telegram, from your Telegram app, chat up BotFather (New
+Message, Search, “BotFather”), then say \fB/newbot\fP and follow the
+instructions. Eventually it will tell you the bot token (in the form
+seen above, \fB<number>:<random string>\fP) \- add this to your config
+file.
+.sp
+You can then click on the link of your bot, which will send the message
+\fB/start\fP\&. At this point, you can use the command
+\fBurlwatch \-\-telegram\-chats\fP to list the private chats the bot is
+involved with. This is the chat ID that you need to put into the config
+file as \fBchat_id\fP\&. You may add multiple chat IDs as a YAML list:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+telegram:
+  bot_token: \(aq999999999:3tOhy2CuZE0pTaCtszRfKpnagOG8IQbP5gf\(aq # your bot api token
+  chat_id:
+    \- \(aq11111111\(aq
+    \- \(aq22222222\(aq
+  enabled: true
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Don’t forget to also enable the reporter.
+.SH SLACK
+.sp
+Slack notifications are configured using “Slack Incoming Webhooks”. Here
+is a sample configuration:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+slack:
+  webhook_url: \(aqhttps://hooks.slack.com/services/T50TXXXXXU/BDVYYYYYYY/PWTqwyFM7CcCfGnNzdyDYZ\(aq
+  enabled: true
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+To set up Slack, from you Slack Team, create a new app and activate
+“Incoming Webhooks” on a channel, you’ll get a webhook URL, copy it into
+the configuration as seen above.
+.SH MATTERMOST
+.sp
+Mattermost notifications are set up the same way as Slack notifications,
+the webhook URL is different:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+mattermost:
+  webhook_url: \(aqhttp://{your\-mattermost\-site}/hooks/XXXXXXXXXXXXXXXXXXXXXX\(aq
+  enabled: true
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+See \fI\%Incoming Webooks\fP <\fBhttps://developers.mattermost.com/integrate/incoming-webhooks/\fP>
+in the Mattermost documentation for details.
+.SH DISCORD
+.sp
+Discord notifications are configured using “Discord Incoming Webhooks”. Here
+is a sample configuration:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+discord:
+   webhook_url: \(aqhttps://discordapp.com/api/webhooks/11111XXXXXXXXXXX/BBBBYYYYYYYYYYYYYYYYYYYYYYYyyyYYYYYYYYYYYYYY\(aq
+   enabled: true
+   embed: true
+   colored: true
+   subject: \(aq{count} changes: {jobs}\(aq
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+To set up Discord, from your Discord Server settings, select Integration and then create a "New Webhook", give the webhook a name to post under, select a channel, push "Copy Webhook URL" and paste it into the configuration as seen above.
+.sp
+Embedded content might be easier to read and identify individual reports. Subject preceeds the embedded report and is only used when \fIembed\fP is true.
+.sp
+When \fIcolored\fP is true reports will be embedded in code section (with diff syntax) to enable colors.
+.SH IFTTT
+.sp
+To configure IFTTT events, you need to retrieve your key from here:
+.sp
+\fI\%https://ifttt.com/maker_webhooks/settings\fP
+.sp
+The URL shown in "Account Info" has the following format:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+https://maker.ifttt.com/use/{key}
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+In this URL, \fB{key}\fP is your API key. The configuration should look like
+this (you can pick any event name you want):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+ifttt:
+  enabled: true
+  key: aA12abC3D456efgHIjkl7m
+  event: event_name_you_want
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The event will contain three values in the posted JSON:
+.INDENT 0.0
+.IP \(bu 2
+\fBvalue1\fP: The type of change (\fBnew\fP, \fBchanged\fP, \fBunchanged\fP or \fBerror\fP)
+.IP \(bu 2
+\fBvalue2\fP: The name of the job (\fBname\fP key in \fBjobs.yaml\fP)
+.IP \(bu 2
+\fBvalue3\fP: The location of the job (\fBurl\fP, \fBcommand\fP or \fBnavigate\fP key in \fBjobs.yaml\fP)
+.UNINDENT
+.sp
+These values will be passed on to the Action in your Recipe.
+.SH MATRIX
+.sp
+You can have notifications sent to you through the \fI\%Matrix protocol\fP <\fBhttps://matrix.org\fP>\&.
+.sp
+To achieve this, you first need to register a Matrix account for the bot
+on any homeserver.
+.sp
+You then need to acquire an access token and room ID, using the
+following instructions adapted from \fI\%this
+guide\fP <\fBhttps://t2bot.io/docs/access_tokens/\fP>:
+.INDENT 0.0
+.IP 1. 3
+Open \fI\%Riot.im\fP <\fBhttps://riot.im/app/\fP> in a private browsing window
+.IP 2. 3
+Register/Log in as your bot, using its user ID and password.
+.IP 3. 3
+Set the display name and avatar, if desired.
+.IP 4. 3
+In the settings page, select the "Help & About" tab, scroll down to the bottom and click Access
+Token: <click to reveal>.
+.IP 5. 3
+Copy the highlighted text to your configuration.
+.IP 6. 3
+Join the room that you wish to send notifications to.
+.IP 7. 3
+Go to the Room Settings (gear icon) and copy the \fIInternal Room ID\fP
+from the bottom.
+.IP 8. 3
+Close the private browsing window \fBbut do not log out, as this
+invalidates the Access Token\fP\&.
+.UNINDENT
+.sp
+Here is a sample configuration:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+matrix:
+  homeserver: https://matrix.org
+  access_token: "YOUR_TOKEN_HERE"
+  room_id: "!roomroomroom:matrix.org"
+  enabled: true
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+You will probably want to use the following configuration for the
+\fBmarkdown\fP reporter, if you intend to post change notifications to a
+public Matrix room, as the messages quickly become noisy:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+markdown:
+  details: false
+  footer: false
+  minimal: true
+  enabled: true
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH E-MAIL VIA GMAIL SMTP
+.sp
+You need to configure your GMail account to allow for “less secure”
+(password\-based) apps to login:
+.INDENT 0.0
+.IP 1. 3
+Go to \fI\%https://myaccount.google.com/\fP
+.IP 2. 3
+Click on “Sign\-in & security”
+.IP 3. 3
+Scroll all the way down to “Allow less secure apps” and enable it
+.UNINDENT
+.sp
+You do not want to do this with your primary GMail account, but
+rather on a separate account that you create just for sending mails
+via urlwatch. Allowing less secure apps and storing the password
+(even if it\(aqs in the keychain) is not good security practice for your
+primary account.
+.sp
+Now, start the configuration editor:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+urlwatch \-\-edit\-config
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+These are the keys you need to configure:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+report:
+  email:
+    enabled: true
+    from: your.username@gmail.com
+    to: your.destination.email@example.com
+    method: smtp
+    smtp:
+      host: smtp.gmail.com
+      auth: true
+      port: 587
+      starttls: true
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The password is best stored in your keychain, and not in the config
+file. To store the password, run:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+urlwatch \-\-smtp\-login
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This will query your password, check the login, and store it in your
+keychain. Subsequent runs will use this password for logging in.
+.SH E-MAIL VIA AMAZON SIMPLE E-MAIL SERVICE (SES)
+.sp
+Same as the GMail configuration above, but use e.g.
+\fBemail\-smtp.us\-west\-2.amazonaws.com\fP as the SMTP host, and
+username and port settings according to SES\(aqs login page.
+.SH SMTP LOGIN WITHOUT KEYRING
+.sp
+If for whatever reason you cannot use a keyring to store your password
+(for example, when using it from a \fBcron\fP job) you can also set the
+\fBinsecure_password\fP option in the SMTP config:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+report:
+  email:
+    smtp:
+      auth: true
+      insecure_password: secret123
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The \fBinsecure_password\fP key will be preferred over the data stored in
+the keyring. Please note that as the name says, storing the password as
+plaintext in the configuration is insecure and bad practice, but for an
+e\-mail account that’s only dedicated for sending mails this might be a
+way. \fBNever ever use this with your your primary e\-mail account!\fP
+Seriously! Create a throw\-away GMail (or other) account just for sending
+out those e\-mails or use local \fBsendmail\fP with a mail server
+configured instead of relying on SMTP and password auth.
+.sp
+Note that this makes it really easy for your password to be picked up by
+software running on your machine, by other users logged into the system
+and/or for the password to appear in log files accidentally.
+.SH XMPP
+.sp
+You can have notifications sent to you through the \fIXMPP protocol\fP\&.
+.sp
+To achieve this, you should register a new XMPP account that is just
+used for urlwatch.
+.sp
+Here is a sample configuration:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+xmpp:
+  enabled: true
+  sender: "BOT_ACCOUNT_NAME"
+  recipient: "YOUR_ACCOUNT_NAME"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The password is not stored in the config file, but in your keychain. To
+store the password, run: \fBurlwatch \-\-xmpp\-login\fP and enter your
+password.
+.sp
+If for whatever reason you cannot use a keyring to store your password
+you can also set the \fBinsecure_password\fP option in the XMPP config.
+For more information about the security implications, see
+\fI\%SMTP login without keyring\fP\&.
+.SH PROWL
+.sp
+You can have notifications sent to you through the \fIProwl\fP push
+notification service, to recieve the notification on iOS.
+.sp
+To achieve this, you should register a new Prowl account, and have
+the Prowl application installed on your iOS device.
+.sp
+To create an API key for urlwatch:
+.INDENT 0.0
+.IP 1. 3
+Log into the Prowl website at \fI\%https://prowlapp.com/\fP
+.IP 2. 3
+Navigate to the “API Keys” tab.
+.IP 3. 3
+Scroll to the “Generate a new API key” section.
+.IP 4. 3
+Give the key a note that will remind you you\(aqve used it for urlwatch.
+.IP 5. 3
+Press “Generate Key”
+.IP 6. 3
+Copy the resulting key.
+.UNINDENT
+.sp
+Here is a sample configuration:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+prowl:
+  enabled: true
+  api_key: \(aq<your api key here>\(aq
+  priority: 2
+  application: \(aqurlwatch example\(aq
+  subject: \(aq{count} changes: {jobs}\(aq
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The “subject" field is similar to the subject field in the email, and
+will be used as the name of the Prowl event. The application is prepended
+to the event and shown as the source of the event in the Prowl App.
+.SH FILES
+.sp
+\fB$XDG_CONFIG_HOME/urlwatch/urlwatch.yaml\fP
+.SH SEE ALSO
+.sp
+\fBurlwatch(1)\fP,
+\fBurlwatch\-config(5)\fP,
+\fBurlwatch\-intro(7)\fP,
+\fBurlwatch\-cookbook(7)\fP
+.SH COPYRIGHT
+2022 Thomas Perl
+.\" Generated by docutils manpage writer.
+.

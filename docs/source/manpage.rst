@@ -123,6 +123,7 @@ See also
 :manpage:`urlwatch-deprecated(7)`,
 :manpage:`urlwatch-jobs(5)`,
 :manpage:`urlwatch-filters(5)`,
+:manpage:`urlwatch-config(5)`,
 :manpage:`urlwatch-reporters(5)`
 
 

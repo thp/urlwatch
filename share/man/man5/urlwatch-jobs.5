@@ -1,0 +1,286 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "URLWATCH-JOBS" "5" "Mar 15, 2022" "urlwatch 2.24" "urlwatch 2.24 Documentation"
+.SH NAME
+urlwatch-jobs \- Job types and configuration for urlwatch
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH SYNOPSIS
+.sp
+urlwatch \-\-edit
+.SH DESCRIPTION
+.sp
+Jobs are the kind of things that \fBurlwatch(1)\fP can monitor.
+.sp
+The list of jobs to run are contained in the configuration file \fBurls.yaml\fP,
+accessed with the command \fBurlwatch \-\-edit\fP, each separated by a line
+containing only \fB\-\-\-\fP\&. The command \fBurlwatch \-\-list\fP prints the name
+of each job, along with its index number (1, 2, 3, ...) which gets assigned
+automatically according to its position in the configuration file.
+.sp
+While optional, it is recommended that each job starts with a \fBname\fP entry:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+name: "This is a human\-readable name/label of the job"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The following job types are available:
+.SH URL
+.sp
+This is the main job type \-\- it retrieves a document from a web server:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+name: "urlwatch homepage"
+url: "https://thp.io/2008/urlwatch/"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Required keys:
+.INDENT 0.0
+.IP \(bu 2
+\fBurl\fP: The URL to the document to watch for changes
+.UNINDENT
+.sp
+Job\-specific optional keys:
+.INDENT 0.0
+.IP \(bu 2
+\fBcookies\fP: Cookies to send with the request (see advanced_topics)
+.IP \(bu 2
+\fBmethod\fP: HTTP method to use (default: \fBGET\fP)
+.IP \(bu 2
+\fBdata\fP: HTTP POST/PUT data
+.IP \(bu 2
+\fBssl_no_verify\fP: Do not verify SSL certificates (true/false)
+.IP \(bu 2
+\fBignore_cached\fP: Do not use cache control (ETag/Last\-Modified) values (true/false)
+.IP \(bu 2
+\fBhttp_proxy\fP: Proxy server to use for HTTP requests
+.IP \(bu 2
+\fBhttps_proxy\fP: Proxy server to use for HTTPS requests
+.IP \(bu 2
+\fBheaders\fP: HTTP header to send along with the request
+.IP \(bu 2
+\fBencoding\fP: Override the character encoding from the server (see advanced_topics)
+.IP \(bu 2
+\fBtimeout\fP: Override the default socket timeout (see advanced_topics)
+.IP \(bu 2
+\fBignore_connection_errors\fP: Ignore (temporary) connection errors (see advanced_topics)
+.IP \(bu 2
+\fBignore_http_error_codes\fP: List of HTTP errors to ignore (see advanced_topics)
+.IP \(bu 2
+\fBignore_timeout_errors\fP: Do not report errors when the timeout is hit
+.IP \(bu 2
+\fBignore_too_many_redirects\fP: Ignore redirect loops (see advanced_topics)
+.UNINDENT
+.sp
+(Note: \fBurl\fP implies \fBkind: url\fP)
+.SH BROWSER
+.sp
+This job type is a resource\-intensive variant of "URL" to handle web pages
+requiring JavaScript in order to render the content to be monitored.
+.sp
+The optional \fBpyppeteer\fP package must be installed to run "Browser" jobs
+(see dependencies).
+.sp
+At the moment, the Chromium version used by \fBpyppeteer\fP only supports
+macOS (x86_64), Windows (both x86 and x64) and Linux (x86_64). See
+\fI\%this issue\fP <\fBhttps://github.com/pyppeteer/pyppeteer/issues/155\fP> in the
+Pyppeteer issue tracker for progress on getting ARM devices supported
+(e.g. Raspberry Pi).
+.sp
+Because \fBpyppeteer\fP downloads a special version of Chromium (~ 100 MiB),
+the first execution of a \fBbrowser\fP job could take some time (and bandwidth).
+It is possible to run \fBpyppeteer\-install\fP to pre\-download Chromium.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+name: "A page with JavaScript"
+navigate: "https://example.org/"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Required keys:
+.INDENT 0.0
+.IP \(bu 2
+\fBnavigate\fP: URL to navigate to with the browser
+.UNINDENT
+.sp
+Job\-specific optional keys:
+.INDENT 0.0
+.IP \(bu 2
+\fBwait_until\fP:  Either \fBload\fP, \fBdomcontentloaded\fP, \fBnetworkidle0\fP, or \fBnetworkidle2\fP (see advanced_topics)
+.UNINDENT
+.sp
+As this job uses \fI\%Pyppeteer\fP <\fBhttps://github.com/pyppeteer/pyppeteer\fP>
+to render the page in a headless Chromium instance, it requires massively
+more resources than a "URL" job. Use it only on pages where \fBurl\fP does not
+give the right results.
+.sp
+Hint: in many instances instead of using a "Browser" job you can
+monitor the output of an API called by the site during page loading
+containing the information you\(aqre after using the much faster "URL" job type.
+.sp
+(Note: \fBnavigate\fP implies \fBkind: browser\fP)
+.SH SHELL
+.sp
+This job type allows you to watch the output of arbitrary shell commands,
+which is useful for e.g. monitoring an FTP uploader folder, output of
+scripts that query external devices (RPi GPIO), etc...
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+name: "What is in my Home Directory?"
+command: "ls \-al ~"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Required keys:
+.INDENT 0.0
+.IP \(bu 2
+\fBcommand\fP: The shell command to execute
+.UNINDENT
+.sp
+Job\-specific optional keys:
+.INDENT 0.0
+.IP \(bu 2
+\fBstderr\fP: Change how standard error is treated, see below
+.UNINDENT
+.sp
+(Note: \fBcommand\fP implies \fBkind: shell\fP)
+.SS Configuring \fBstderr\fP behavior for shell jobs
+.sp
+By default urlwatch captures \fBstderr\fP for error reporting (non\-zero exit
+code), but ignores the output when the shell job exits with exit code 0.
+.sp
+This behavior can be customized using the \fBstderr\fP key:
+.INDENT 0.0
+.IP \(bu 2
+\fBignore\fP: Capture \fBstderr\fP, report on non\-zero exit code, ignore otherwise (default)
+.IP \(bu 2
+\fBurlwatch\fP: \fBstderr\fP of the shell job is sent to \fBstderr\fP of the \fBurlwatch\fP process;
+any error message on \fBstderr\fP will not be visible in the error message from the reporter
+(legacy default behavior of urlwatch 2.24 and older)
+.IP \(bu 2
+\fBfail\fP: Treat the job as failed if there is \fIany\fP output on \fBstderr\fP, even with exit status 0
+.IP \(bu 2
+\fBstdout\fP: Merge \fBstderr\fP output into \fBstdout\fP, which means stderr output is also considered
+for the change detection/diff part of urlwatch (this is similar to \fB2>&1\fP in a shell)
+.UNINDENT
+.sp
+For example, this job definition will make the job appear as failed,
+even though the script exits with exit code 0:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+command: |
+  echo "Normal standard output."
+  echo "Something goes to stderr, which makes this job fail." 1>&2
+  exit 0
+stderr: fail
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+On the other hand, if you want to diff both stdout and stderr of the job, use this:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+command: |
+  echo "An important line on stdout."
+  echo "Another important line on stderr." 1>&2
+stderr: stdout
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH OPTIONAL KEYS FOR ALL JOB TYPES
+.INDENT 0.0
+.IP \(bu 2
+\fBname\fP: Human\-readable name/label of the job
+.IP \(bu 2
+\fBfilter\fP: filters (if any) to apply to the output (can be tested with \fB\-\-test\-filter\fP)
+.IP \(bu 2
+\fBmax_tries\fP: Number of times to retry fetching the resource
+.IP \(bu 2
+\fBdiff_tool\fP: Command to a custom tool for generating diff text
+.IP \(bu 2
+\fBdiff_filter\fP: filters (if any) to apply to the diff result (can be tested with \fB\-\-test\-diff\-filter\fP)
+.IP \(bu 2
+\fBtreat_new_as_changed\fP: Will treat jobs that don\(aqt have any historic data as \fBCHANGED\fP instead of \fBNEW\fP (and create a diff for new jobs)
+.IP \(bu 2
+\fBcompared_versions\fP: Number of versions to compare for similarity
+.IP \(bu 2
+\fBkind\fP (redundant): Either \fBurl\fP, \fBshell\fP or \fBbrowser\fP\&.  Automatically derived from the unique key (\fBurl\fP, \fBcommand\fP or \fBnavigate\fP) of the job type
+.IP \(bu 2
+\fBuser_visible_url\fP: Different URL to show in reports (e.g. when watched URL is a REST API URL, and you want to show a webpage)
+.UNINDENT
+.SH SETTING KEYS FOR ALL JOBS AT ONCE
+.sp
+The main configuration file has a \fBjob_defaults\fP
+key that can be used to configure keys for all jobs at once.
+.sp
+See \fBurlwatch\-config(5)\fP for how to configure job defaults.
+.SH EXAMPLES
+.sp
+See \fBurlwatch\-cookbook(7)\fP for example job configurations.
+.SH FILES
+.sp
+\fB$XDG_CONFIG_HOME/urlwatch/urls.yaml\fP
+.SH SEE ALSO
+.sp
+\fBurlwatch(1)\fP,
+\fBurlwatch\-intro(5)\fP,
+\fBurlwatch\-filters(5)\fP
+.SH COPYRIGHT
+2022 Thomas Perl
+.\" Generated by docutils manpage writer.
+.

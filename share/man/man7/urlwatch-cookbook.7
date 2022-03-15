@@ -1,0 +1,540 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "URLWATCH-COOKBOOK" "7" "Mar 15, 2022" "urlwatch 2.24" "urlwatch 2.24 Documentation"
+.SH NAME
+urlwatch-cookbook \- Advanced topics and recipes for urlwatch
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH ADDING URLS FROM THE COMMAND LINE
+.sp
+Quickly adding new URLs to the job list from the command line:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+urlwatch \-\-add url=http://example.org,name=Example
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH USING WORD-BASED DIFFERENCES
+.sp
+You can also specify an external \fBdiff\fP\-style tool (a tool that takes
+two filenames (old, new) as parameter and returns on its standard output
+the difference of the files), for example to use \fBwdiff(1)\fP to get
+word\-based differences instead of line\-based difference:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.com/
+diff_tool: wdiff
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Note that \fBdiff_tool\fP specifies an external command\-line tool, so that
+tool must be installed separately (e.g.\ \fBapt install wdiff\fP on Debian
+or \fBbrew install wdiff\fP on macOS). Coloring is supported for
+\fBwdiff\fP\-style output, but potentially not for other diff tools.
+.SH IGNORING CONNECTION ERRORS
+.sp
+In some cases, it might be useful to ignore (temporary) network errors
+to avoid notifications being sent. While there is a \fBdisplay.error\fP
+config option (defaulting to \fBtrue\fP) to control reporting of errors
+globally, to ignore network errors for specific jobs only, you can use
+the \fBignore_connection_errors\fP key in the job list configuration file:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.com/
+ignore_connection_errors: true
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Similarly, you might want to ignore some (temporary) HTTP errors on the
+server side:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.com/
+ignore_http_error_codes: 408, 429, 500, 502, 503, 504
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+or ignore all HTTP errors if you like:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.com/
+ignore_http_error_codes: 4xx, 5xx
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH OVERRIDING THE CONTENT ENCODING
+.sp
+For web pages with misconfigured HTTP headers or rare encodings, it may
+be useful to explicitly specify an encoding from Python’s \fI\%Standard
+Encodings\fP <\fBhttps://docs.python.org/3/library/codecs.html#standard-encodings\fP>\&.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.com/
+encoding: utf\-8
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH CHANGING THE DEFAULT TIMEOUT
+.sp
+By default, url jobs timeout after 60 seconds. If you want a different
+timeout period, use the \fBtimeout\fP key to specify it in number of
+seconds, or set it to 0 to never timeout.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.com/
+timeout: 300
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH SUPPLYING COOKIE DATA
+.sp
+It is possible to add cookies to HTTP requests for pages that need it,
+the YAML syntax for this is:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.com/
+cookies:
+    Key: ValueForKey
+    OtherKey: OtherValue
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH COMPARING WITH SEVERAL LATEST SNAPSHOTS
+.sp
+If a webpage frequently changes between several known stable states, it
+may be desirable to have changes reported only if the webpage changes
+into a new unknown state. You can use \fBcompared_versions\fP to do this.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.com/
+compared_versions: 3
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+In this example, changes are only reported if the webpage becomes
+different from the latest three distinct states. The differences are
+shown relative to the closest match.
+.SH RECEIVING A REPORT EVERY TIME URLWATCH RUNS
+.sp
+If you are watching pages that change seldomly, but you still want to
+be notified daily if \fBurlwatch\fP still works, you can watch the output
+of the \fBdate\fP command, for example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+name: "urlwatch watchdog"
+command: "date"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Since the output of \fBdate\fP changes every second, this job should produce a
+report every time urlwatch is run.
+.SH USING REDIS AS A CACHE BACKEND
+.sp
+If you want to use Redis as a cache backend over the default SQLite3 file:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+urlwatch \-\-cache=redis://localhost:6379/
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+There is no migration path from the SQLite3 format, the cache will be empty
+the first time Redis is used.
+.SH WATCHING CHANGES ON .ONION (TOR) PAGES
+.sp
+Since pages on the \fI\%Tor Network\fP <\fBhttps://www.torproject.org\fP> are not accessible via public DNS and TCP,
+you need to either configure a Tor client as HTTP/HTTPS proxy or use the
+\fBtorify(1)\fP tool from the \fBtor\fP package (\fBapt install tor\fP on Debian,
+\fBbrew install tor\fP on macOS). Setting up Tor is out of scope for this
+document. On a properly set up Tor installation, one can just prefix the
+\fBurlwatch\fP command with the \fBtorify\fP wrapper to access .onion pages:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+torify urlwatch
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH WATCHING FACEBOOK PAGE EVENTS
+.sp
+If you want to be notified of new events on a public Facebook page, you
+can use the following job pattern, replace \fBPAGE\fP with the name of the
+page (can be found by navigating to the events page on your browser):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://m.facebook.com/PAGE/pages/permalink/?view_type=tab_events
+filter:
+  \- css:
+      selector: div#objects_container
+      exclude: \(aqdiv.x, #m_more_friends_who_like_this, img\(aq
+  \- re.sub:
+      pattern: \(aq(/events/\ed*)[^"]*\(aq
+      repl: \(aq\e1\(aq
+  \- html2text: pyhtml2text
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH ONLY SHOW ADDED OR REMOVED LINES
+.sp
+The \fBdiff_filter\fP feature can be used to filter the diff output text
+with the same tools (see filters) used for filtering web pages.
+.sp
+In order to show only diff lines with added lines, use:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.com/things\-get\-added.html
+diff_filter:
+  \- grep: \(aq^[@+]\(aq
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This will only keep diff lines starting with \fB@\fP or \fB+\fP\&. Similarly,
+to only keep removed lines:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.com/things\-get\-removed.html
+diff_filter:
+  \- grep: \(aq^[@\-]\(aq
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+More sophisticated diff filtering is possibly by combining existing
+filters, writing a new filter or using \fBshellpipe\fP to delegate the
+filtering/processing of the diff output to an external tool.
+.sp
+Read the next section if you want to disable empty notifications.
+.SH DISABLE EMPTY NOTIFICATIONS
+.sp
+As an extension to the previous example, let\(aqs say you want to only
+get notified with all lines added, but receive no notifications at all
+if lines are removed.
+.sp
+A diff usually looks like this:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+\-\-\- @       Fri, 04 Mar 2022 19:58:14 +0100
++++ @       Fri, 04 Mar 2022 19:58:22 +0100
+@@ \-1,3 +1,3 @@
+ someline
+\-someotherlines
++someotherline
+ anotherline
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+We want to filter all lines starting with "+" only, but because of
+the headers we also want to filter lines that start with "+++",
+which can be accomplished like so:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.com/only\-added.html
+diff_filter:
+  \- grep: \(aq^[+]\(aq      # Include all lines starting with "+"
+  \- grepi: \(aq^[+]{3}\(aq  # Exclude the line starting with "+++"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This deals with all diff lines now, but since urlwatch reports
+"changed" pages even when the \fBdiff_filter\fP returns an empty string
+(which might be useful in some cases), you have to explicitly opt out
+by using \fBurlwatch \-\-edit\-config\fP and setting the \fBempty\-diff\fP
+option to \fBfalse\fP in the \fBdisplay\fP category:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+display:
+  empty\-diff: false
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH PASS DIFF OUTPUT TO A CUSTOM SCRIPT
+.sp
+In some situations, it might be useful to run a script with the diff as input
+when changes were detected (e.g. to start an update or process something). This
+can be done by combining \fBdiff_filter\fP with the \fBshellpipe\fP filter, which
+can be any custom script.
+.sp
+The output of the custom script will then be the diff result as reported by
+urlwatch, so if it outputs any status, the \fBCHANGED\fP notification that
+urlwatch does will contain the output of the custom script, not the original
+diff. This can even have a "normal" filter attached to only watch links
+(the \fBcss: a\fP part of the filter definitions):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.org/downloadlist.html
+filter:
+  \- css: a
+diff_filter:
+  \- shellpipe: /usr/local/bin/process_new_links.sh
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH SETTING THE CONTENT WIDTH FOR HTML2TEXT (LYNX METHOD)
+.sp
+When using the \fBlynx\fP method in the \fBhtml2text\fP filter, it uses a default
+width that will cause additional line breaks to be inserted.
+.sp
+To set the \fBlynx\fP output width to 400 characters, use this filter setup:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.com/longlines.html
+filter:
+  \- html2text:
+      method: lynx
+      width: 400
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH COMPARING WEB PAGES VISUALLY
+.sp
+To compare the visual contents of web pages, Nicolai has written
+\fI\%pyvisualcompare\fP <\fBhttps://github.com/nspo/pyvisualcompare\fP> as
+a frontend (with GUI) to \fBurlwatch\fP\&. The tool can be used to
+select a region of a web page. It then generates a configuration
+for \fBurlwatch\fP to run \fBpyvisualcompare\fP and generate a hash
+for the screen contents.
+.SH CONFIGURING HOW LONG BROWSER JOBS WAIT FOR PAGES TO LOAD
+.sp
+For browser jobs, you can configure how long the headless browser will wait
+before a page is considered loaded by using the \fIwait_until\fP option. It can take one of four values:
+.INDENT 0.0
+.INDENT 3.5
+.INDENT 0.0
+.IP \(bu 2
+\fIload\fP will wait until the \fIload\fP browser event is fired (default).
+.IP \(bu 2
+\fIdocumentloaded\fP will wait until the \fIDOMContentLoaded\fP browser event is fired.
+.IP \(bu 2
+\fInetworkidle0\fP will wait until there are no more than 0 network connections for at least 500 ms.
+.IP \(bu 2
+\fInetworkidle2\fP will wait until there are no more than 2 network connections for at least 500 ms.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SH TREATING NEW JOBS AS CHANGED
+.sp
+In some cases (e.g. when the \fBdiff_tool\fP or \fBdiff_filter\fP executes some
+external command as a side effect that should also run for the initial page
+state), you can set the \fBtreat_new_as_changed\fP to \fBtrue\fP, which will make
+the job report as \fBCHANGED\fP instead of \fBNEW\fP the first time it is retrieved
+(and the diff will be reported, too).
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: http://example.com/initialpage.html
+treat_new_as_changed: true
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This option will also change the behavior of \fB\-\-test\-diff\-filter\fP, and allow
+testing the diff filter if only a single version of the page has been
+retrieved.
+.SH MONITORING THE SAME URL IN MULTIPLE JOBS
+.sp
+Because urlwatch uses the \fBurl\fP/\fBnavigate\fP (for URL/Browser jobs) and/or
+the \fBcommand\fP (for Shell jobs) key as unique identifier, each URL can only
+appear in a single job. If you want to monitor the same URL multiple times,
+you can append \fB#1\fP, \fB#2\fP, ... (or anything that makes them unique) to
+the URLs, like this:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+name: "Looking for Thing A"
+url: http://example.com/#1
+filter:
+  \- grep: "Thing A"
+\-\-\-
+name: "Looking for Thing B"
+url: http://example.com/#2
+filter:
+  \- grep: "Thing B"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH RUNNING A SUBSET OF JOBS
+.sp
+To run one or more specific jobs instead of all known jobs, provide
+the job index numbers to the urlwatch command. For example, to run
+jobs with index 2, 4, and 7:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+urlwatch 2 4 7
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH SENDING HTML FORM DATA USING POST
+.sp
+To simulate submitting a HTML form using the POST method, you can pass
+the form fields in the \fBdata\fP field of the job description:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+name: "My POST Job"
+url: http://example.com/foo
+data:
+  username: "foo"
+  password: "bar"
+  submit: "Send query"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+By default, the request will use the HTTP \fBPOST\fP method, and the
+\fBContent\-type\fP will be set to \fBapplication/x\-www\-form\-urlencoded\fP\&.
+.SH SENDING ARBITRARY DATA USING HTTP PUT
+.sp
+It is possible to customize the HTTP method and \fBContent\-type\fP header,
+allowing you to send arbitrary requests to the server:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+name: "My PUT Request"
+url: http://example.com/item/new
+method: PUT
+headers:
+  Content\-type: application/json
+data: \(aq{"foo": true}\(aq
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH SEE ALSO
+.sp
+\fBurlwatch(1)\fP,
+\fBurlwatch\-intro(7)\fP,
+\fBurlwatch\-jobs(5)\fP,
+\fBurlwatch\-filters(5)\fP,
+\fBurlwatch\-config(5)\fP,
+\fBurlwatch\-reporters(5)\fP
+.SH COPYRIGHT
+2022 Thomas Perl
+.\" Generated by docutils manpage writer.
+.
