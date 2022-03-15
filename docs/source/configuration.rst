@@ -3,13 +3,27 @@
 Configuration
 =============
 
-The global configuration for urlwatch contains basic settings for the generic
-behavior of urlwatch as well as the :ref:`reporters`. You can edit it with:
+.. only:: man
 
-.. code:: bash
+   Synopsis
+   --------
 
    urlwatch --edit-config
 
+   Description
+   -----------
+
+
+The global configuration for urlwatch contains basic settings for the generic
+behavior of urlwatch as well as the :ref:`reporters`.
+
+.. only:: html or pdf
+
+    You can edit it with:
+
+    .. code:: bash
+
+       urlwatch --edit-config
 
 .. _configuration_display:
 
@@ -53,7 +67,14 @@ current page contents.
 Reporters
 ---------
 
-Configuration of reporters is described in :ref:`reporters`.
+
+.. only:: html or pdf
+
+    Configuration of reporters is described in :ref:`reporters`.
+
+.. only:: man
+
+    See :manpage:`urlwatch-reporters(5)` on the available reporters.
 
 Here is an example configuration that reports on standard
 output in color, as well as HTML e-mail using ``sendmail``:
@@ -115,3 +136,19 @@ The possible sub-keys to ``job_defaults`` are:
 * ``browser``: Applies only to ``browser`` jobs (with key ``navigate``)
 
 See :ref:`jobs` about the different job kinds and what the possible keys are.
+
+.. only:: man
+
+    Files
+    -----
+
+    ``$XDG_CONFIG_HOME/urlwatch/urlwatch.yaml``
+
+    See also
+    --------
+
+    :manpage:`urlwatch(1)`,
+    :manpage:`urlwatch-reporters(5)`,
+    :manpage:`urlwatch-intro(7)`,
+    :manpage:`urlwatch-cookbook(7)`
+

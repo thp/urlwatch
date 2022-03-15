@@ -25,31 +25,6 @@ notified (via e-mail, in your terminal or through various third party
 services) of any changes. The change notification will include the URL
 that has changed and a unified diff of what has changed.
 
-Quick Start
-===========
-
-1. Run ``urlwatch`` once to migrate your old data or start fresh
-2. Use ``urlwatch --edit`` to customize your job list (this will
-   create/edit ``urls.yaml``)
-3. Use ``urlwatch --edit-config`` if you want to set up e-mail sending
-4. Add ``urlwatch`` to your crontab (``crontab -e``) to monitor webpages
-   periodically
-
-The checking interval is defined by how often you run ``urlwatch``. You
-can use e.g. `crontab.guru <https://crontab.guru>`__ to figure out the
-schedule expression for the checking interval, we recommend not more
-often than 30 minutes (this would be ``*/30 * * * *``). If you have
-never used cron before, check out the `crontab command
-help <https://www.computerhope.com/unix/ucrontab.htm>`__.
-
-On Windows, ``cron`` is not installed by default. Use the `Windows Task
-Scheduler <https://en.wikipedia.org/wiki/Windows_Task_Scheduler>`__
-instead, or see `this StackOverflow
-question <https://stackoverflow.com/q/132971/1047040>`__ for
-alternatives.
-
-
-
 The Handbook
 ============
 
@@ -57,12 +32,12 @@ The Handbook
    :maxdepth: 2
 
    introduction
-   dependencies
    jobs
    filters
    configuration
    reporters
    advanced
+   dependencies
    deprecated
    migration
 

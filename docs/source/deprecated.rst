@@ -1,8 +1,8 @@
 Deprecated Features
 ===================
 
-This page lists the features that are deprecated and steps to
-update your configuration to use the replacements (if any).
+As features are deprecated and cleaned up, they are documented
+here with steps to update your configuration for replacements.
 
 
 Filters without subfilters (since 2.22)

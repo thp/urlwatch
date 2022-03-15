@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'urlwatch'
-copyright = '2021, Thomas Perl'
+copyright = '2022 Thomas Perl'
 author = 'Thomas Perl'
 
 # The full version, including alpha/beta/rc tags
@@ -55,3 +55,23 @@ html_theme = 'alabaster'
 html_static_path = ['_static']
 
 master_doc = 'index'
+
+
+# -- Options for man pages ---------------------------------------------------
+
+man_pages = [
+    ('manpage',       'urlwatch',            'Monitor webpages and command output for changes', '', '1'),
+    ('configuration', 'urlwatch-config',     'Configuration of urlwatch behavior', '', '5'),
+    ('jobs',          'urlwatch-jobs',       'Job types and configuration for urlwatch', '', '5'),
+    ('filters',       'urlwatch-filters',    'Filtering output and diff data of urlwatch jobs', '', '5'),
+    ('reporters',     'urlwatch-reporters',  'Reporters for change notifications', '', '5'),
+    ('advanced',      'urlwatch-cookbook',   'Advanced topics and recipes for urlwatch', '', '7'),
+    ('introduction',  'urlwatch-intro',      'Introduction to basic urlwatch usage', '', '7'),
+    ('deprecated',    'urlwatch-deprecated', 'Documentation of feature deprecation in urlwatch', '', '7'),
+]
+
+man_show_urls = True
+man_make_section_directory = True
+
+# Distros/packagers can override this to point to their manpages web service
+manpages_url = 'https://manpages.debian.org/{path}'

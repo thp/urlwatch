@@ -8,7 +8,18 @@
 Filters
 =======
 
-Filters are currently used in two stages of processing:
+.. only:: man
+
+   Synopsis
+   --------
+
+   urlwatch --edit
+
+   Description
+   -----------
+
+Each job can have two filter stages configured, with one or more
+filters processed after each other:
 
 * Applied to the downloaded page before diffing the changes (``filter``)
 * Applied to the diff result before reporting the changes (``diff_filter``)
@@ -51,6 +62,7 @@ At the moment, the following filters are built-in:
 
 - **beautify**: Beautify HTML
 - **css**: Filter XML/HTML using CSS selectors
+- **csv2text**: Convert CSV to plaintext
 - **element-by-class**: Get all HTML elements by class
 - **element-by-id**: Get an HTML element by its ID
 - **element-by-style**: Get all HTML elements by style
@@ -307,22 +319,33 @@ If the PDF file is password protected, you can specify its password:
 Dealing with CSV input
 ----------------------
 
-`csv2text` filter can be used to turn CSV data to a prettier textual representation. This is done by
-supplying a `format_string` which is a [python format string](https://docs.python.org/3/library/string.html#format-string-syntax).
-If the CSV has a header, the format string should use the header names (**lowercased**). Example:
+The ``csv2text`` filter can be used to turn CSV data to a prettier textual representation
+This is done by supplying a ``format_string`` which is a `python format string`_.
 
-| Name  | Company |
-|--|--|
-| Smith | Initech |
-| Doe   | Initech |
+.. _`python format string`: https://docs.python.org/3/library/string.html#format-string-syntax
 
-Format string for the above CSV: `Mr {name} works at {company}` (Note the lowercase).
-If there is no header row, you will need to use the numeric array notation:
-`Mr {0} works at {1}`.
-You can also use numeric array on CSV with headers with the flag `ignore_header`.
-`has_header` can be used to force use the first line or first ignore the first line as header,
-otherwise [csv.Sniffer](https://docs.python.org/3/library/csv.html#csv.Sniffer)
-would be used.
+If the CSV has a header, the format string should use the header names lowercased.
+For example, let's say we have a CSV file containing data like this::
+
+    Name;Company
+    Smith;Initech
+    Doe;Initech
+
+A possible format string for the above CSV (note the lowercase keys)::
+
+    Mr {name} works at {company}
+
+If there is no header row, you will need to use the numeric array notation::
+
+    Mr {0} works at {1}
+
+You can force the use of numeric indices with the flag ``ignore_header``.
+
+The key ``has_header`` can be used to force use the first line or first
+ignore the first line as header, otherwise `csv.Sniffer`_ will be used.
+
+.. _`csv.Sniffer`: https://docs.python.org/3/library/csv.html#csv.Sniffer
+
 
 Sorting of webpage content
 --------------------------
@@ -511,9 +534,9 @@ the line (``-o``), you can specify this as ``shellpipe`` filter:
    filter:
      - shellpipe: "grep -i -o 'price: <span>.*</span>'"
 
-This feature also allows you to use ``sed``, ``awk`` and ``perl``
+This feature also allows you to use :manpage:`sed(1)`, :manpage:`awk(1)` and :manpage:`perl(1)`
 one-liners for text processing (of course, any text tool that
-works in a shell can be used). For example, this ``awk`` one-liner
+works in a shell can be used). For example, this :manpage:`awk(1)` one-liner
 prepends the line number to each line:
 
 .. code:: yaml
@@ -583,7 +606,7 @@ The subfilters ``timeout`` and ``language`` are optional:
 
 
 Filtering JSON response data using ``jq`` selectors
---------------------------------
+---------------------------------------------------
 
 The ``jq`` filter uses the Python bindings for `jq`_, a lightweight JSON processor.
 Use of this filter requires the optional `jq Python module`_ to be installed.
@@ -606,3 +629,19 @@ Supports aggregations, selections, and the built-in operators like ``length``.  
 more information on the operations permitted, see the `jq Manual`_.
 
 .. _jq Manual: https://stedolan.github.io/jq/manual/
+
+
+.. only:: man
+
+    Files
+    -----
+
+    ``$XDG_CONFIG_HOME/urlwatch/urls.yaml``
+
+    See also
+    --------
+
+    :manpage:`urlwatch(1)`,
+    :manpage:`urlwatch-intro(5)`,
+    :manpage:`urlwatch-jobs(5)`
+

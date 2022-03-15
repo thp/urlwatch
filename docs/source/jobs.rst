@@ -3,12 +3,22 @@
 Jobs
 ====
 
-Jobs are the kind of things that `urlwatch` can monitor.
+.. only:: man
+
+   Synopsis
+   --------
+
+   urlwatch --edit
+
+   Description
+   -----------
+
+Jobs are the kind of things that :manpage:`urlwatch(1)` can monitor.
 
 The list of jobs to run are contained in the configuration file ``urls.yaml``,
 accessed with the command ``urlwatch --edit``, each separated by a line
 containing only ``---``. The command ``urlwatch --list`` prints the name
-of each job, along with its index number (1,2,3,...) which gets assigned
+of each job, along with its index number (1, 2, 3, ...) which gets assigned
 automatically according to its position in the configuration file.
 
 While optional, it is recommended that each job starts with a ``name`` entry:
@@ -16,6 +26,8 @@ While optional, it is recommended that each job starts with a ``name`` entry:
 .. code-block:: yaml
 
     name: "This is a human-readable name/label of the job"
+
+The following job types are available:
 
 
 URL
@@ -160,17 +172,42 @@ Optional keys for all job types
 -------------------------------
 
 - ``name``: Human-readable name/label of the job
-- ``filter``: :ref:`filters` (if any) to apply to the output (can be tested with ``--test-filter``)
+- ``filter``: :doc:`filters` (if any) to apply to the output (can be tested with ``--test-filter``)
 - ``max_tries``: Number of times to retry fetching the resource
 - ``diff_tool``: Command to a custom tool for generating diff text
-- ``diff_filter``: :ref:`filters` (if any) to apply to the diff result (can be tested with ``--test-diff-filter``)
+- ``diff_filter``: :doc:`filters` (if any) to apply to the diff result (can be tested with ``--test-diff-filter``)
 - ``treat_new_as_changed``: Will treat jobs that don't have any historic data as ``CHANGED`` instead of ``NEW`` (and create a diff for new jobs)
 - ``compared_versions``: Number of versions to compare for similarity
 - ``kind`` (redundant): Either ``url``, ``shell`` or ``browser``.  Automatically derived from the unique key (``url``, ``command`` or ``navigate``) of the job type
 - ``user_visible_url``: Different URL to show in reports (e.g. when watched URL is a REST API URL, and you want to show a webpage)
 
 
-Settings keys for all jobs at once
-----------------------------------
+Setting keys for all jobs at once
+---------------------------------
 
-See :ref:`job_defaults` for how to configure keys for all jobs at once.
+The main :doc:`configuration` file has a ``job_defaults``
+key that can be used to configure keys for all jobs at once.
+
+.. only:: man
+
+    See :manpage:`urlwatch-config(5)` for how to configure job defaults.
+
+.. only:: man
+
+    Examples
+    --------
+
+    See :manpage:`urlwatch-cookbook(7)` for example job configurations.
+
+    Files
+    -----
+
+    ``$XDG_CONFIG_HOME/urlwatch/urls.yaml``
+
+    See also
+    --------
+
+    :manpage:`urlwatch(1)`,
+    :manpage:`urlwatch-intro(5)`,
+    :manpage:`urlwatch-filters(5)`
+

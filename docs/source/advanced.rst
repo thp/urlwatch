@@ -17,7 +17,7 @@ Using word-based differences
 
 You can also specify an external ``diff``-style tool (a tool that takes
 two filenames (old, new) as parameter and returns on its standard output
-the difference of the files), for example to use GNU ``wdiff`` to get
+the difference of the files), for example to use :manpage:`wdiff(1)` to get
 word-based differences instead of line-based difference:
 
 .. code-block:: yaml
@@ -149,7 +149,7 @@ Watching changes on .onion (Tor) pages
 
 Since pages on the `Tor Network`_ are not accessible via public DNS and TCP,
 you need to either configure a Tor client as HTTP/HTTPS proxy or use the
-``torify(1)`` tool from the ``tor`` package (``apt install tor`` on Debian,
+:manpage:`torify(1)` tool from the ``tor`` package (``apt install tor`` on Debian,
 ``brew install tor`` on macOS). Setting up Tor is out of scope for this
 document. On a properly set up Tor installation, one can just prefix the
 ``urlwatch`` command with the ``torify`` wrapper to access .onion pages:
@@ -185,7 +185,7 @@ Only show added or removed lines
 --------------------------------
 
 The ``diff_filter`` feature can be used to filter the diff output text
-with the same tools (see :ref:`filters`) used for filtering web pages.
+with the same tools (see :doc:`filters`) used for filtering web pages.
 
 In order to show only diff lines with added lines, use:
 
@@ -402,3 +402,16 @@ allowing you to send arbitrary requests to the server:
     headers:
       Content-type: application/json
     data: '{"foo": true}'
+
+.. only:: man
+
+    See also
+    --------
+
+    :manpage:`urlwatch(1)`,
+    :manpage:`urlwatch-intro(7)`,
+    :manpage:`urlwatch-jobs(5)`,
+    :manpage:`urlwatch-filters(5)`,
+    :manpage:`urlwatch-config(5)`,
+    :manpage:`urlwatch-reporters(5)`
+

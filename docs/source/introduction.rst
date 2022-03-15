@@ -3,35 +3,89 @@
 Introduction
 ============
 
-`urlwatch` monitors the output of webpages or arbitrary shell commands.
 
-Every time you run `urlwatch`, it:
-
-- retrieves the output and processes it
-- compares it with the version retrieved the previous time ("diffing")
-- if it finds any differences, generates a summary "report" that can be displayed or sent via one or more methods, such as email
-
-:ref:`Jobs`
+Quick Start
 -----------
+
+1. Run ``urlwatch`` once to migrate your old data or start fresh
+2. Use ``urlwatch --edit`` to customize jobs and filters (``urls.yaml``)
+3. Use ``urlwatch --edit-config`` to customize settings and reporters (``urlwatch.yaml``)
+4. Add ``urlwatch`` to your crontab (``crontab -e``) to monitor webpages periodically
+
+The checking interval is defined by how often you run ``urlwatch``. You
+can use e.g. `crontab.guru <https://crontab.guru>`__ to figure out the
+schedule expression for the checking interval, we recommend not more
+often than 30 minutes (this would be ``*/30 * * * *``). If you have
+never used cron before, check out the `crontab command
+help <https://www.computerhope.com/unix/ucrontab.htm>`__.
+
+On Windows, ``cron`` is not installed by default. Use the `Windows Task
+Scheduler <https://en.wikipedia.org/wiki/Windows_Task_Scheduler>`__
+instead, or see `this StackOverflow
+question <https://stackoverflow.com/q/132971/1047040>`__ for
+alternatives.
+
+
+How it works
+------------
+
+Every time you run :manpage:`urlwatch(1)`, it:
+
+- retrieves the output of each job and filters it
+- compares it with the version retrieved the previous time ("diffing")
+- if it finds any differences, it invokes enabled reporters (e.g.
+  text reporter, e-mail reporter, ...) to notify you of the changes
+
+Jobs and Filters
+----------------
+
 Each website or shell command to be monitored constitutes a "job".
 
-The instructions for each such job are contained in a config file in the `YAML format`_, accessible with the ``urlwatch --edit`` command.
+The instructions for each such job are contained in a config file in the `YAML
+format`_. If you have more than one job, you separate them with a line
+containing only ``---``.
+
+You can edit the job and filter configuration file using:
+
+.. code::
+
+    urlwatch --edit
+
 If you get an error, set your ``$EDITOR`` (or ``$VISUAL``) environment
-variable in your shell with a command such as ``export EDITOR=/bin/nano``.
+variable in your shell, for example:
+
+.. code::
+
+    export EDITOR=/bin/nano
+
+While you can edit the YAML file manually, using ``--edit`` will
+do sanity checks before activating the new configuration file.
 
 .. _YAML format: https://yaml.org/spec/
 
-Typically, the first entry ("key") in a job is a ``name``, which can be anything you want and helps you identify what you're monitoring.
+Kinds of Jobs
+~~~~~~~~~~~~~
 
-The second key is one of either ``url``, ``navigate`` or ``command``:
+Each job must have exactly one of the following keys, which also
+defines the kind of job:
 
-- ``url`` retrieves what is served by the web server,
-- ``navigate`` handles more web pages requiring JavaScript to display the content to be monitored, and
+- ``url`` retrieves what is served by the web server (HTTP GET by default),
+- ``navigate`` uses a headless browser to load web pages requiring JavaScript, and
 - ``command`` runs a shell command.
+
+Each job can have an optional ``name`` key to define a user-visible name for the job.
 
 You can then use optional keys to finely control various job's parameters.
 
-Finally, you often use the ``filter`` key to select one or more :ref:`filters` to apply to the data after it is retrieved, to:
+.. only:: man
+
+    See :manpage:`urlwatch-jobs(5)` for detailed information on job configuration.
+
+Filters
+~~~~~~~
+
+You may use the ``filter`` key to select one or more :doc:`filters` to apply to
+the data after it is retrieved, for example to:
 
 - select HTML: ``css``, ``xpath``, ``element-by-class``, ``element-by-id``, ``element-by-style``, ``element-by-tag``
 - make HTML more readable: ``html2text``, ``beautify``
@@ -42,7 +96,11 @@ Finally, you often use the ``filter`` key to select one or more :ref:`filters` t
 - just detect changes: ``sha1sum``
 - edit text: ``grep``, ``grepi``, ``strip``, ``sort``, ``striplines``
 
-These :ref:`filters` can be chained. As an example, after retrieving an HTML document by using the ``url`` key, you can extract a selection with the ``xpath`` filter, convert this to text with ``html2text``, use ``grep`` to extract only lines matching a specific regular expression, and then ``sort`` them:
+These filters can be chained. As an example, after retrieving an HTML
+document by using the ``url`` key, you can extract a selection with the
+``xpath`` filter, convert this to text with ``html2text``, use ``grep`` to
+extract only lines matching a specific regular expression, and then ``sort``
+them:
 
 .. code-block:: yaml
 
@@ -65,11 +123,23 @@ These :ref:`filters` can be chained. As an example, after retrieving an HTML doc
       - sort:
     ---
 
-If you have more than one job, per `YAML specifications <https://yaml.org/spec/>`__, you separate them with a line containing only ``---``.
+.. only:: man
 
-:ref:`Reporters`
-----------------
-`urlwatch` can be configured to do something with its report besides (or in addition to) the default of displaying it on the console, such as one or more of:
+    See :manpage:`urlwatch-filters(5)` for detailed information on filter configuration.
+
+Reporters
+---------
+
+`urlwatch` can be configured to do something with its report besides
+(or in addition to) the default of displaying it on the console.
+
+:doc:`reporters` are configured in the global configuration file:
+
+.. code::
+
+    urlwatch --edit-config
+
+Examples of reporters:
 
 - ``email`` (using SMTP)
 - email using ``mailgun``
@@ -82,4 +152,18 @@ If you have more than one job, per `YAML specifications <https://yaml.org/spec/>
 - ``stdout``
 - ``xmpp``
 
-Reporters are configured in a separate file, see :ref:`configuration`.
+.. only:: man
+
+    See :manpage:`urlwatch-reporters(5)` for reporter configuration options.
+
+.. only:: man
+
+    See Also
+    --------
+
+    :manpage:`urlwatch(1)`,
+    :manpage:`urlwatch-jobs(5)`,
+    :manpage:`urlwatch-filters(5)`,
+    :manpage:`urlwatch-config(5)`,
+    :manpage:`urlwatch-reporters(5)`,
+    :manpage:`cron(8)`
