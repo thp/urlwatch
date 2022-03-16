@@ -205,7 +205,7 @@ is a sample configuration:
 
 To set up Discord, from your Discord Server settings, select Integration and then create a "New Webhook", give the webhook a name to post under, select a channel, push "Copy Webhook URL" and paste it into the configuration as seen above.
 
-Embedded content might be easier to read and identify individual reports. Subject preceeds the embedded report and is only used when `embed` is true.
+Embedded content might be easier to read and identify individual reports. Subject precedes the embedded report and is only used when `embed` is true.
 
 When `colored` is true reports will be embedded in code section (with diff syntax) to enable colors.
 
@@ -402,7 +402,7 @@ Prowl
 -----
 
 You can have notifications sent to you through the `Prowl` push
-notification service, to recieve the notification on iOS.
+notification service, to receive the notification on iOS.
 
 To achieve this, you should register a new Prowl account, and have
 the Prowl application installed on your iOS device.
