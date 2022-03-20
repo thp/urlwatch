@@ -36,8 +36,8 @@ def test_normalize_filter_list(input, output):
     assert list(FilterBase.normalize_filter_list(input)) == output
 
 
-FILTER_TESTS = list(yaml.safe_load(open(os.path.join(os.path.dirname(__file__), 'data/filter_tests.yaml'), 'r',
-                                        encoding='utf8')).items())
+with open(os.path.join(os.path.dirname(__file__), 'data/filter_tests.yaml'), 'r', encoding='utf8') as f:
+    FILTER_TESTS = list(yaml.safe_load(f).items())
 
 
 @pytest.mark.parametrize('test_name, test_data', FILTER_TESTS, ids=[d[0] for d in FILTER_TESTS])
