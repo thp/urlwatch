@@ -54,19 +54,21 @@ class BrowserLoop(object):
         return browser
 
     @asyncio.coroutine
-    def _get_content(self, url, wait_until=None):
+    def _get_content(self, url, wait_until=None, useragent=None):
         context = yield from self._browser.createIncognitoBrowserContext()
         page = yield from context.newPage()
         opts = {}
         if wait_until is not None:
             opts['waitUntil'] = wait_until
+        if useragent is not None:
+            yield from page.setUserAgent(useragent)
         yield from page.goto(url, opts)
         content = yield from page.content()
         yield from context.close()
         return content
 
-    def process(self, url, wait_until=None):
-        coroutine = self._get_content(url, wait_until=wait_until)
+    def process(self, url, wait_until=None, useragent=None):
+        coroutine = self._get_content(url, wait_until=wait_until, useragent=useragent)
         return asyncio.run_coroutine_threadsafe(coroutine, self._event_loop).result()
 
     def destroy(self):
@@ -90,8 +92,8 @@ class BrowserContext(object):
                 BrowserContext._BROWSER_LOOP = BrowserLoop()
             BrowserContext._BROWSER_REFCNT += 1
 
-    def process(self, url, wait_until=None):
-        return BrowserContext._BROWSER_LOOP.process(url, wait_until=wait_until)
+    def process(self, url, wait_until=None, useragent=None):
+        return BrowserContext._BROWSER_LOOP.process(url, wait_until=wait_until, useragent=useragent)
 
     def close(self):
         with BrowserContext._BROWSER_LOCK:
@@ -113,13 +115,17 @@ def main():
                         dest='wait_until',
                         choices=['load', 'domcontentloaded', 'networkidle0', 'networkidle2'],
                         help='When to consider a pageload finished')
+    parser.add_argument('-u',
+                        '--useragent',
+                        dest='useragent',
+                        help='Change the useragent (sent by pyppeteer)')
     args = parser.parse_args()
 
     setup_logger(args.verbose)
 
     try:
         ctx = BrowserContext()
-        print(ctx.process(args.url, wait_until=args.wait_until))
+        print(ctx.process(args.url, wait_until=args.wait_until, useragent=args.useragent))
     finally:
         ctx.close()
 

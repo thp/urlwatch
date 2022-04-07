@@ -95,7 +95,7 @@ Required keys:
 Job-specific optional keys:
 
 - ``wait_until``:  Either ``load``, ``domcontentloaded``, ``networkidle0``, or ``networkidle2`` (see :ref:`advanced_topics`)
-
+- ``useragent``:  Change useragent (will be passed to pyppeteer)
 
 As this job uses `Pyppeteer <https://github.com/pyppeteer/pyppeteer>`__
 to render the page in a headless Chromium instance, it requires massively
