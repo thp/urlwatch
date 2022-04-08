@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## UNRELEASED
+
+### Added
+
+- `browser` job: Add support for specifying `useragent` (#700, by Francesco Versaci)
+
 ## [2.25] -- 2022-03-15
 
 ### Added
