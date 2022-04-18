@@ -10,6 +10,11 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - `browser` job: Add support for specifying `useragent` (#700, by Francesco Versaci)
 
+### Fixed
+
+- Limit e-mail header length to 78 characters to avoid issues with some SMTP servers
+  (PR#703, fixes #702, by Julien Palard)
+
 ## [2.25] -- 2022-03-15
 
 ### Added
