@@ -31,6 +31,21 @@ or ``brew install wdiff`` on macOS). Coloring is supported for
 ``wdiff``-style output, but potentially not for other diff tools.
 
 
+Ignoring whitespace changes
+---------------------------
+
+If you would like to ignore whitespace changes so that you don't receive
+notifications for trivial differences, you can use ``diff_tool`` for this.
+For example:
+
+.. code-block:: yaml
+
+   diff_tool: "diff --ignore-all-space -u"
+
+To use a different external ``diff``-like tool, make sure it returns unified
+output format for best results.
+
+
 Ignoring connection errors
 --------------------------
 
