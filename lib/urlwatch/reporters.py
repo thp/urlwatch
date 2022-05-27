@@ -46,6 +46,8 @@ from .mailer import SendmailMailer
 from .util import TrackSubClasses, chunkstring
 from .xmpp import XMPP
 
+from feedgen.feed import FeedGenerator
+
 try:
     import chump
 except ImportError:
