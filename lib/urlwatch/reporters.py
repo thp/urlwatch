@@ -47,6 +47,7 @@ from .util import TrackSubClasses, chunkstring
 from .xmpp import XMPP
 
 from feedgen.feed import FeedGenerator
+import hashlib
 
 try:
     import chump
@@ -409,6 +410,8 @@ class RssReporter(TextReporter):
         fe = fg.add_entry()
         fe.title('New changes')
         fe.content(body, type='CDATA')
+        id = hashlib.sha1(body.encode('utf-8')).hexdigest()
+        fe.id(id)
 
         # Output feed to STDOUT.
         rss = fg.rss_str(pretty=True).decode("utf-8")
