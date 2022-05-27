@@ -385,6 +385,35 @@ class StdoutReporter(TextReporter):
                 print(line)
 
 
+class RssReporter(TextReporter):
+    """Print summary on stdout (the console) as RSS"""
+
+    __kind__ = 'rss'
+
+    def submit(self):
+
+        body = '\n'.join(super().submit())
+        if not body:
+            return
+        
+        # Text output within preformatted tag.
+        body = '<pre>' + body + '</pre>'
+
+        # Create feed.
+        fg = FeedGenerator()
+        fg.title(self.config['feed']['title'])
+        fg.link( href=self.config['feed']['url'], rel='alternate' )
+        fg.subtitle(self.config['feed']['subtitle'])
+
+        # Create feed item
+        fe = fg.add_entry()
+        fe.title('New changes')
+        fe.content(body, type='CDATA')
+
+        # Output feed to STDOUT.
+        rss = fg.rss_str().decode("utf-8")
+        print(rss)
+
 class EMailReporter(TextReporter):
     """Send summary via e-mail / SMTP"""
 
