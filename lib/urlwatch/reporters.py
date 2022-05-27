@@ -411,7 +411,7 @@ class RssReporter(TextReporter):
         fe.content(body, type='CDATA')
 
         # Output feed to STDOUT.
-        rss = fg.rss_str().decode("utf-8")
+        rss = fg.rss_str(pretty=True).decode("utf-8")
         print(rss)
 
 class EMailReporter(TextReporter):
