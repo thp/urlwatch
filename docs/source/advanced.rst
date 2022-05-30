@@ -27,7 +27,7 @@ word-based differences instead of line-based difference:
 
 Note that ``diff_tool`` specifies an external command-line tool, so that
 tool must be installed separately (e.g. ``apt install wdiff`` on Debian
-or ``brew install wdiff`` on macOS). Coloring is supported for
+or ``brew install wdiff`` on macOS). Syntax highlighting is supported for
 ``wdiff``-style output, but potentially not for other diff tools.
 
 
@@ -40,10 +40,10 @@ For example:
 
 .. code-block:: yaml
 
-   diff_tool: "diff --ignore-all-space -u"
+   diff_tool: "diff --ignore-all-space --unified"
 
-To use a different external ``diff``-like tool, make sure it returns unified
-output format for best results.
+When using another external ``diff``-like tool, make sure it returns unified
+output format to retain syntax highlighting.
 
 
 Only show added or removed lines
