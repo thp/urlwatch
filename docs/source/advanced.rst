@@ -27,7 +27,7 @@ word-based differences instead of line-based difference:
 
 Note that ``diff_tool`` specifies an external command-line tool, so that
 tool must be installed separately (e.g. ``apt install wdiff`` on Debian
-or ``brew install wdiff`` on macOS). Coloring is supported for
+or ``brew install wdiff`` on macOS). Syntax highlighting is supported for
 ``wdiff``-style output, but potentially not for other diff tools.
 
 
@@ -40,10 +40,116 @@ For example:
 
 .. code-block:: yaml
 
-   diff_tool: "diff --ignore-all-space -u"
+   diff_tool: "diff --ignore-all-space --unified"
 
-To use a different external ``diff``-like tool, make sure it returns unified
-output format for best results.
+When using another external ``diff``-like tool, make sure it returns unified
+output format to retain syntax highlighting.
+
+
+Only show added or removed lines
+--------------------------------
+
+The ``diff_filter`` feature can be used to filter the diff output text
+with the same tools (see :doc:`filters`) used for filtering web pages.
+
+In order to show only diff lines with added lines, use:
+
+.. code-block:: yaml
+
+   url: http://example.com/things-get-added.html
+   diff_filter:
+     - grep: '^[@+]'
+
+This will only keep diff lines starting with ``@`` or ``+``. Similarly,
+to only keep removed lines:
+
+.. code-block:: yaml
+
+   url: http://example.com/things-get-removed.html
+   diff_filter:
+     - grep: '^[@-]'
+
+More sophisticated diff filtering is possibly by combining existing
+filters, writing a new filter or using ``shellpipe`` to delegate the
+filtering/processing of the diff output to an external tool.
+
+Read the next section if you want to disable empty notifications.
+
+
+Disable empty notifications
+---------------------------
+
+As an extension to the previous example, let's say you want to only
+get notified with all lines added, but receive no notifications at all
+if lines are removed.
+
+A diff usually looks like this:
+
+.. code-block::
+
+    --- @	Fri, 04 Mar 2022 19:58:14 +0100
+    +++ @	Fri, 04 Mar 2022 19:58:22 +0100
+    @@ -1,3 +1,3 @@
+     someline
+    -someotherlines
+    +someotherline
+     anotherline
+
+We want to filter all lines starting with "+" only, but because of
+the headers we also want to filter lines that start with "+++",
+which can be accomplished like so:
+
+.. code-block:: yaml
+
+    url: http://example.com/only-added.html
+    diff_filter:
+      - grep: '^[+]'      # Include all lines starting with "+"
+      - grepi: '^[+]{3}'  # Exclude the line starting with "+++"
+
+This deals with all diff lines now, but since urlwatch reports
+"changed" pages even when the ``diff_filter`` returns an empty string
+(which might be useful in some cases), you have to explicitly opt out
+by using ``urlwatch --edit-config`` and setting the ``empty-diff``
+option to ``false`` in the ``display`` category:
+
+.. code-block:: yaml
+
+    display:
+      empty-diff: false
+
+
+Pass diff output to a custom script
+-----------------------------------
+
+In some situations, it might be useful to run a script with the diff as input
+when changes were detected (e.g. to start an update or process something). This
+can be done by combining ``diff_filter`` with the ``shellpipe`` filter, which
+can be any custom script.
+
+The output of the custom script will then be the diff result as reported by
+urlwatch, so if it outputs any status, the ``CHANGED`` notification that
+urlwatch does will contain the output of the custom script, not the original
+diff. This can even have a "normal" filter attached to only watch links
+(the ``css: a`` part of the filter definitions):
+
+.. code-block:: yaml
+
+   url: http://example.org/downloadlist.html
+   filter:
+     - css: a
+   diff_filter:
+     - shellpipe: /usr/local/bin/process_new_links.sh
+
+
+Comparing web pages visually
+----------------------------
+
+To compare the visual contents of web pages, Nicolai has written
+`pyvisualcompare <https://github.com/nspo/pyvisualcompare>`__ as
+a frontend (with GUI) to ``urlwatch``. The tool can be used to
+select a region of a web page. It then generates a configuration
+for ``urlwatch`` to run ``pyvisualcompare`` and generate a hash
+for the screen contents.
 
 
 Ignoring connection errors
@@ -196,101 +302,6 @@ page (can be found by navigating to the events page on your browser):
      - html2text: pyhtml2text
 
 
-Only show added or removed lines
---------------------------------
-
-The ``diff_filter`` feature can be used to filter the diff output text
-with the same tools (see :doc:`filters`) used for filtering web pages.
-
-In order to show only diff lines with added lines, use:
-
-.. code-block:: yaml
-
-   url: http://example.com/things-get-added.html
-   diff_filter:
-     - grep: '^[@+]'
-
-This will only keep diff lines starting with ``@`` or ``+``. Similarly,
-to only keep removed lines:
-
-.. code-block:: yaml
-
-   url: http://example.com/things-get-removed.html
-   diff_filter:
-     - grep: '^[@-]'
-
-More sophisticated diff filtering is possibly by combining existing
-filters, writing a new filter or using ``shellpipe`` to delegate the
-filtering/processing of the diff output to an external tool.
-
-Read the next section if you want to disable empty notifications.
-
-
-Disable empty notifications
----------------------------
-
-As an extension to the previous example, let's say you want to only
-get notified with all lines added, but receive no notifications at all
-if lines are removed.
-
-A diff usually looks like this:
-
-.. code-block::
-
-    --- @	Fri, 04 Mar 2022 19:58:14 +0100
-    +++ @	Fri, 04 Mar 2022 19:58:22 +0100
-    @@ -1,3 +1,3 @@
-     someline
-    -someotherlines
-    +someotherline
-     anotherline
-
-We want to filter all lines starting with "+" only, but because of
-the headers we also want to filter lines that start with "+++",
-which can be accomplished like so:
-
-.. code-block:: yaml
-
-    url: http://example.com/only-added.html
-    diff_filter:
-      - grep: '^[+]'      # Include all lines starting with "+"
-      - grepi: '^[+]{3}'  # Exclude the line starting with "+++"
-
-This deals with all diff lines now, but since urlwatch reports
-"changed" pages even when the ``diff_filter`` returns an empty string
-(which might be useful in some cases), you have to explicitly opt out
-by using ``urlwatch --edit-config`` and setting the ``empty-diff``
-option to ``false`` in the ``display`` category:
-
-.. code-block:: yaml
-
-    display:
-      empty-diff: false
-
-
-Pass diff output to a custom script
------------------------------------
-
-In some situations, it might be useful to run a script with the diff as input
-when changes were detected (e.g. to start an update or process something). This
-can be done by combining ``diff_filter`` with the ``shellpipe`` filter, which
-can be any custom script.
-
-The output of the custom script will then be the diff result as reported by
-urlwatch, so if it outputs any status, the ``CHANGED`` notification that
-urlwatch does will contain the output of the custom script, not the original
-diff. This can even have a "normal" filter attached to only watch links
-(the ``css: a`` part of the filter definitions):
-
-.. code-block:: yaml
-
-   url: http://example.org/downloadlist.html
-   filter:
-     - css: a
-   diff_filter:
-     - shellpipe: /usr/local/bin/process_new_links.sh
-
-
 Setting the content width for ``html2text`` (``lynx`` method)
 -------------------------------------------------------------
 
@@ -306,17 +317,6 @@ To set the ``lynx`` output width to 400 characters, use this filter setup:
      - html2text:
          method: lynx
          width: 400
-
-
-Comparing web pages visually
-----------------------------
-
-To compare the visual contents of web pages, Nicolai has written
-`pyvisualcompare <https://github.com/nspo/pyvisualcompare>`__ as
-a frontend (with GUI) to ``urlwatch``. The tool can be used to
-select a region of a web page. It then generates a configuration
-for ``urlwatch`` to run ``pyvisualcompare`` and generate a hash
-for the screen contents.
 
 
 Configuring how long browser jobs wait for pages to load
