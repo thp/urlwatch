@@ -9,11 +9,18 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Added
 
 - `browser` job: Add support for specifying `useragent` (#700, by Francesco Versaci)
+- Document how to ignore whitespace changes (PR#707, by Paulo Magalhaes)
+
+### Changed
+
+- Docs: Re-group diff-related topics and improve wording (PR#712, by neutric)
 
 ### Fixed
 
 - Limit e-mail header length to 78 characters to avoid issues with some SMTP servers
   (PR#703, fixes #702, by Julien Palard)
+- Fix a ResourceWarning for unclosed files when running unit tests
+  (PR#698, by Louis Sautier)
 
 ## [2.25] -- 2022-03-15
 
