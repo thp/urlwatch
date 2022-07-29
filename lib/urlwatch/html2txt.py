@@ -70,7 +70,7 @@ def html2text(data, baseurl, method, options):
 
     if method == 'pyhtml2text':
         if pyhtml2text is None:
-            raise ImportError('Please install pyhtml2text')
+            raise ImportError("Please install python's html2text")
 
         parser = pyhtml2text.HTML2Text()
         parser.baseurl = baseurl
