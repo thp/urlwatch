@@ -90,7 +90,12 @@ def html2text(data, baseurl, method, options):
     if method == 'lynx':
         cmd = ['lynx', '-nonumbers', '-dump', '-stdin', '-assume_charset UTF-8', '-display_charset UTF-8']
     elif method == 'html2text':
-        cmd = ['html2text', '-nobs', '-utf8']
+        if '-utf8' in subprocess.check_output(['html2text', '-help'], encoding='utf-8'):
+            # Version 1.3.2a or older, defaults to Latin-1, needs "-utf8"
+            cmd = ['html2text', '-nobs', '-utf8']
+        else:
+            # Version 2.1.1 or newer, defaults to UTF-8
+            cmd = ['html2text', '-nobs']
     else:
         raise ValueError('Unknown html2text method: %r' % (method,))
 
