@@ -75,16 +75,19 @@ DEFAULT_CONFIG = {
             'details': True,
             'footer': True,
             'minimal': False,
+            'separate': False,
         },
 
         'markdown': {
             'details': True,
             'footer': True,
             'minimal': False,
+            'separate': False,
         },
 
         'html': {
             'diff': 'unified',  # "unified" or "table"
+            'separate': False,
         },
 
         'stdout': {

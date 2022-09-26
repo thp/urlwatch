@@ -88,6 +88,7 @@ output in color, as well as HTML e-mail using ``sendmail``:
        line_length: 75
      html:
        diff: unified
+       separate: true
      email:
        enabled: true
        method: sendmail
@@ -108,6 +109,9 @@ Configuration settings like ``text``, ``html`` and ``markdown`` will
 apply to all reporters that derive from that reporter (for example,
 the ``stdout`` reporter uses ``text``, while the ``email`` reporter
 with ``html: true`` set uses ``html``).
+
+Setting ``separate: true`` will cause the reporter to send a report for
+each job rather than a combined report for all jobs.
 
 .. _job_defaults:
 
