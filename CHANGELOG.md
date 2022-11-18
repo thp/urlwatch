@@ -22,6 +22,8 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Fix a ResourceWarning for unclosed files when running unit tests
   (PR#698, by Louis Sautier)
 - Add support for html2text 2.1.1 and newer by feature-checking `-utf8` support via `-help` (fixes #718)
+- html2text options were only applied to the first job when using `job_defaults`
+  (PR#726, fixes #588, by trevorshannon)
 
 ## [2.25] -- 2022-03-15
 
