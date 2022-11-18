@@ -181,6 +181,12 @@ DEFAULT_CONFIG = {
             'application': '',
             'subject': '{count} changes: {jobs}'
         },
+        'shell': {
+            'enabled': False,
+            'command': '',
+            'ignore_stdout': True,
+            'ignore_stderr': False,
+        },
     },
 
     'job_defaults': {
