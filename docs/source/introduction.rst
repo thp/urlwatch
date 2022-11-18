@@ -151,6 +151,7 @@ Examples of reporters:
 - ``pushover``
 - ``stdout``
 - ``xmpp``
+- ``shell``
 
 .. only:: man
 

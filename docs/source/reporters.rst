@@ -60,19 +60,20 @@ The list of built-in reporters can be retrieved using::
 
 At the moment, the following reporters are built-in:
 
-- **stdout**: Print summary on stdout (the console)
+- **discord**: Send a message to a Discord channel
 - **email**: Send summary via e-mail / SMTP
+- **ifttt**: Send summary via IFTTT
 - **mailgun**: Send e-mail via the Mailgun service
 - **matrix**: Send a message to a room using the Matrix protocol
 - **mattermost**: Send a message to a Mattermost channel
+- **prowl**: Send a detailed notification via prowlapp.com
 - **pushbullet**: Send summary via pushbullet.com
 - **pushover**: Send summary via pushover.net
+- **shell**: Pipe a message to a shell command
 - **slack**: Send a message to a Slack channel
-- **discord**: Send a message to a Discord channel
+- **stdout**: Print summary on stdout (the console)
 - **telegram**: Send a message using Telegram
-- **ifttt**: Send summary via IFTTT
 - **xmpp**: Send a message using the XMPP Protocol
-- **prowl**: Send a message via prowlapp.com
 
 .. To convert the "urlwatch --features" output, use:
    sed -e 's/^  \* \(.*\) - \(.*\)$/- **\1**: \2/'
@@ -431,6 +432,39 @@ The “subject" field is similar to the subject field in the email, and
 will be used as the name of the Prowl event. The application is prepended
 to the event and shown as the source of the event in the Prowl App.
 
+
+Shell
+-----
+
+This is a simple reporter that pipes the text report notification to a
+command of your choice. The command is run using Python's
+`subprocess.Popen()`_ with ``shell=False`` (to avoid possibly-unwanted
+shell expansion). Of course, you can create your own shell script that
+does shell expansion and other things, and call that from the ``command``.
+
+The key ``ignore_stdout`` (defaults to ``true``) can be used to ignore
+any output the program writes on stdout. The key ``ignore_stderr`` (defaults
+to ``false``) can be used to ignore any output the program writes on stderr.
+
+If stdout/stderr are not ignored, urlwatch will log any possible output
+in its ``--verbose`` log.
+
+The report written to ``stdin`` of the process is based on the output of
+the ``text`` reporter, configuring the text reporter will adjust the data
+sent to the ``shell`` reporter.
+
+For example, to simply append reports to a file, configure it like this:
+
+.. code:: yaml
+
+    shell:
+      enabled: true
+      command: ['tee', '-a', '/path/to/log.txt']
+      ignore_stdout: true
+
+.. _subprocess.Popen(): https://docs.python.org/3/library/subprocess.html#popen-constructor
+
+
 .. only:: man
 
     Files
@@ -445,4 +479,3 @@ to the event and shown as the source of the event in the Prowl App.
     :manpage:`urlwatch-config(5)`,
     :manpage:`urlwatch-intro(7)`,
     :manpage:`urlwatch-cookbook(7)`
-

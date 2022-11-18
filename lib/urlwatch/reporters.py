@@ -37,6 +37,7 @@ import sys
 import time
 import html
 import functools
+import subprocess
 
 import requests
 
@@ -1059,3 +1060,32 @@ class ProwlReporter(TextReporter):
                 result.status_code, result.content))
 
         return result
+
+
+class ShellReporter(TextReporter):
+    """Pipe a message to a shell command"""
+
+    __kind__ = 'shell'
+
+    def submit(self):
+        text = '\n'.join(super().submit()) + '\n'
+
+        if not text:
+            logger.debug('Not calling shell reporter (no changes)')
+            return
+
+        cmd = self.config['command']
+
+        process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        stdout, stderr = process.communicate(text.encode())
+
+        if stdout and not self.config.get('ignore_stdout', False):
+            logger.info('Standard output from shell reporter: {!r}'.format(stdout))
+
+        if stderr and not self.config.get('ignore_stderr', True):
+            logger.warning('Standard error output from shell reporter: {!r}'.format(stderr))
+
+        exitcode = process.wait()
+        if exitcode != 0:
+            logger.error('Shell reporter {} exited with {}'.format(cmd, exitcode))
