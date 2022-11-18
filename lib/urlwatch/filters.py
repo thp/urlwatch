@@ -321,8 +321,7 @@ class Html2TextFilter(FilterBase):
     def filter(self, data, subfilter):
         if 'method' in subfilter:
             method = subfilter['method']
-            del subfilter['method']
-            options = subfilter
+            options = {key: val for (key, val) in subfilter.items() if key != 'method'}
         else:
             method = 're'
             options = {}

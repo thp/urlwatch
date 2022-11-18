@@ -89,3 +89,13 @@ def test_shellpipe_inherits_environment_but_does_not_modify_it():
 
     # Check that outside the variable wasn't overwritten by the filter
     assert os.environ['URLWATCH_JOB_NAME'] == 'should-not-be-overwritten'
+
+
+def test_html2text_does_not_modify_subfilter():
+    # The subfilter dict passed to Html2TextFilter should not be modified by
+    # the filter() method.
+    expected_subfilter = {'method': 're', 'extra_arg': 42}
+    subfilter = expected_subfilter.copy()
+    filtercls = FilterBase.__subclasses__.get('html2text')
+    filtercls(None, None).filter('unused', subfilter)
+    assert subfilter == expected_subfilter
