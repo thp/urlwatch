@@ -167,10 +167,10 @@ class HtmlReporter(ReporterBase):
             <meta http-equiv="content-type" content="text/html; charset=utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style type="text/css">
-                body { font-family: sans-serif; }
-                .diff_add { color: green; background-color: lightgreen; }
-                .diff_sub { color: red; background-color: lightred; }
-                .diff_chg { color: orange; background-color: lightyellow; }
+                body { font-family: sans-serif; line-height: 1.5em; }
+                .diff_add { background-color: #e6ffec; display: inline-block;}
+                .diff_sub { background-color: #ffebe9; display: inline-block; }
+                .diff_chg { background-color: #f9e48b; display: inline-block; }
                 .unified_add { color: green; }
                 .unified_sub { color: red; }
                 .unified_nor { color: #333; }
