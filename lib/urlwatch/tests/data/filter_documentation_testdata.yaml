@@ -264,17 +264,15 @@ https://github.com/tulir/gomuks/releases:
     v0.2.4
 https://github.com/thp/urlwatch/tags:
   input: |-
-    <div class="commit js-details-container Details">
-      <div class="d-flex">
-        <h4 class="flex-auto min-width-0 pr-2 pb-1 commit-title" data-test-selector="tag-title">
-          <a href="/thp/urlwatch/releases/tag/2.24">
-            2.24
-          </a>
-        </h4>
+    <div class="d-flex">
+      <div class="d-flex inline pr-2 pb-1 col-12 ">
+        <h2 data-view-component="true" class="f4 d-inline"><a href="/thp/urlwatch/releases/tag/2.25" data-view-component="true" class="Link--primary">2.25</a></h2>
+          <span class="hidden-text-expander inline">
+          </span>
       </div>
     </div>
   output: |-
-    2.24
+    2.25
 https://gitlab.com/chinstrap/gammastep/-/tags:
   input: |-
     <a class="item-title ref-name" href="/chinstrap/gammastep/-/tags/v2.0.7">v2.0.7</a>
