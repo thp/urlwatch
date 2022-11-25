@@ -438,9 +438,10 @@ This is the corresponding version for Github tags:
 
    url: https://github.com/thp/urlwatch/tags
    filter:
-     - xpath: (//div[contains(@class,"commit js-details-container Details")]//h4//a)[1]
-     - html2text
-     - strip
+     - xpath:
+         path: //*[@class="Link--primary"]
+         maxitems: 1
+     - html2text:
 
 and for Gitlab tags:
 

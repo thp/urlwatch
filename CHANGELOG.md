@@ -25,6 +25,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Add support for html2text 2.1.1 and newer by feature-checking `-utf8` support via `-help` (fixes #718)
 - html2text options were only applied to the first job when using `job_defaults`
   (PR#726, fixes #588, by trevorshannon)
+- Update Github tags watch filter documentation with new XPath (fixes #723, by Luis Aranguren)
 
 ## [2.25] -- 2022-03-15
 
