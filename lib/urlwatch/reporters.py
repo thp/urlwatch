@@ -185,7 +185,7 @@ class HtmlReporter(ReporterBase):
                     body { background-color: #121212; color: #fff; }
                     a { color: #8ab5f8; }
                     a:visited { color: #c58af9; }
-                    td.diff_header, td.diff_next { background-color: #121212; }
+                    td.diff_header, td.diff_next { background-color: #1c1c1c; }
                     .diff_add { background-color: #1c4329; }
                     .diff_sub { background-color: #542527; }
                     .diff_chg { background-color: #907709; }
