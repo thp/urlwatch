@@ -168,21 +168,24 @@ class HtmlReporter(ReporterBase):
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style type="text/css">
                 body { font-family: sans-serif; line-height: 1.5em; }
-                .diff_add { background-color: #e6ffec; display: inline-block; }
-                .diff_sub { background-color: #ffebe9; display: inline-block; }
+                .diff_add { background-color: #abf2bc; display: inline-block; }
+                .diff_sub { background-color: #ffd7d5; display: inline-block; }
                 .diff_chg { background-color: #f9e48b; display: inline-block; }
                 .unified_add { color: green; }
                 .unified_sub { color: red; }
                 .unified_nor { color: #333; }
                 td, th, colgroup { border: none; }
                 table, thead, tbody { border: 1px solid #9a9a9a; }
-                .diff_header { border-left: 1px solid #9a9a9a; }
-                td.diff_header { color: #6e7781; background-color: #f5f5f5; text-align: right; vertical-align: top; }
-                .diff_next { display: none; }
+                .diff_next { border-left: 1px solid #9a9a9a; }
+                td.diff_header, td.diff_next { color: #6e7781; background-color: #f5f5f5; text-align: right; vertical-align: top; }
                 table { font-family: monospace; }
                 td, th { padding: 0 0.5em; }
                 h2 span.verb { color: #888; }
-                @media (prefers-color-scheme: dark ) {
+                @media (prefers-color-scheme: dark) {
+                    body { background-color: #121212; color: #fff; }
+                    a { color: #8ab5f8; }
+                    a:visited { color: #c58af9; }
+                    td.diff_header, td.diff_next { background-color: #121212; }
                     .diff_add { background-color: #1c4329; }
                     .diff_sub { background-color: #542527; }
                     .diff_chg { background-color: #907709; }
