@@ -15,6 +15,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Changed
 
 - Docs: Re-group diff-related topics and improve wording (PR#712, by neutric)
+- Improved HTML e-mail diff style, including Dark Mode support (#730, by trevorshannon)
 
 ### Fixed
 
