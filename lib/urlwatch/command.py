@@ -221,7 +221,7 @@ class UrlwatchCommand:
         if self.urlwatch_config.features:
             sys.exit(self.show_features())
         if self.urlwatch_config.gc_cache:
-            self.urlwatcher.cache_storage.gc([job.get_guid() for job in self.urlwatcher.jobs])
+            self.urlwatcher.cache_storage.gc([job.get_guid() for job in self.urlwatcher.jobs], self.urlwatch_config.gc_cache)
             sys.exit(0)
         if self.urlwatch_config.edit:
             sys.exit(self.urlwatcher.urls_storage.edit(self.urlwatch_config.urls_yaml_example))

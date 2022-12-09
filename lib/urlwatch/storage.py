@@ -455,7 +455,7 @@ class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def clean(self, guid):
+    def clean(self, guid, retain_limit=1):
         ...
 
     def backup(self):
@@ -467,13 +467,13 @@ class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
         for guid, data, timestamp, tries, etag in entries:
             self.save(None, guid, data, timestamp, tries, etag)
 
-    def gc(self, known_guids):
+    def gc(self, known_guids, retain_limit=1):
         for guid in set(self.get_guids()) - set(known_guids):
             print('Removing: {guid}'.format(guid=guid))
             self.delete(guid)
 
         for guid in known_guids:
-            count = self.clean(guid)
+            count = self.clean(guid, retain_limit)
             if count > 0:
                 print('Removed {count} old versions of {guid}'.format(count=count, guid=guid))
 
@@ -521,7 +521,7 @@ class CacheDirStorage(CacheStorage):
         if os.path.exists(filename):
             os.unlink(filename)
 
-    def clean(self, guid):
+    def clean(self, guid, retain_limit=1):
         # We only store the latest version, no need to clean
         return 0
 
@@ -585,13 +585,20 @@ class CacheMiniDBStorage(CacheStorage):
     def delete(self, guid):
         CacheEntry.delete_where(self.db, CacheEntry.c.guid == guid)
         self.db.commit()
+        pass
 
-    def clean(self, guid):
-        keep_id = next((CacheEntry.query(self.db, CacheEntry.c.id, where=CacheEntry.c.guid == guid,
-                                         order_by=CacheEntry.c.timestamp.desc, limit=1)), (None,))[0]
-
-        if keep_id is not None:
-            result = CacheEntry.delete_where(self.db, (CacheEntry.c.guid == guid) & (CacheEntry.c.id != keep_id))
+    def clean(self, guid, retain_limit=1):
+        retain_limit = max(1, retain_limit)
+        keep_ids = [row[0] for row in CacheEntry.query(
+            self.db, CacheEntry.c.id, where=CacheEntry.c.guid == guid,
+            order_by=CacheEntry.c.timestamp.desc, limit=retain_limit)]
+        # If nothing's returned from the query, the given guid is not in the db
+        # and no action is needed.
+        if keep_ids:
+            where_clause = CacheEntry.c.guid == guid
+            for keep_id in keep_ids:
+                where_clause = where_clause & (CacheEntry.c.id != keep_id)
+            result = CacheEntry.delete_where(self.db, where_clause)
             self.db.commit()
             self.db.vacuum()
             return result
@@ -659,10 +666,11 @@ class CacheRedisStorage(CacheStorage):
     def delete(self, guid):
         self.db.delete(self._make_key(guid))
 
-    def clean(self, guid):
+    def clean(self, guid, retain_limit=1):
+        retain_limit = max(1, retain_limit)
         key = self._make_key(guid)
         i = self.db.llen(key)
-        if self.db.ltrim(key, 0, 0):
+        if self.db.ltrim(key, 0, retain_limit - 1):
             return i - self.db.llen(key)
 
         return 0
