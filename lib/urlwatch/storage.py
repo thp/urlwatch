@@ -587,7 +587,6 @@ class CacheMiniDBStorage(CacheStorage):
     def delete(self, guid):
         CacheEntry.delete_where(self.db, CacheEntry.c.guid == guid)
         self.db.commit()
-        pass
 
     def clean(self, guid, retain_limit=1):
         retain_limit = max(1, retain_limit)
