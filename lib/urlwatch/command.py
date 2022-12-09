@@ -220,7 +220,7 @@ class UrlwatchCommand:
     def handle_actions(self):
         if self.urlwatch_config.features:
             sys.exit(self.show_features())
-        if self.urlwatch_config.gc_cache:
+        if self.urlwatch_config.gc_cache is not None:
             self.urlwatcher.cache_storage.gc([job.get_guid() for job in self.urlwatcher.jobs], self.urlwatch_config.gc_cache)
             sys.exit(0)
         if self.urlwatch_config.edit:

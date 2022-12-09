@@ -468,6 +468,8 @@ class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
             self.save(None, guid, data, timestamp, tries, etag)
 
     def gc(self, known_guids, retain_limit=1):
+        if retain_limit <= 0:
+            raise ValueError(f'Cache garbage collection must retain at least 1 historical snapshot per job (requested: {retain_limit})')
         for guid in set(self.get_guids()) - set(known_guids):
             print('Removing: {guid}'.format(guid=guid))
             self.delete(guid)
