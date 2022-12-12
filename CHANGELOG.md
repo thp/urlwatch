@@ -16,6 +16,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - Docs: Re-group diff-related topics and improve wording (PR#712, by neutric)
 - Improved HTML e-mail diff style, including Dark Mode support (#730, by trevorshannon)
+- Require Python >= 3.7, as Python 3.6 was EOL'd on 2021-12-23
 
 ### Fixed
 
