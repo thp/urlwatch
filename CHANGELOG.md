@@ -19,6 +19,8 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Require Python >= 3.7, as Python 3.6 was EOL'd on 2021-12-23
 - `Dockerfile`: Shrink image by switching to an Alpine-based Python 3.11 base image,
   this reduces the container size from 1 GiB to 151 MiB (#731, by Scott Edlund)
+- `--gc-cache` can now take a parameter to keep more than 1 historical snapshot
+  (#732, by trevorshannon)
 
 ### Fixed
 
