@@ -109,6 +109,10 @@ class ReporterBase(object, metaclass=TrackSubClasses):
         return othercls(self.report, config, self.job_states, self.duration)
 
     @classmethod
+    def get_base_config(cls, report):
+        return report.config['report'][cls.mro()[-3].__kind__]
+
+    @classmethod
     def reporter_documentation(cls):
         result = []
         for sc in TrackSubClasses.sorted_by_kind(cls):
@@ -134,7 +138,12 @@ class ReporterBase(object, metaclass=TrackSubClasses):
             if cfg['enabled']:
                 any_enabled = True
                 logger.info('Submitting with %s (%r)', name, subclass)
-                subclass(report, cfg, job_states, duration).submit()
+                base_config = subclass.get_base_config(report)
+                if base_config.get('separate', False):
+                    for job_state in job_states:
+                        subclass(report, cfg, [job_state], duration).submit()
+                else:
+                    subclass(report, cfg, job_states, duration).submit()
 
         if not any_enabled:
             logger.warning('No reporters enabled.')
@@ -156,11 +165,14 @@ class SafeHtml(object):
 
 
 class HtmlReporter(ReporterBase):
+
+    __kind__ = 'html'
+
     def submit(self):
         yield from (str(part) for part in self._parts())
 
     def _parts(self):
-        cfg = self.report.config['report']['html']
+        cfg = self.get_base_config(self.report)
 
         yield SafeHtml("""<!DOCTYPE html>
         <html><head>
@@ -262,8 +274,11 @@ class HtmlReporter(ReporterBase):
 
 
 class TextReporter(ReporterBase):
+
+    __kind__ = 'text'
+
     def submit(self):
-        cfg = self.report.config['report']['text']
+        cfg = self.get_base_config(self.report)
         line_length = cfg['line_length']
         show_details = cfg['details']
         show_footer = cfg['footer']
@@ -370,7 +385,7 @@ class StdoutReporter(TextReporter):
     def submit(self):
         print = self._get_print()
 
-        cfg = self.report.config['report']['text']
+        cfg = self.get_base_config(self.report)
         line_length = cfg['line_length']
 
         separators = (line_length * '=', line_length * '-', '-- ') if line_length else ()
@@ -763,8 +778,11 @@ class DiscordReporter(TextReporter):
 
 
 class MarkdownReporter(ReporterBase):
+
+    __kind__ = 'markdown'
+
     def submit(self, max_length=None):
-        cfg = self.report.config['report']['markdown']
+        cfg = self.get_base_config(self.report)
         show_details = cfg['details']
         show_footer = cfg['footer']
 
