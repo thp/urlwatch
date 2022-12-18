@@ -461,6 +461,10 @@ class CacheStorage(BaseFileStorage, metaclass=ABCMeta):
     def clean(self, guid, retain_limit=1):
         ...
 
+    @abstractmethod
+    def move(self, guid, new_guid):
+        ...
+
     def backup(self):
         for guid in self.get_guids():
             data, timestamp, tries, etag = self.load(None, guid)
@@ -529,6 +533,10 @@ class CacheDirStorage(CacheStorage):
     def clean(self, guid, retain_limit=1):
         # We only store the latest version, no need to clean
         return 0
+
+    def move(self, guid, new_guid):
+        os.rename(self._get_filename(guid), self._get_filename(new_guid))
+        return 1
 
 
 class CacheEntry(minidb.Model):
@@ -609,6 +617,18 @@ class CacheMiniDBStorage(CacheStorage):
 
         return 0
 
+    def move(self, guid, new_guid):
+        total_moved = 0
+        # Note if there are existing records with 'new_guid', they will
+        # not be overwritten and the job histories will be merged.
+        for entry in CacheEntry.load(self.db, CacheEntry.c.guid == guid):
+            entry.guid = new_guid
+            entry.save()
+            total_moved += 1
+        self.db.commit()
+
+        return total_moved
+
 
 class CacheRedisStorage(CacheStorage):
     def __init__(self, filename):
@@ -678,3 +698,10 @@ class CacheRedisStorage(CacheStorage):
             return i - self.db.llen(key)
 
         return 0
+
+    def move(self, guid, new_guid):
+        key = self._make_key(guid)
+        new_key = self._make_key(new_guid)
+        # Note if a list with 'new_key' already exists, the data stored there 
+        # will be overwritten.
+        self.db.rename(key, new_key)

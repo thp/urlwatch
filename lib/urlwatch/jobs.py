@@ -113,6 +113,9 @@ class JobBase(object, metaclass=TrackSubClasses):
     def get_location(self):
         raise NotImplementedError()
 
+    def set_location(self):
+        raise NotImplementedError()
+
     def pretty_name(self):
         raise NotImplementedError()
 
@@ -212,6 +215,12 @@ class ShellJob(Job):
     def get_location(self):
         return self.user_visible_url or self.command
 
+    def set_location(self, location):
+        if self.user_visible_url:
+            self.user_visible_url = location
+        else:
+            self.command = location
+
     def retrieve(self, job_state):
         if not self.stderr or self.stderr == 'ignore':
             # Report stderr output for non-zero exit code,
@@ -258,6 +267,12 @@ class UrlJob(Job):
 
     def get_location(self):
         return self.user_visible_url or self.url
+
+    def set_location(self, location):
+        if self.user_visible_url:
+            self.user_visible_url = location
+        else:
+            self.url = location
 
     def retrieve(self, job_state):
         headers = {
@@ -401,6 +416,12 @@ class BrowserJob(Job):
 
     def get_location(self):
         return self.user_visible_url or self.navigate
+
+    def set_location(self, location):
+        if self.user_visible_url:
+            self.user_visible_url = location
+        else:
+            self.navigate = location
 
     def main_thread_enter(self):
         from .browser import BrowserContext
