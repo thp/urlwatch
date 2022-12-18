@@ -95,8 +95,8 @@ miscellaneous:
    --features
           list supported jobs/filters/reporters
 
-   --gc-cache
-          remove old cache entries
+   --gc-cache RETAIN_LIMIT
+          remove old cache entries, keeping the latest RETAIN_LIMIT (default: 1)
 
 
 Files
