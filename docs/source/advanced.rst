@@ -430,3 +430,28 @@ allowing you to send arbitrary requests to the server:
     :manpage:`urlwatch-config(5)`,
     :manpage:`urlwatch-reporters(5)`
 
+
+UTF-8 support on Windows
+------------------------
+
+On Windows, the default file encoding might be locale-specific and not work
+correctly if files are saved using the (recommended) UTF-8 encoding.
+
+If you are having problems loading UTF-8-encoded files on Windows, you might
+see an issue like the following when ``urlwatch`` parses your config files:
+
+.. code-block:: text
+
+    UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 214: character maps to <undefined>
+
+To work around this issue, Python 3.7 and newer have a new
+`UTF-8 Mode`_ that can be enabled by setting the environment
+variable ``PYTHONUTF8`` to ``1``::
+
+    set PYTHONUTF8=1
+    urlwatch
+
+You can also add this environment variable to your user environment or system
+environment to apply the UTF-8 Mode to all Python programs on your machine.
+
+.. _UTF-8 Mode: https://peps.python.org/pep-0540/
