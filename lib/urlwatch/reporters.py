@@ -95,7 +95,7 @@ class ReporterBase(object, metaclass=TrackSubClasses):
                                                       version=urlwatch.__version__,
                                                       copyright=urlwatch.__copyright__),
             'Website: {url}'.format(url=urlwatch.__url__),
-            'Buy me a coffee: https://ko-fi.com/thpx86',
+            'Support urlwatch development: https://github.com/sponsors/thp',
             'watched {count} URLs in {duration} seconds'.format(count=len(self.job_states),
                                                                 duration=self.duration.seconds),
         )
