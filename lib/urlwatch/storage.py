@@ -423,8 +423,12 @@ class UrlsYaml(BaseYamlFileStorage, UrlsBaseFileStorage):
             yaml.dump_all([job.serialize() for job in jobs], fp, default_flow_style=False)
 
     def load(self, *args):
-        with open(self.filename) as fp:
-            return self._parse(fp)
+        try:
+            with open(self.filename) as fp:
+                return self._parse(fp)
+        except UnicodeDecodeError:
+            with open(self.filename, encoding="utf-8") as fp:
+                return self._parse(fp)
 
 
 class UrlsTxt(BaseTxtFileStorage, UrlsBaseFileStorage):
