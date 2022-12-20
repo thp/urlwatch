@@ -67,14 +67,32 @@ current page contents.
 Reporters
 ---------
 
+"Reporters" are the modules that deliver notifications through their
+respective medium when they are enabled through the configuration file.
 
 .. only:: html or pdf
 
-    Configuration of reporters is described in :ref:`reporters`.
+    Reporter-specific options are described in :ref:`reporters`.
 
 .. only:: man
 
-    See :manpage:`urlwatch-reporters(5)` on the available reporters.
+    See :manpage:`urlwatch-reporters(5)` for reporter-specific options.
+
+In addition to the reporter-specific options, all reporters support these
+options:
+
+* ``enable``: *[bool]* Activate the reporter. **(required)**
+* ``separate``: *[bool]* Send a report for each job rather than a combined
+  report for all jobs. (default: False)
+
+Reporters are implemented in a hierarchy, such that these common configuration
+settings will apply to all descendent reporters:
+
+.. inheritance-ascii-tree:: urlwatch.reporters.ReporterBase
+
+.. note::
+   Setting the `email` reporter's `html` option to `true` will cause it to
+   inherit from the `html` configuration.
 
 Here is an example configuration that reports on standard
 output in color, as well as HTML e-mail using ``sendmail``:
@@ -104,14 +122,6 @@ output in color, as well as HTML e-mail using ``sendmail``:
 
 Any reporter-specific configuration must be below the ``report`` key
 in the configuration.
-
-Configuration settings like ``text``, ``html`` and ``markdown`` will
-apply to all reporters that derive from that reporter (for example,
-the ``stdout`` reporter uses ``text``, while the ``email`` reporter
-with ``html: true`` set uses ``html``).
-
-Setting ``separate: true`` will cause the reporter to send a report for
-each job rather than a combined report for all jobs.
 
 .. _job_defaults:
 
