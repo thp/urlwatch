@@ -705,3 +705,4 @@ class CacheRedisStorage(CacheStorage):
         # Note if a list with 'new_key' already exists, the data stored there
         # will be overwritten.
         self.db.rename(key, new_key)
+        return self.db.llen(new_key)
