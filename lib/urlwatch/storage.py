@@ -702,6 +702,6 @@ class CacheRedisStorage(CacheStorage):
     def move(self, guid, new_guid):
         key = self._make_key(guid)
         new_key = self._make_key(new_guid)
-        # Note if a list with 'new_key' already exists, the data stored there 
+        # Note if a list with 'new_key' already exists, the data stored there
         # will be overwritten.
         self.db.rename(key, new_key)

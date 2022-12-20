@@ -11,17 +11,6 @@ Quickly adding new URLs to the job list from the command line::
 
     urlwatch --add url=http://example.org,name=Example
 
-Updating a URL and keeping past history
----------------------------------------
-
-Job history is stored based on the value of the ``url`` parameter, so updating
-a job's URL in the configuration file ``urls.yaml`` will create a new job with 
-no history.  Retain history by using ``--change_location``::
-
-    urlwatch --change_location http://example.org#old http://example.org#new
-
-The command also works with Browser and Shell jobs, changing ``navigate`` and 
-``command`` respectively.
 
 Using word-based differences
 ----------------------------
@@ -381,6 +370,19 @@ the URLs, like this:
     url: http://example.com/#2
     filter:
       - grep: "Thing B"
+
+
+Updating a URL and keeping past history
+---------------------------------------
+
+Job history is stored based on the value of the ``url`` parameter, so updating
+a job's URL in the configuration file ``urls.yaml`` will create a new job with 
+no history.  Retain history by using ``--change-location``::
+
+    urlwatch --change-location http://example.org#old http://example.org#new
+
+The command also works with Browser and Shell jobs, changing ``navigate`` and 
+``command`` respectively.
 
 
 Running a subset of jobs
