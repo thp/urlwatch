@@ -476,6 +476,8 @@ class IFTTTReport(TextReporter):
 class WebServiceReporter(TextReporter):
     MAX_LENGTH = 1024
 
+    __kind__ = 'webservice'
+
     def web_service_get(self):
         raise NotImplementedError
 
