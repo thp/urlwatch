@@ -33,6 +33,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - html2text options were only applied to the first job when using `job_defaults`
   (PR#726, fixes #588, by trevorshannon)
 - Update Github tags watch filter documentation with new XPath (fixes #723, by Luis Aranguren)
+- Fix `--gc-cache` to clear unknown keys when using Redis storage (fixes #743, by scottmac) 
 
 ## [2.25] -- 2022-03-15
 
