@@ -81,7 +81,7 @@ respective medium when they are enabled through the configuration file.
 In addition to the reporter-specific options, all reporters support these
 options:
 
-* ``enable``: *[bool]* Activate the reporter. **(required)**
+* ``enable``: *[bool]* Activate the reporter. (default: False)
 * ``separate``: *[bool]* Send a report for each job rather than a combined
   report for all jobs. (default: False)
 
