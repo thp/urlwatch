@@ -201,6 +201,7 @@ class HtmlReporter(ReporterBase):
                 td.diff_header, td.diff_next { color: #6e7781; background-color: #f5f5f5; text-align: right; vertical-align: top; }
                 table { font-family: monospace; line-height: 1.5em; }
                 td, th { padding: 0 0.5em; }
+                td[nowrap] { white-space: normal; word-break: break-word; }
                 h2 span.verb { color: #888; }
                 @media (prefers-color-scheme: dark) {
                     body { background-color: #121212; color: #fff; }
