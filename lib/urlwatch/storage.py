@@ -629,7 +629,7 @@ class CacheRedisStorage(CacheStorage):
     def get_guids(self):
         guids = []
         for guid in self.db.keys(b'guid:*'):
-            guids.append(str(guid[len('guid:'):]))
+            guids.append(guid[len('guid:'):].decode())
         return guids
 
     def load(self, job, guid):
