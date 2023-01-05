@@ -134,8 +134,8 @@ class ReporterBase(object, metaclass=TrackSubClasses):
     def submit_all(cls, report, job_states, duration):
         any_enabled = False
         for name, subclass in cls.__subclasses__.items():
-            cfg = report.config['report'].get(name, {'enabled': False})
-            if cfg['enabled']:
+            cfg = report.config['report'].get(name, {})
+            if cfg.get('enabled', False):
                 any_enabled = True
                 logger.info('Submitting with %s (%r)', name, subclass)
                 base_config = subclass.get_base_config(report)
