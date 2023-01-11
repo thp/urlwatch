@@ -216,8 +216,8 @@ class UrlwatchCommand:
             new_loc = self.urlwatch_config.change_location[1]
             # Ensure the user isn't overwriting an existing job with the change.
             if new_loc in (j.get_location() for j in self.urlwatcher.jobs):
-                print('The new location "%s" already exists for a job. Use that '
-                      'existing job or choose a different value.' % new_loc)
+                print(f'The new location "{new_loc}" already exists for a job. Use that '
+                      'existing job or choose a different value.')
                 save = False
             else:
                 job = self._find_job(self.urlwatch_config.change_location[0])
@@ -225,14 +225,14 @@ class UrlwatchCommand:
                     # Update the job's location (which will also update the
                     # guid) and move any history in the cache over to the job's
                     # updated guid.
-                    print('Moving location of %r to "%s"' % (job, new_loc))
+                    print(f'Moving location of {job!r} to "{new_loc}"')
                     old_guid = job.get_guid()
                     old_loc = job.get_location()
                     job.set_location(new_loc)
                     num_moved = self.urlwatcher.cache_storage.move(
                         old_guid, job.get_guid())
                     if num_moved:
-                        print('Moved %d snapshots of "%s" to "%s"' % (num_moved, old_loc, new_loc))
+                        print(f'Moved {num_moved} snapshots of "{old_loc}" to "{new_loc}"')
                 else:
                     print('Not found: %s' % self.urlwatch_config.change_location[0])
                     save = False
