@@ -49,21 +49,23 @@ class Mailer(object):
     def send(self, msg):
         raise NotImplementedError
 
-    def msg_plain(self, from_email, to_email, subject, body):
+    def msg_plain(self, from_email, to_email, reply_to_email, subject, body):
         msg = email.mime.text.MIMEText(body, 'plain', 'utf-8')
         msg['Subject'] = subject
         msg['From'] = from_email
         msg['To'] = to_email
         msg['Date'] = email.utils.formatdate()
+        msg['Reply-To'] = reply_to_email
 
         return msg
 
-    def msg_html(self, from_email, to_email, subject, body_text, body_html):
+    def msg_html(self, from_email, to_email, reply_to_email, subject, body_text, body_html):
         msg = email.mime.multipart.MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From'] = from_email
         msg['To'] = to_email
         msg['Date'] = email.utils.formatdate()
+        msg['Reply-To'] = reply_to_email
 
         msg.attach(email.mime.text.MIMEText(body_text, 'plain', 'utf-8'))
         msg.attach(email.mime.text.MIMEText(body_html, 'html', 'utf-8'))
