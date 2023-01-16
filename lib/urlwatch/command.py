@@ -228,7 +228,7 @@ class UrlwatchCommand:
                     print(f'Moving location of {job!r} to "{new_loc}"')
                     old_guid = job.get_guid()
                     old_loc = job.get_location()
-                    job.set_location(new_loc)
+                    job.set_base_location(new_loc)
                     num_moved = self.urlwatcher.cache_storage.move(
                         old_guid, job.get_guid())
                     if num_moved:

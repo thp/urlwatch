@@ -535,6 +535,8 @@ class CacheDirStorage(CacheStorage):
         return 0
 
     def move(self, guid, new_guid):
+        if guid == new_guid:
+            return 0
         os.rename(self._get_filename(guid), self._get_filename(new_guid))
         return 1
 
@@ -619,13 +621,14 @@ class CacheMiniDBStorage(CacheStorage):
 
     def move(self, guid, new_guid):
         total_moved = 0
-        # Note if there are existing records with 'new_guid', they will
-        # not be overwritten and the job histories will be merged.
-        for entry in CacheEntry.load(self.db, CacheEntry.c.guid == guid):
-            entry.guid = new_guid
-            entry.save()
-            total_moved += 1
-        self.db.commit()
+        if guid != new_guid:
+            # Note if there are existing records with 'new_guid', they will
+            # not be overwritten and the job histories will be merged.
+            for entry in CacheEntry.load(self.db, CacheEntry.c.guid == guid):
+                entry.guid = new_guid
+                entry.save()
+                total_moved += 1
+            self.db.commit()
 
         return total_moved
 
@@ -700,6 +703,8 @@ class CacheRedisStorage(CacheStorage):
         return 0
 
     def move(self, guid, new_guid):
+        if guid == new_guid:
+            return 0
         key = self._make_key(guid)
         new_key = self._make_key(new_guid)
         # Note if a list with 'new_key' already exists, the data stored there
