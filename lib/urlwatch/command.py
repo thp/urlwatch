@@ -212,6 +212,31 @@ class UrlwatchCommand:
             print('Adding %r' % (job,))
             self.urlwatcher.jobs.append(job)
 
+        if self.urlwatch_config.change_location is not None:
+            new_loc = self.urlwatch_config.change_location[1]
+            # Ensure the user isn't overwriting an existing job with the change.
+            if new_loc in (j.get_location() for j in self.urlwatcher.jobs):
+                print(f'The new location "{new_loc}" already exists for a job. '
+                      'Delete the existing job or choose a different value.')
+                save = False
+            else:
+                job = self._find_job(self.urlwatch_config.change_location[0])
+                if job is not None:
+                    # Update the job's location (which will also update the
+                    # guid) and move any history in the cache over to the job's
+                    # updated guid.
+                    print(f'Moving location of {job!r} to "{new_loc}"')
+                    old_guid = job.get_guid()
+                    old_loc = job.get_location()
+                    job.set_base_location(new_loc)
+                    num_moved = self.urlwatcher.cache_storage.move(
+                        old_guid, job.get_guid())
+                    if num_moved:
+                        print(f'Moved {num_moved} snapshots of "{old_loc}" to "{new_loc}"')
+                else:
+                    print(f'Not found: {self.urlwatch_config.change_location[0]}')
+                    save = False
+
         if save:
             self.urlwatcher.urls_storage.save(self.urlwatcher.jobs)
 
@@ -235,7 +260,9 @@ class UrlwatchCommand:
             sys.exit(self.dump_history(self.urlwatch_config.dump_history))
         if self.urlwatch_config.list:
             sys.exit(self.list_urls())
-        if self.urlwatch_config.add is not None or self.urlwatch_config.delete is not None:
+        if (self.urlwatch_config.add is not None
+                or self.urlwatch_config.delete is not None
+                or self.urlwatch_config.change_location is not None):
             sys.exit(self.modify_urls())
 
     def check_edit_config(self):
