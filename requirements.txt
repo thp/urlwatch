@@ -5,3 +5,4 @@ keyring
 appdirs
 lxml
 cssselect
+bs4
