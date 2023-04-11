@@ -85,7 +85,7 @@ if lines are removed.
 
 A diff usually looks like this:
 
-.. code-block::
+.. code-block:: diff
 
     --- @	Fri, 04 Mar 2022 19:58:14 +0100
     +++ @	Fri, 04 Mar 2022 19:58:22 +0100
