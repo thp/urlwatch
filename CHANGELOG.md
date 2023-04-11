@@ -10,7 +10,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - `browser` job: Add support for specifying `useragent` (#700, by Francesco Versaci)
 - Document how to ignore whitespace changes (PR#707, by Paulo Magalhaes)
-- `shell` reporter: Call a script or program when chanegs are detected (fixes #650)
+- `shell` reporter: Call a script or program when changes are detected (fixes #650)
 - New `separate` configuration option for reporters to split reports into one-per-job (contributed by Ryne Everett)
 - `--change-location` option allowing job location to be changed without losing job history (#739, by trevorshannon)
 
