@@ -12,7 +12,12 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
+
+HERE = os.path.abspath(os.path.dirname(__file__) or '.')
+ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
+
+sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(ROOT, 'lib'))
 
 
 # -- Project information -----------------------------------------------------
