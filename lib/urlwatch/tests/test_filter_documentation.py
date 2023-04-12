@@ -15,10 +15,15 @@ here = os.path.dirname(__file__)
 
 
 # https://stackoverflow.com/a/48719723/1047040
+# https://stackoverflow.com/a/75996218/1047040
 def parse_rst(text):
     parser = docutils.parsers.rst.Parser()
-    components = (docutils.parsers.rst.Parser,)
-    settings = docutils.frontend.OptionParser(components=components).get_default_values()
+    if hasattr(docutils.frontend, 'get_default_settings'):
+        # docutils >= 0.18
+        settings = docutils.frontend.get_default_settings(docutils.parsers.rst.Parser)
+    else:
+        # docutils < 0.18
+        settings = docutils.frontend.OptionParser(components=(docutils.parsers.rst.Parser,)).get_default_values()
     document = docutils.utils.new_document('<rst-doc>', settings=settings)
     parser.parse(text, document)
     return document
