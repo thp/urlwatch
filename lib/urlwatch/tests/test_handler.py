@@ -89,8 +89,7 @@ def test_pep8_conformance():
 
 class ConfigForTest(CommandConfig):
     def __init__(self, config, urls, cache, hooks, verbose):
-        (prefix, bindir) = os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))
-        super().__init__([], 'urlwatch', os.path.dirname(__file__), bindir, prefix, config, urls, hooks, cache, verbose)
+        super().__init__([], 'urlwatch', os.path.dirname(__file__), root, config, urls, hooks, cache, verbose)
 
 
 @contextlib.contextmanager

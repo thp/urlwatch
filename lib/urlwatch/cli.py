@@ -47,9 +47,6 @@ if not os.path.exists(urlwatch_dir):
 # Check if we are installed in the system already
 (prefix, bindir) = os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))
 
-if bindir != 'bin':
-    sys.path.insert(0, os.path.join(prefix, bindir, 'lib'))
-
 from urlwatch.command import UrlwatchCommand
 from urlwatch.config import CommandConfig
 from urlwatch.main import Urlwatch
@@ -90,7 +87,7 @@ def main():
     if os.path.exists(old_cache_file) and not os.path.exists(new_cache_file):
         cache_file = old_cache_file
 
-    command_config = CommandConfig(sys.argv[1:], pkgname, urlwatch_dir, bindir, prefix,
+    command_config = CommandConfig(sys.argv[1:], pkgname, urlwatch_dir, prefix,
                                    config_file, urls_file, hooks_file, cache_file, False)
     setup_logger(command_config.verbose)
 

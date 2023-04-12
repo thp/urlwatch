@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## UNRELEASED
+
+### Fixed
+
+- Rework handling of running from a source checkout, fixes issues with example files
+  when `urlwatch` was run as `/usr/sbin/urlwatch`, e.g. on Void Linux (fixes #755)
+
 ## [2.26] -- 2023-04-11
 
 ### Added
