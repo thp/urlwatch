@@ -3,7 +3,7 @@ FROM python:3.11.0-alpine3.17
 
 # Optional python modules for additional functionality
 # https://urlwatch.readthedocs.io/en/latest/dependencies.html#optional-packages
-ENV OPT_PYPKGS="beautifulsoup4 jsbeautifier cssbeautifier aioxmpp"
+ARG OPT_PYPKGS="beautifulsoup4 jsbeautifier cssbeautifier aioxmpp"
 ENV HOME="/home/user"
 
 RUN adduser -D user
