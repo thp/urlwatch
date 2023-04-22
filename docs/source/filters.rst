@@ -285,6 +285,30 @@ viewport size), you can use ``maxitems: 1`` to only return the first
 item.
 
 
+Fixing list reorderings with CSS Selector or XPath filters
+----------------------------------------------------------
+
+In some cases, the ordering of items on a webpage might change regularly
+without the actual content changing. By default, this would show up in
+the diff output as an element being removed from one part of the page and
+inserted in another part of the page.
+
+In cases where the order of items doesn't matter, it's possible to sort
+matched items lexicographically to avoid spurious reports when only the
+ordering of items changes on the page.
+
+The subfilter for ``css`` and ``xpath`` filters is ``sort``, and can be
+``true`` or ``false`` (the default):
+
+.. code:: yaml
+
+   url: https://example.org/items-random-order.html
+   filter:
+     - css:
+         selector: span.item
+         sort: true
+
+
 Filtering PDF documents
 -----------------------
 

@@ -674,6 +674,7 @@ class LxmlParser:
         self.namespaces = subfilter.get('namespaces')
         self.skip = int(subfilter.get('skip', 0))
         self.maxitems = int(subfilter.get('maxitems', 0))
+        self.sort_items = bool(subfilter.get('sort', False))
         if self.method not in ('html', 'xml'):
             raise ValueError('%s method must be "html" or "xml", got %r' % (filter_kind, self.method))
         if self.method == 'html' and self.namespaces is not None:
@@ -777,7 +778,8 @@ class LxmlParser:
             elements = elements[self.skip:]
         if self.maxitems:
             elements = elements[:self.maxitems]
-        return '\n'.join(self._to_string(element) for element in elements)
+        elements = (self._to_string(element) for element in elements)
+        return '\n'.join(sorted(elements) if self.sort_items else elements)
 
 
 LXML_PARSER_COMMON_SUBFILTERS = {
@@ -786,6 +788,7 @@ LXML_PARSER_COMMON_SUBFILTERS = {
     'namespaces': 'Mapping of XML namespaces for matching',
     'skip': 'Number of elements to skip from the beginning (default: 0)',
     'maxitems': 'Maximum number of items to return (default: all)',
+    'sort': 'Sort matched items after filtering (default: False)',
 }
 
 
