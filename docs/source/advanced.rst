@@ -18,7 +18,7 @@ Using word-based differences
 You can also specify an external ``diff``-style tool (a tool that takes
 two filenames (old, new) as parameter and returns on its standard output
 the difference of the files), for example to use :manpage:`wdiff(1)` to get
-word-based differences instead of line-based difference:
+word-based differences instead of line-based difference, or `pandiff <https://github.com/davidar/pandiff>`_ to get markdown differences:
 
 .. code-block:: yaml
 
