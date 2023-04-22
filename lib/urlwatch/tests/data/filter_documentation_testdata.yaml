@@ -363,6 +363,22 @@ https://example.net/css-skip-maxitems.html:
     <div class="cpu">Pentium</div>
 
     <div class="cpu">Pentium MMX</div>
+https://example.org/items-random-order.html:
+  input: |
+    <body>
+      This is a test. <span class="item">B</span>
+      And some other content. <span class="item">D</span>
+      <span class="item">A</span> Sort it please.
+      Thank you. <span class="item">C</span>
+    </body>
+  output: |
+    <span class="item">A</span>
+
+    <span class="item">B</span>
+
+    <span class="item">C</span>
+
+    <span class="item">D</span>
 https://example.net/jobs.json:
   input: |
     [

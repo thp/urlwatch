@@ -6,6 +6,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## UNRELEASED
 
+### Added
+
+- `css` and `xpath` filters now accept a `sort` subfilter to sort matched elements lexicographically
+
 ### Fixed
 
 - Rework handling of running from a source checkout, fixes issues with example files
