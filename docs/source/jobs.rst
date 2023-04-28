@@ -67,21 +67,12 @@ Job-specific optional keys:
 Browser
 -------
 
-This job type is a resource-intensive variant of "URL" to handle web pages
-requiring JavaScript in order to render the content to be monitored.
+This job type is a resource-intensive variant of "URL" to handle web pages that
+require JavaScript to render the content being monitored.
 
-The optional ``pyppeteer`` package must be installed to run "Browser" jobs
-(see :ref:`dependencies`).
-
-At the moment, the Chromium version used by ``pyppeteer`` only supports
-macOS (x86_64), Windows (both x86 and x64) and Linux (x86_64). See
-`this issue <https://github.com/pyppeteer/pyppeteer/issues/155>`__ in the
-Pyppeteer issue tracker for progress on getting ARM devices supported
-(e.g. Raspberry Pi).
-
-Because ``pyppeteer`` downloads a special version of Chromium (~ 100 MiB),
-the first execution of a ``browser`` job could take some time (and bandwidth).
-It is possible to run ``pyppeteer-install`` to pre-download Chromium.
+The optional `playwright` package must be installed in order to run Browser jobs
+(see :ref:`dependencies`). You will also need to install the browsers using
+`playwright install <https://playwright.dev/python/docs/intro>`.
 
 .. code-block:: yaml
 
@@ -94,17 +85,19 @@ Required keys:
 
 Job-specific optional keys:
 
-- ``wait_until``:  Either ``load``, ``domcontentloaded``, ``networkidle0``, or ``networkidle2`` (see :ref:`advanced_topics`)
-- ``useragent``:  Change useragent (will be passed to pyppeteer)
+- ``wait_until``: Either ``load``, ``domcontentloaded``, ``networkidle``, or
+  ``commit`` (see :ref:`advanced_topics`)
+- ``useragent``: ``User-Agent`` header used for requests (otherwise browser default is used)
+- ``browser``:  Either ``chromium``, ``chrome``, ``chrome-beta``, ``msedge``,
+  ``msedge-beta``, ``msedge-dev``,
+``firefox``, ``webkit`` (must be installed with ``playwright install``)
 
-As this job uses `Pyppeteer <https://github.com/pyppeteer/pyppeteer>`__
-to render the page in a headless Chromium instance, it requires massively
-more resources than a "URL" job. Use it only on pages where ``url`` does not
-give the right results.
-
-Hint: in many instances instead of using a "Browser" job you can
-monitor the output of an API called by the site during page loading
-containing the information you're after using the much faster "URL" job type.
+Because this job uses ``Playwright <https://playwright.dev/python/>``__ to
+render the page in a headless browser instance, it uses massively more resources
+than a "URL" job. Use it only on pages where ``url`` does not return the correct
+results. In many cases, instead of using a "Browser" job, you can use the output
+of an API called by the page as it loads, which contains the information you are
+you're looking for by using the much faster "URL" job type.
 
 (Note: ``navigate`` implies ``kind: browser``)
 

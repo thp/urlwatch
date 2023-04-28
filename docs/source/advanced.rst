@@ -323,12 +323,17 @@ Configuring how long browser jobs wait for pages to load
 --------------------------------------------------------
 
 For browser jobs, you can configure how long the headless browser will wait
-before a page is considered loaded by using the `wait_until` option. It can take one of four values:
+before a page is considered loaded by using the `wait_until` option. It can take
+one of four values:
 
-  - `load` will wait until the `load` browser event is fired (default).
-  - `documentloaded` will wait until the `DOMContentLoaded` browser event is fired.
-  - `networkidle0` will wait until there are no more than 0 network connections for at least 500 ms.
-  - `networkidle2` will wait until there are no more than 2 network connections for at least 500 ms.
+   - `load` - consider operation to be finished when the load event is fired
+   - `domcontentloaded` - consider operation to be finished when the
+     DOMContentLoaded event is fired
+   - `networkidle` - DISCOURAGED consider operation to be finished when there
+     are no network connections for at least 500 ms. Don't use this method for
+     testing, rely on web assertions to assess readiness instead
+   - `commit` - consider operation to be finished when network response is
+     received and the document started loading
 
 
 Treating ``NEW`` jobs as ``CHANGED``
