@@ -420,14 +420,6 @@ class BrowserJob(Job):
         from playwright.sync_api import sync_playwright
         with sync_playwright() as playwright:
             browser = playwright[self.browser or "chromium"].launch()
-
-            context = browser.new_context(user_agent=self.useragent, extra_http_headers={
-                "If-None-Match": job_state.etag,
-                "If-Modified-Since": email.utils.formatdate(job_state.timestamp),
-            })
-
-            page = context.new_page()
-            response = page.goto(self.navigate, wait_until=self.wait_until)
-
-            job_state.etag = response.header_value("ETag")
+            page = browser.new_page(user_agent=self.useragent)
+            page.goto(self.navigate, wait_until=self.wait_until)
             return page.content()
