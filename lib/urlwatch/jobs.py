@@ -34,13 +34,15 @@ import logging
 import os
 import re
 import subprocess
-import requests
 import textwrap
-import urlwatch
+
+import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-from .util import TrackSubClasses
+import urlwatch
+
 from .filters import FilterBase
+from .util import TrackSubClasses
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -406,7 +408,7 @@ class BrowserJob(Job):
 
     __required__ = ('navigate',)
 
-    __optional__ = ('wait_until', 'useragent')
+    __optional__ = ('wait_until', 'useragent', 'browser')
 
     def get_location(self):
         return self.user_visible_url or self.navigate
@@ -414,12 +416,10 @@ class BrowserJob(Job):
     def set_base_location(self, location):
         self.navigate = location
 
-    def main_thread_enter(self):
-        from .browser import BrowserContext
-        self.ctx = BrowserContext()
-
-    def main_thread_exit(self):
-        self.ctx.close()
-
     def retrieve(self, job_state):
-        return self.ctx.process(self.navigate, wait_until=self.wait_until, useragent=self.useragent)
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as playwright:
+            browser = playwright[self.browser or "chromium"].launch()
+            page = browser.new_page(user_agent=self.useragent)
+            page.goto(self.navigate, wait_until=self.wait_until)
+            return page.content()
