@@ -46,25 +46,23 @@ class BrowserLoop(object):
         self._loop_thread = threading.Thread(target=self._event_loop.run_forever)
         self._loop_thread.start()
 
-    @asyncio.coroutine
-    def _launch_browser(self):
-        browser = yield from pyppeteer.launch()
-        for p in (yield from browser.pages()):
-            yield from p.close()
+    async def _launch_browser(self):
+        browser = await pyppeteer.launch(headless=True, args=['--no-sandbox'])
+        for p in (await browser.pages()):
+            await p.close()
         return browser
 
-    @asyncio.coroutine
-    def _get_content(self, url, wait_until=None, useragent=None):
-        context = yield from self._browser.createIncognitoBrowserContext()
-        page = yield from context.newPage()
+    async def _get_content(self, url, wait_until=None, useragent=None):
+        context = await self._browser.createIncognitoBrowserContext()
+        page = await context.newPage()
         opts = {}
         if wait_until is not None:
             opts['waitUntil'] = wait_until
         if useragent is not None:
-            yield from page.setUserAgent(useragent)
-        yield from page.goto(url, opts)
-        content = yield from page.content()
-        yield from context.close()
+            await page.setUserAgent(useragent)
+        await page.goto(url, opts)
+        content = await page.content()
+        await context.close()
         return content
 
     def process(self, url, wait_until=None, useragent=None):
