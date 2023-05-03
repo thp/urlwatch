@@ -33,6 +33,17 @@ urlwatch-deprecated \- Documentation of feature deprecation in urlwatch
 .sp
 As features are deprecated and cleaned up, they are documented
 here with steps to update your configuration for replacements.
+.SH NETWORKIDLE0 AND NETWORKIDLE2 FOR WAIT_UNTIL IN BROWSER JOBS (SINCE 2.28)
+.sp
+Since version 2.28, execution of browser jobs uses Playwright instead of pyppetteer.
+.sp
+The previously\-supported \fBwait_until\fP values of \fBnetworkidle0\fP and \fBnetworkidle2\fP
+are not supported anymore. Playwright supports the values \fBload\fP, \fBdomcontentloaded\fP,
+\fBnetworkidle\fP (discouraged) or \fBcommit\fP instead.
+.sp
+Existing settings of \fBnetworkidle0\fP and \fBnetworkidle2\fP will be mapped to
+\fBnetworkidle\fP, and a warning will be issued. To silence the warning and continue
+to use \fBnetworkidle\fP, specify \fBwait_until: networkidle\fP explicitly.
 .SH FILTERS WITHOUT SUBFILTERS (SINCE 2.22)
 .sp
 In older urlwatch versions, it was possible to write custom

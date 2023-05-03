@@ -112,21 +112,12 @@ Job\-specific optional keys:
 (Note: \fBurl\fP implies \fBkind: url\fP)
 .SH BROWSER
 .sp
-This job type is a resource\-intensive variant of \(dqURL\(dq to handle web pages
-requiring JavaScript in order to render the content to be monitored.
+This job type is a resource\-intensive variant of \(dqURL\(dq to handle web pages that
+require JavaScript to render the content being monitored.
 .sp
-The optional \fBpyppeteer\fP package must be installed to run \(dqBrowser\(dq jobs
-(see \fI\%Dependencies\fP).
-.sp
-At the moment, the Chromium version used by \fBpyppeteer\fP only supports
-macOS (x86_64), Windows (both x86 and x64) and Linux (x86_64). See
-\fI\%this issue\fP <\fBhttps://github.com/pyppeteer/pyppeteer/issues/155\fP> in the
-Pyppeteer issue tracker for progress on getting ARM devices supported
-(e.g. Raspberry Pi).
-.sp
-Because \fBpyppeteer\fP downloads a special version of Chromium (~ 100 MiB),
-the first execution of a \fBbrowser\fP job could take some time (and bandwidth).
-It is possible to run \fBpyppeteer\-install\fP to pre\-download Chromium.
+The optional \fIplaywright\fP package must be installed in order to run Browser jobs
+(see \fI\%Dependencies\fP). You will also need to install the browsers using
+\fBplaywright install\fP (see \fI\%Playwright Installation\fP <\fBhttps://playwright.dev/python/docs/intro\fP> for details).
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -148,19 +139,21 @@ Required keys:
 Job\-specific optional keys:
 .INDENT 0.0
 .IP \(bu 2
-\fBwait_until\fP:  Either \fBload\fP, \fBdomcontentloaded\fP, \fBnetworkidle0\fP, or \fBnetworkidle2\fP (see \fI\%Advanced Topics\fP)
+\fBwait_until\fP: Either \fBload\fP, \fBdomcontentloaded\fP, \fBnetworkidle\fP, or
+\fBcommit\fP (see \fI\%Advanced Topics\fP)
 .IP \(bu 2
-\fBuseragent\fP:  Change useragent (will be passed to pyppeteer)
+\fBuseragent\fP: \fBUser\-Agent\fP header used for requests (otherwise browser default is used)
+.IP \(bu 2
+\fBbrowser\fP:  Either \fBchromium\fP, \fBchrome\fP, \fBchrome\-beta\fP, \fBmsedge\fP,
+\fBmsedge\-beta\fP, \fBmsedge\-dev\fP, \fBfirefox\fP, \fBwebkit\fP (must be installed with \fBplaywright install\fP)
 .UNINDENT
 .sp
-As this job uses \fI\%Pyppeteer\fP <\fBhttps://github.com/pyppeteer/pyppeteer\fP>
-to render the page in a headless Chromium instance, it requires massively
-more resources than a \(dqURL\(dq job. Use it only on pages where \fBurl\fP does not
-give the right results.
-.sp
-Hint: in many instances instead of using a \(dqBrowser\(dq job you can
-monitor the output of an API called by the site during page loading
-containing the information you\(aqre after using the much faster \(dqURL\(dq job type.
+Because this job uses \fI\%Playwright\fP <\fBhttps://playwright.dev/python/\fP> to
+render the page in a headless browser instance, it uses massively more resources
+than a \(dqURL\(dq job. Use it only on pages where \fBurl\fP does not return the correct
+results. In many cases, instead of using a \(dqBrowser\(dq job, you can use the output
+of an API called by the page as it loads, which contains the information you are
+you\(aqre looking for by using the much faster \(dqURL\(dq job type.
 .sp
 (Note: \fBnavigate\fP implies \fBkind: browser\fP)
 .SH SHELL

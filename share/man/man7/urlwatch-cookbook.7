@@ -426,18 +426,24 @@ filter:
 .SH CONFIGURING HOW LONG BROWSER JOBS WAIT FOR PAGES TO LOAD
 .sp
 For browser jobs, you can configure how long the headless browser will wait
-before a page is considered loaded by using the \fIwait_until\fP option. It can take one of four values:
+before a page is considered loaded by using the \fBwait_until\fP option.
+.sp
+It can take one of four values (see \fI\%wait_until docs\fP <\fBhttps://playwright.dev/python/docs/api/class-page#page-goto-option-wait-until\fP> of Playwright):
 .INDENT 0.0
 .INDENT 3.5
 .INDENT 0.0
 .IP \(bu 2
-\fIload\fP will wait until the \fIload\fP browser event is fired (default).
+\fBload\fP \- consider operation to be finished when the load event is fired
 .IP \(bu 2
-\fIdocumentloaded\fP will wait until the \fIDOMContentLoaded\fP browser event is fired.
+\fBdomcontentloaded\fP \- consider operation to be finished when the
+DOMContentLoaded event is fired
 .IP \(bu 2
-\fInetworkidle0\fP will wait until there are no more than 0 network connections for at least 500 ms.
+\fBnetworkidle\fP \- \fBdiscouraged\fP consider operation to be finished when there
+are no network connections for at least 500 ms. Don\(aqt use this method for
+testing, rely on web assertions to assess readiness instead
 .IP \(bu 2
-\fInetworkidle2\fP will wait until there are no more than 2 network connections for at least 500 ms.
+\fBcommit\fP \- consider operation to be finished when network response is
+received and the document started loading
 .UNINDENT
 .UNINDENT
 .UNINDENT

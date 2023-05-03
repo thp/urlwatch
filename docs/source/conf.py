@@ -27,7 +27,7 @@ copyright = '2023 Thomas Perl'
 author = 'Thomas Perl'
 
 # The full version, including alpha/beta/rc tags
-release = '2.27'
+release = '2.28'
 
 
 # -- General configuration ---------------------------------------------------
