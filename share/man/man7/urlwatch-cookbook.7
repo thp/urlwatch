@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "URLWATCH-COOKBOOK" "7" "Apr 11, 2023" "" "urlwatch"
+.TH "URLWATCH-COOKBOOK" "7" "May 03, 2023" "" "urlwatch"
 .SH NAME
 urlwatch-cookbook \- Advanced topics and recipes for urlwatch
 .SH ADDING URLS FROM THE COMMAND LINE
@@ -48,7 +48,7 @@ urlwatch \-\-add url=http://example.org,name=Example
 You can also specify an external \fBdiff\fP\-style tool (a tool that takes
 two filenames (old, new) as parameter and returns on its standard output
 the difference of the files), for example to use \fBwdiff(1)\fP to get
-word\-based differences instead of line\-based difference:
+word\-based differences instead of line\-based difference, or \fI\%pandiff\fP <\fBhttps://github.com/davidar/pandiff\fP> to get markdown differences:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -75,7 +75,7 @@ For example:
 .sp
 .nf
 .ft C
-diff_tool: "diff \-\-ignore\-all\-space \-\-unified"
+diff_tool: \(dqdiff \-\-ignore\-all\-space \-\-unified\(dq
 .ft P
 .fi
 .UNINDENT
@@ -86,7 +86,7 @@ output format to retain syntax highlighting.
 .SH ONLY SHOW ADDED OR REMOVED LINES
 .sp
 The \fBdiff_filter\fP feature can be used to filter the diff output text
-with the same tools (see filters) used for filtering web pages.
+with the same tools (see \fI\%Filters\fP) used for filtering web pages.
 .sp
 In order to show only diff lines with added lines, use:
 .INDENT 0.0
@@ -146,8 +146,8 @@ A diff usually looks like this:
 .UNINDENT
 .UNINDENT
 .sp
-We want to filter all lines starting with "+" only, but because of
-the headers we also want to filter lines that start with "+++",
+We want to filter all lines starting with \(dq+\(dq only, but because of
+the headers we also want to filter lines that start with \(dq+++\(dq,
 which can be accomplished like so:
 .INDENT 0.0
 .INDENT 3.5
@@ -156,15 +156,15 @@ which can be accomplished like so:
 .ft C
 url: http://example.com/only\-added.html
 diff_filter:
-  \- grep: \(aq^[+]\(aq      # Include all lines starting with "+"
-  \- grepi: \(aq^[+]{3}\(aq  # Exclude the line starting with "+++"
+  \- grep: \(aq^[+]\(aq      # Include all lines starting with \(dq+\(dq
+  \- grepi: \(aq^[+]{3}\(aq  # Exclude the line starting with \(dq+++\(dq
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
 .sp
 This deals with all diff lines now, but since urlwatch reports
-"changed" pages even when the \fBdiff_filter\fP returns an empty string
+\(dqchanged\(dq pages even when the \fBdiff_filter\fP returns an empty string
 (which might be useful in some cases), you have to explicitly opt out
 by using \fBurlwatch \-\-edit\-config\fP and setting the \fBempty\-diff\fP
 option to \fBfalse\fP in the \fBdisplay\fP category:
@@ -189,7 +189,7 @@ can be any custom script.
 The output of the custom script will then be the diff result as reported by
 urlwatch, so if it outputs any status, the \fBCHANGED\fP notification that
 urlwatch does will contain the output of the custom script, not the original
-diff. This can even have a "normal" filter attached to only watch links
+diff. This can even have a \(dqnormal\(dq filter attached to only watch links
 (the \fBcss: a\fP part of the filter definitions):
 .INDENT 0.0
 .INDENT 3.5
@@ -337,8 +337,8 @@ of the \fBdate\fP command, for example:
 .sp
 .nf
 .ft C
-name: "urlwatch watchdog"
-command: "date"
+name: \(dqurlwatch watchdog\(dq
+command: \(dqdate\(dq
 .ft P
 .fi
 .UNINDENT
@@ -396,7 +396,7 @@ filter:
       selector: div#objects_container
       exclude: \(aqdiv.x, #m_more_friends_who_like_this, img\(aq
   \- re.sub:
-      pattern: \(aq(/events/\ed*)[^"]*\(aq
+      pattern: \(aq(/events/\ed*)[^\(dq]*\(aq
       repl: \(aq\e1\(aq
   \- html2text: pyhtml2text
 .ft P
@@ -475,15 +475,15 @@ the URLs, like this:
 .sp
 .nf
 .ft C
-name: "Looking for Thing A"
+name: \(dqLooking for Thing A\(dq
 url: http://example.com/#1
 filter:
-  \- grep: "Thing A"
+  \- grep: \(dqThing A\(dq
 \-\-\-
-name: "Looking for Thing B"
+name: \(dqLooking for Thing B\(dq
 url: http://example.com/#2
 filter:
-  \- grep: "Thing B"
+  \- grep: \(dqThing B\(dq
 .ft P
 .fi
 .UNINDENT
@@ -530,12 +530,12 @@ the form fields in the \fBdata\fP field of the job description:
 .sp
 .nf
 .ft C
-name: "My POST Job"
+name: \(dqMy POST Job\(dq
 url: http://example.com/foo
 data:
-  username: "foo"
-  password: "bar"
-  submit: "Send query"
+  username: \(dqfoo\(dq
+  password: \(dqbar\(dq
+  submit: \(dqSend query\(dq
 .ft P
 .fi
 .UNINDENT
@@ -552,12 +552,12 @@ allowing you to send arbitrary requests to the server:
 .sp
 .nf
 .ft C
-name: "My PUT Request"
+name: \(dqMy PUT Request\(dq
 url: http://example.com/item/new
 method: PUT
 headers:
   Content\-type: application/json
-data: \(aq{"foo": true}\(aq
+data: \(aq{\(dqfoo\(dq: true}\(aq
 .ft P
 .fi
 .UNINDENT

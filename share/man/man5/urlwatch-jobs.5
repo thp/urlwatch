@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "URLWATCH-JOBS" "5" "Apr 11, 2023" "" "urlwatch"
+.TH "URLWATCH-JOBS" "5" "May 03, 2023" "" "urlwatch"
 .SH NAME
 urlwatch-jobs \- Job types and configuration for urlwatch
 .SH SYNOPSIS
@@ -49,7 +49,7 @@ While optional, it is recommended that each job starts with a \fBname\fP entry:
 .sp
 .nf
 .ft C
-name: "This is a human\-readable name/label of the job"
+name: \(dqThis is a human\-readable name/label of the job\(dq
 .ft P
 .fi
 .UNINDENT
@@ -64,8 +64,8 @@ This is the main job type \-\- it retrieves a document from a web server:
 .sp
 .nf
 .ft C
-name: "urlwatch homepage"
-url: "https://thp.io/2008/urlwatch/"
+name: \(dqurlwatch homepage\(dq
+url: \(dqhttps://thp.io/2008/urlwatch/\(dq
 .ft P
 .fi
 .UNINDENT
@@ -80,7 +80,7 @@ Required keys:
 Job\-specific optional keys:
 .INDENT 0.0
 .IP \(bu 2
-\fBcookies\fP: Cookies to send with the request (see advanced_topics)
+\fBcookies\fP: Cookies to send with the request (see \fI\%Advanced Topics\fP)
 .IP \(bu 2
 \fBmethod\fP: HTTP method to use (default: \fBGET\fP)
 .IP \(bu 2
@@ -96,27 +96,27 @@ Job\-specific optional keys:
 .IP \(bu 2
 \fBheaders\fP: HTTP header to send along with the request
 .IP \(bu 2
-\fBencoding\fP: Override the character encoding from the server (see advanced_topics)
+\fBencoding\fP: Override the character encoding from the server (see \fI\%Advanced Topics\fP)
 .IP \(bu 2
-\fBtimeout\fP: Override the default socket timeout (see advanced_topics)
+\fBtimeout\fP: Override the default socket timeout (see \fI\%Advanced Topics\fP)
 .IP \(bu 2
-\fBignore_connection_errors\fP: Ignore (temporary) connection errors (see advanced_topics)
+\fBignore_connection_errors\fP: Ignore (temporary) connection errors (see \fI\%Advanced Topics\fP)
 .IP \(bu 2
-\fBignore_http_error_codes\fP: List of HTTP errors to ignore (see advanced_topics)
+\fBignore_http_error_codes\fP: List of HTTP errors to ignore (see \fI\%Advanced Topics\fP)
 .IP \(bu 2
 \fBignore_timeout_errors\fP: Do not report errors when the timeout is hit
 .IP \(bu 2
-\fBignore_too_many_redirects\fP: Ignore redirect loops (see advanced_topics)
+\fBignore_too_many_redirects\fP: Ignore redirect loops (see \fI\%Advanced Topics\fP)
 .UNINDENT
 .sp
 (Note: \fBurl\fP implies \fBkind: url\fP)
 .SH BROWSER
 .sp
-This job type is a resource\-intensive variant of "URL" to handle web pages
+This job type is a resource\-intensive variant of \(dqURL\(dq to handle web pages
 requiring JavaScript in order to render the content to be monitored.
 .sp
-The optional \fBpyppeteer\fP package must be installed to run "Browser" jobs
-(see dependencies).
+The optional \fBpyppeteer\fP package must be installed to run \(dqBrowser\(dq jobs
+(see \fI\%Dependencies\fP).
 .sp
 At the moment, the Chromium version used by \fBpyppeteer\fP only supports
 macOS (x86_64), Windows (both x86 and x64) and Linux (x86_64). See
@@ -132,8 +132,8 @@ It is possible to run \fBpyppeteer\-install\fP to pre\-download Chromium.
 .sp
 .nf
 .ft C
-name: "A page with JavaScript"
-navigate: "https://example.org/"
+name: \(dqA page with JavaScript\(dq
+navigate: \(dqhttps://example.org/\(dq
 .ft P
 .fi
 .UNINDENT
@@ -148,19 +148,19 @@ Required keys:
 Job\-specific optional keys:
 .INDENT 0.0
 .IP \(bu 2
-\fBwait_until\fP:  Either \fBload\fP, \fBdomcontentloaded\fP, \fBnetworkidle0\fP, or \fBnetworkidle2\fP (see advanced_topics)
+\fBwait_until\fP:  Either \fBload\fP, \fBdomcontentloaded\fP, \fBnetworkidle0\fP, or \fBnetworkidle2\fP (see \fI\%Advanced Topics\fP)
 .IP \(bu 2
 \fBuseragent\fP:  Change useragent (will be passed to pyppeteer)
 .UNINDENT
 .sp
 As this job uses \fI\%Pyppeteer\fP <\fBhttps://github.com/pyppeteer/pyppeteer\fP>
 to render the page in a headless Chromium instance, it requires massively
-more resources than a "URL" job. Use it only on pages where \fBurl\fP does not
+more resources than a \(dqURL\(dq job. Use it only on pages where \fBurl\fP does not
 give the right results.
 .sp
-Hint: in many instances instead of using a "Browser" job you can
+Hint: in many instances instead of using a \(dqBrowser\(dq job you can
 monitor the output of an API called by the site during page loading
-containing the information you\(aqre after using the much faster "URL" job type.
+containing the information you\(aqre after using the much faster \(dqURL\(dq job type.
 .sp
 (Note: \fBnavigate\fP implies \fBkind: browser\fP)
 .SH SHELL
@@ -173,8 +173,8 @@ scripts that query external devices (RPi GPIO), etc...
 .sp
 .nf
 .ft C
-name: "What is in my Home Directory?"
-command: "ls \-al ~"
+name: \(dqWhat is in my Home Directory?\(dq
+command: \(dqls \-al ~\(dq
 .ft P
 .fi
 .UNINDENT
@@ -221,8 +221,8 @@ even though the script exits with exit code 0:
 .nf
 .ft C
 command: |
-  echo "Normal standard output."
-  echo "Something goes to stderr, which makes this job fail." 1>&2
+  echo \(dqNormal standard output.\(dq
+  echo \(dqSomething goes to stderr, which makes this job fail.\(dq 1>&2
   exit 0
 stderr: fail
 .ft P
@@ -237,8 +237,8 @@ On the other hand, if you want to diff both stdout and stderr of the job, use th
 .nf
 .ft C
 command: |
-  echo "An important line on stdout."
-  echo "Another important line on stderr." 1>&2
+  echo \(dqAn important line on stdout.\(dq
+  echo \(dqAnother important line on stderr.\(dq 1>&2
 stderr: stdout
 .ft P
 .fi
@@ -249,13 +249,13 @@ stderr: stdout
 .IP \(bu 2
 \fBname\fP: Human\-readable name/label of the job
 .IP \(bu 2
-\fBfilter\fP: filters (if any) to apply to the output (can be tested with \fB\-\-test\-filter\fP)
+\fBfilter\fP: \fI\%Filters\fP (if any) to apply to the output (can be tested with \fB\-\-test\-filter\fP)
 .IP \(bu 2
 \fBmax_tries\fP: Number of times to retry fetching the resource
 .IP \(bu 2
 \fBdiff_tool\fP: Command to a custom tool for generating diff text
 .IP \(bu 2
-\fBdiff_filter\fP: filters (if any) to apply to the diff result (can be tested with \fB\-\-test\-diff\-filter\fP)
+\fBdiff_filter\fP: \fI\%Filters\fP (if any) to apply to the diff result (can be tested with \fB\-\-test\-diff\-filter\fP)
 .IP \(bu 2
 \fBtreat_new_as_changed\fP: Will treat jobs that don\(aqt have any historic data as \fBCHANGED\fP instead of \fBNEW\fP (and create a diff for new jobs)
 .IP \(bu 2
@@ -267,7 +267,7 @@ stderr: stdout
 .UNINDENT
 .SH SETTING KEYS FOR ALL JOBS AT ONCE
 .sp
-The main configuration file has a \fBjob_defaults\fP
+The main \fI\%Configuration\fP file has a \fBjob_defaults\fP
 key that can be used to configure keys for all jobs at once.
 .sp
 See \fBurlwatch\-config(5)\fP for how to configure job defaults.

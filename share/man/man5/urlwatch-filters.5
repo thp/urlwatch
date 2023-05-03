@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "URLWATCH-FILTERS" "5" "Apr 11, 2023" "" "urlwatch"
+.TH "URLWATCH-FILTERS" "5" "May 03, 2023" "" "urlwatch"
 .SH NAME
 urlwatch-filters \- Filtering output and diff data of urlwatch jobs
 .SH SYNOPSIS
@@ -67,7 +67,7 @@ the diff algorithm.
 The \fBfilter\fP is only applied to new content, the old content was
 already filtered when it was retrieved. This means that changes to
 \fBfilter\fP are not visible when reporting unchanged contents
-(see configuration_display for details), and the diff output
+(see \fI\%Display\fP for details), and the diff output
 will be between (old content with filter at the time old content was
 retrieved) and (new content with current filter).
 .sp
@@ -147,7 +147,7 @@ At the moment, the following filters are built\-in:
 .SH PICKING OUT ELEMENTS FROM A WEBPAGE
 .sp
 You can pick only a given HTML element with the built\-in filter, for
-example to extract \fB<div id="something">.../<div>\fP from a page, you
+example to extract \fB<div id=\(dqsomething\(dq>.../<div>\fP from a page, you
 can use the following in your \fBurls.yaml\fP:
 .INDENT 0.0
 .INDENT 3.5
@@ -189,7 +189,7 @@ removal to get just a certain info field from a webpage:
 url: https://example.net/version.html
 filter:
   \- html2text
-  \- grep: "Current.*version"
+  \- grep: \(dqCurrent.*version\(dq
   \- strip
 .ft P
 .fi
@@ -252,8 +252,8 @@ filter:
 .UNINDENT
 .UNINDENT
 .sp
-This would filter only \fB<li class="unchecked">\fP tags directly
-below \fB<ul id="groceries">\fP elements.
+This would filter only \fB<li class=\(dqunchecked\(dq>\fP tags directly
+below \fB<ul id=\(dqgroceries\(dq>\fP elements.
 .sp
 Some limitations and extensions exist as explained in \fI\%cssselect’s
 documentation\fP <\fBhttps://cssselect.readthedocs.io/en/latest/#supported-selectors\fP>\&.
@@ -388,6 +388,33 @@ If you get multiple results on one page, but you only expected one
 the same HTML document, and shows/hides one via CSS depending on the
 viewport size), you can use \fBmaxitems: 1\fP to only return the first
 item.
+.SH FIXING LIST REORDERINGS WITH CSS SELECTOR OR XPATH FILTERS
+.sp
+In some cases, the ordering of items on a webpage might change regularly
+without the actual content changing. By default, this would show up in
+the diff output as an element being removed from one part of the page and
+inserted in another part of the page.
+.sp
+In cases where the order of items doesn\(aqt matter, it\(aqs possible to sort
+matched items lexicographically to avoid spurious reports when only the
+ordering of items changes on the page.
+.sp
+The subfilter for \fBcss\fP and \fBxpath\fP filters is \fBsort\fP, and can be
+\fBtrue\fP or \fBfalse\fP (the default):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+url: https://example.org/items\-random\-order.html
+filter:
+  \- css:
+      selector: span.item
+      sort: true
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .SH FILTERING PDF DOCUMENTS
 .sp
 To monitor the text of a PDF file, you use the \fIpdf2text\fP filter. It requires
@@ -502,7 +529,7 @@ sort text paragraphs (text separated by an empty line):
 url: http://example.org/paragraphs.txt
 filter:
   \- sort:
-      separator: "\en\en"
+      separator: \(dq\en\en\(dq
 .ft P
 .fi
 .UNINDENT
@@ -559,7 +586,7 @@ filter:
 .UNINDENT
 .sp
 Alternatively, the filter can be specified more verbose with a dict.
-In this example \fB"\en\en"\fP is used to separate paragraphs (items that
+In this example \fB\(dq\en\en\(dq\fP is used to separate paragraphs (items that
 are separated by an empty line):
 .INDENT 0.0
 .INDENT 3.5
@@ -569,7 +596,7 @@ are separated by an empty line):
 url: http://example.org/reverse\-paragraphs.txt
 filter:
   \- reverse:
-      separator: "\en\en"
+      separator: \(dq\en\en\(dq
 .ft P
 .fi
 .UNINDENT
@@ -585,7 +612,7 @@ project for the latest release version, to be notified of new releases:
 .ft C
 url: https://github.com/tulir/gomuks/releases
 filter:
-  \- xpath: \(aq(//div[contains(@class,"d\-flex flex\-column flex\-md\-row my\-5 flex\-justify\-center")]//h1//a)[1]\(aq
+  \- xpath: \(aq(//div[contains(@class,\(dqd\-flex flex\-column flex\-md\-row my\-5 flex\-justify\-center\(dq)]//h1//a)[1]\(aq
   \- html2text: re
   \- strip
 .ft P
@@ -602,7 +629,7 @@ This is the corresponding version for Github tags:
 url: https://github.com/thp/urlwatch/tags
 filter:
   \- xpath:
-      path: //*[@class="Link\-\-primary"]
+      path: //*[@class=\(dqLink\-\-primary\(dq]
       maxitems: 1
   \- html2text:
 .ft P
@@ -618,7 +645,7 @@ and for Gitlab tags:
 .ft C
 url: https://gitlab.com/chinstrap/gammastep/\-/tags
 filter:
-  \- xpath: (//a[contains(@class,"item\-title ref\-name")])[1]
+  \- xpath: (//a[contains(@class,\(dqitem\-title ref\-name\(dq)])[1]
   \- html2text
 .ft P
 .fi
@@ -667,7 +694,7 @@ string).
 .ft C
 url: https://example.com/regex\-substitute.html
 filter:
-    \- re.sub: \(aq\es*href="[^"]*"\(aq
+    \- re.sub: \(aq\es*href=\(dq[^\(dq]*\(dq\(aq
     \- re.sub:
         pattern: \(aq<h1>\(aq
         repl: \(aqHEADING 1: \(aq
@@ -680,7 +707,7 @@ filter:
 .UNINDENT
 .sp
 If you want to enable certain flags (e.g. \fBre.MULTILINE\fP) in the
-call, this is possible by inserting an "inline flag" documented in
+call, this is possible by inserting an \(dqinline flag\(dq documented in
 \fI\%flags in re.compile\fP <\fBhttps://docs.python.org/3/library/re.html#re.compile\fP>, here are some examples:
 .INDENT 0.0
 .IP \(bu 2
@@ -727,7 +754,7 @@ the line (\fB\-o\fP), you can specify this as \fBshellpipe\fP filter:
 .ft C
 url: https://example.net/shellpipe\-grep.txt
 filter:
-  \- shellpipe: "grep \-i \-o \(aqprice: <span>.*</span>\(aq"
+  \- shellpipe: \(dqgrep \-i \-o \(aqprice: <span>.*</span>\(aq\(dq
 .ft P
 .fi
 .UNINDENT
@@ -744,7 +771,7 @@ prepends the line number to each line:
 .ft C
 url: https://example.net/shellpipe\-awk\-oneliner.txt
 filter:
-  \- shellpipe: awk \(aq{ print FNR " " $0 }\(aq
+  \- shellpipe: awk \(aq{ print FNR \(dq \(dq $0 }\(aq
 .ft P
 .fi
 .UNINDENT
@@ -764,7 +791,7 @@ filter:
       # Copy the input to a temporary file, then pipe through awk
       tee $FILENAME | awk \(aq/The numbers for (.*) are:/,/The next draw is on (.*)./\(aq
       # Analyze the input file in some other way
-      echo "Input lines: $(wc \-l $FILENAME | awk \(aq{ print $1 }\(aq)"
+      echo \(dqInput lines: $(wc \-l $FILENAME | awk \(aq{ print $1 }\(aq)\(dq
       rm \-f $FILENAME
 .ft P
 .fi

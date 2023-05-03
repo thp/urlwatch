@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "URLWATCH-CONFIG" "5" "Apr 11, 2023" "" "urlwatch"
+.TH "URLWATCH-CONFIG" "5" "May 03, 2023" "" "urlwatch"
 .SH NAME
 urlwatch-config \- Configuration of urlwatch behavior
 .SH SYNOPSIS
@@ -36,7 +36,7 @@ urlwatch \-\-edit\-config
 .SH DESCRIPTION
 .sp
 The global configuration for urlwatch contains basic settings for the generic
-behavior of urlwatch as well as the reporters\&.
+behavior of urlwatch as well as the \fI\%Reporters\fP\&.
 .SH DISPLAY
 .sp
 In addition to always reporting changes (which is the whole point of urlwatch),
@@ -76,7 +76,7 @@ the \fB\-\-test\-filter\fP command line option to apply your current filter to t
 current page contents.
 .SH REPORTERS
 .sp
-"Reporters" are the modules that deliver notifications through their
+\(dqReporters\(dq are the modules that deliver notifications through their
 respective medium when they are enabled through the configuration file.
 .sp
 See \fBurlwatch\-reporters(5)\fP for reporter\-specific options.
@@ -197,7 +197,7 @@ The possible sub\-keys to \fBjob_defaults\fP are:
 \fBbrowser\fP: Applies only to \fBbrowser\fP jobs (with key \fBnavigate\fP)
 .UNINDENT
 .sp
-See jobs about the different job kinds and what the possible keys are.
+See \fI\%Jobs\fP about the different job kinds and what the possible keys are.
 .SH FILES
 .sp
 \fB$XDG_CONFIG_HOME/urlwatch/urlwatch.yaml\fP

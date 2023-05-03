@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "URLWATCH-INTRO" "7" "Apr 11, 2023" "" "urlwatch"
+.TH "URLWATCH-INTRO" "7" "May 03, 2023" "" "urlwatch"
 .SH NAME
 urlwatch-intro \- Introduction to basic urlwatch usage
 .SH QUICK START
@@ -61,14 +61,14 @@ Every time you run \fBurlwatch(1)\fP, it:
 .IP \(bu 2
 retrieves the output of each job and filters it
 .IP \(bu 2
-compares it with the version retrieved the previous time ("diffing")
+compares it with the version retrieved the previous time (\(dqdiffing\(dq)
 .IP \(bu 2
 if it finds any differences, it invokes enabled reporters (e.g.
 text reporter, e\-mail reporter, ...) to notify you of the changes
 .UNINDENT
 .SH JOBS AND FILTERS
 .sp
-Each website or shell command to be monitored constitutes a "job".
+Each website or shell command to be monitored constitutes a \(dqjob\(dq.
 .sp
 The instructions for each such job are contained in a config file in the \fI\%YAML
 format\fP <\fBhttps://yaml.org/spec/\fP>\&. If you have more than one job, you separate them with a line
@@ -121,7 +121,7 @@ You can then use optional keys to finely control various job\(aqs parameters.
 See \fBurlwatch\-jobs(5)\fP for detailed information on job configuration.
 .SS Filters
 .sp
-You may use the \fBfilter\fP key to select one or more filters to apply to
+You may use the \fBfilter\fP key to select one or more \fI\%Filters\fP to apply to
 the data after it is retrieved, for example to:
 .INDENT 0.0
 .IP \(bu 2
@@ -152,12 +152,12 @@ them:
 .sp
 .nf
 .ft C
-name: "Sample urlwatch job definition"
-url: "https://example.dummy/"
-https_proxy: "http://dummy.proxy/"
+name: \(dqSample urlwatch job definition\(dq
+url: \(dqhttps://example.dummy/\(dq
+https_proxy: \(dqhttp://dummy.proxy/\(dq
 max_tries: 2
 filter:
-  \- xpath: \(aq//section[@role="main"]\(aq
+  \- xpath: \(aq//section[@role=\(dqmain\(dq]\(aq
   \- html2text:
       method: pyhtml2text
       unicode_snob: true
@@ -167,7 +167,7 @@ filter:
       ignore_images: true
       pad_tables: false
       single_line_break: true
-  \- grep: "lines I care about"
+  \- grep: \(dqlines I care about\(dq
   \- sort:
 \-\-\-
 .ft P
@@ -181,7 +181,7 @@ See \fBurlwatch\-filters(5)\fP for detailed information on filter configuration.
 \fIurlwatch\fP can be configured to do something with its report besides
 (or in addition to) the default of displaying it on the console.
 .sp
-reporters are configured in the global configuration file:
+\fI\%Reporters\fP are configured in the global configuration file:
 .INDENT 0.0
 .INDENT 3.5
 .sp
