@@ -421,5 +421,11 @@ class BrowserJob(Job):
         with sync_playwright() as playwright:
             browser = playwright[self.browser or "chromium"].launch()
             page = browser.new_page(user_agent=self.useragent)
+
+            if self.wait_until in ('networkidle0', 'networkidle2'):
+                logger.warning(f'wait_until has deprecated value of {self.wait_until}, see docs')
+                # Pyppetteer -> Playwright migration
+                self.wait_until = 'networkidle'
+
             page.goto(self.navigate, wait_until=self.wait_until)
             return page.content()

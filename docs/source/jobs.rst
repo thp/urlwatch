@@ -72,7 +72,9 @@ require JavaScript to render the content being monitored.
 
 The optional `playwright` package must be installed in order to run Browser jobs
 (see :ref:`dependencies`). You will also need to install the browsers using
-`playwright install <https://playwright.dev/python/docs/intro>`.
+``playwright install`` (see `Playwright Installation`_ for details).
+
+.. _`Playwright Installation`: https://playwright.dev/python/docs/intro
 
 .. code-block:: yaml
 
@@ -89,10 +91,9 @@ Job-specific optional keys:
   ``commit`` (see :ref:`advanced_topics`)
 - ``useragent``: ``User-Agent`` header used for requests (otherwise browser default is used)
 - ``browser``:  Either ``chromium``, ``chrome``, ``chrome-beta``, ``msedge``,
-  ``msedge-beta``, ``msedge-dev``,
-``firefox``, ``webkit`` (must be installed with ``playwright install``)
+  ``msedge-beta``, ``msedge-dev``, ``firefox``, ``webkit`` (must be installed with ``playwright install``)
 
-Because this job uses ``Playwright <https://playwright.dev/python/>``__ to
+Because this job uses Playwright_ to
 render the page in a headless browser instance, it uses massively more resources
 than a "URL" job. Use it only on pages where ``url`` does not return the correct
 results. In many cases, instead of using a "Browser" job, you can use the output
@@ -100,6 +101,8 @@ of an API called by the page as it loads, which contains the information you are
 you're looking for by using the much faster "URL" job type.
 
 (Note: ``navigate`` implies ``kind: browser``)
+
+.. _Playwright: https://playwright.dev/python/
 
 
 Shell

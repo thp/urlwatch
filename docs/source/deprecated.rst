@@ -5,6 +5,20 @@ As features are deprecated and cleaned up, they are documented
 here with steps to update your configuration for replacements.
 
 
+``networkidle0`` and ``networkidle2`` for ``wait_until`` in browser jobs (since 2.28)
+-------------------------------------------------------------------------------------
+
+Since version 2.28, execution of browser jobs uses Playwright instead of pyppetteer.
+
+The previously-supported ``wait_until`` values of ``networkidle0`` and ``networkidle2``
+are not supported anymore. Playwright supports the values ``load``, ``domcontentloaded``,
+``networkidle`` (discouraged) or ``commit`` instead.
+
+Existing settings of ``networkidle0`` and ``networkidle2`` will be mapped to
+``networkidle``, and a warning will be issued. To silence the warning and continue
+to use ``networkidle``, specify ``wait_until: networkidle`` explicitly.
+
+
 Filters without subfilters (since 2.22)
 ---------------------------------------
 

@@ -49,6 +49,7 @@ Where ``<packagename>`` is one of the following:
 | color on Windows        |                                                                     |
 +-------------------------+---------------------------------------------------------------------+
 | `browser` job kind      | `playwright <https://github.com/microsoft/playwright-python>`__     |
+|                         | (since version 2.28)                                                |
 +-------------------------+---------------------------------------------------------------------+
 | Unit testing            | `pycodestyle <http://pycodestyle.pycqa.org/en/latest/>`__,          |
 |                         | `docutils <https://docutils.sourceforge.io>`__,                     |

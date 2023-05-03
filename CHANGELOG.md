@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [UNRELEASED]
+
+### Changed
+
+- Browser jobs: Migrate from Pyppeteer to Playwright (#761, by Paul Sattlegger, fixes #751)
+
 ## [2.27] -- 2023-05-03
 
 ### Added
