@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## UNRELEASED
+
+### Fixed
+
+- Fix documentation for watching Github tags and releases, again (#723)
+
 ## [2.28] -- 2023-05-03
 
 ### Changed

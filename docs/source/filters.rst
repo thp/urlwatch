@@ -452,9 +452,10 @@ project for the latest release version, to be notified of new releases:
 
    url: https://github.com/tulir/gomuks/releases
    filter:
-     - xpath: '(//div[contains(@class,"d-flex flex-column flex-md-row my-5 flex-justify-center")]//h1//a)[1]'
-     - html2text: re
-     - strip
+     - xpath:
+         path: //*[@class="Link--primary Link"]
+         maxitems: 1
+     - html2text:
 
 This is the corresponding version for Github tags:
 
@@ -463,7 +464,7 @@ This is the corresponding version for Github tags:
    url: https://github.com/thp/urlwatch/tags
    filter:
      - xpath:
-         path: //*[@class="Link--primary"]
+         path: //*[@class="Link--primary Link"]
          maxitems: 1
      - html2text:
 
