@@ -319,13 +319,15 @@ To set the ``lynx`` output width to 400 characters, use this filter setup:
          width: 400
 
 
-Configuring how long browser jobs wait for pages to load
+Tweaking JavaScript output
 --------------------------------------------------------
 
-For browser jobs, you can configure how long the headless browser will wait
+Browser jobs might sometimes fail to produce the desired results when loading websites that contain JavaScript.
+If JavaScript refuses to run you may try setting ``useragent`` to the user agent of the current version of a commonly used web browser.
+You can configure how long the headless browser will wait
 before a page is considered loaded by using the ``wait_until`` option.
 
-It can take one of four values (see `wait_until docs`_ of Playwright):
+The option ``wait_until`` can take one of four values (see `wait_until docs`_ of Playwright):
 
    - ``load`` - consider operation to be finished when the load event is fired
    - ``domcontentloaded`` - consider operation to be finished when the
