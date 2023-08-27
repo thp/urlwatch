@@ -51,8 +51,8 @@ Job-specific optional keys:
 - ``data``: HTTP POST/PUT data
 - ``ssl_no_verify``: Do not verify SSL certificates (true/false)
 - ``ignore_cached``: Do not use cache control (ETag/Last-Modified) values (true/false)
-- ``http_proxy``: Proxy server to use for HTTP requests
-- ``https_proxy``: Proxy server to use for HTTPS requests
+- ``http_proxy``: Proxy server to use for HTTP requests (might be http:// or socks5://)
+- ``https_proxy``: Proxy server to use for HTTPS requests (might be http:// or socks5://)
 - ``headers``: HTTP header to send along with the request
 - ``encoding``: Override the character encoding from the server (see :ref:`advanced_topics`)
 - ``timeout``: Override the default socket timeout (see :ref:`advanced_topics`)
