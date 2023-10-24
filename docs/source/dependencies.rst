@@ -10,7 +10,7 @@ additional packages -- however, those are not needed to run urlwatch.
 Mandatory Packages
 ------------------
 
--  Python 3.7 or newer
+-  Python 3.8 or newer
 -  `PyYAML <http://pyyaml.org/>`__
 -  `minidb <https://thp.io/2010/minidb/>`__
 -  `requests <http://python-requests.org/>`__
