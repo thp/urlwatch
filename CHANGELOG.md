@@ -9,6 +9,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Fixed
 
 - Fix documentation for watching Github tags and releases, again (#723)
+- Fix `--test-reporter` command-line option so `separate` configuration option is no longer ignored when sending test notifications (#772, by marunjar)
 
 ## [2.28] -- 2023-05-03
 
