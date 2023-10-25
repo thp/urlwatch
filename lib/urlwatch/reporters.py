@@ -126,7 +126,12 @@ class ReporterBase(object, metaclass=TrackSubClasses):
         subclass = cls.__subclasses__[name]
         cfg = report.config['report'].get(name, {'enabled': False})
         if cfg['enabled']:
-            subclass(report, cfg, job_states, duration).submit()
+            base_config = subclass.get_base_config(report)
+            if base_config.get('separate', False):
+                for job_state in job_states:
+                    subclass(report, cfg, [job_state], duration).submit()
+            else:
+                subclass(report, cfg, job_states, duration).submit()
         else:
             raise ValueError('Reporter not enabled: {name}'.format(name=name))
 
