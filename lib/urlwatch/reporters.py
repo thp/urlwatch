@@ -185,7 +185,7 @@ class HtmlReporter(ReporterBase):
             <meta http-equiv="content-type" content="text/html; charset=utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style type="text/css">
-                body { font-family: sans-serif; line-height: 1.5em; }
+                body { font-family: sans-serif; }
                 .diff_add { background-color: #abf2bc; display: inline-block; }
                 .diff_sub { background-color: #ffd7d5; display: inline-block; }
                 .diff_chg { background-color: #f9e48b; display: inline-block; }
@@ -196,7 +196,7 @@ class HtmlReporter(ReporterBase):
                 table, thead, tbody { border: 1px solid #9a9a9a; }
                 .diff_next { border-left: 1px solid #9a9a9a; }
                 td.diff_header, td.diff_next { color: #6e7781; background-color: #f5f5f5; text-align: right; vertical-align: top; }
-                table { font-family: monospace; }
+                table { font-family: monospace; line-height: 1.5em; }
                 td, th { padding: 0 0.5em; }
                 h2 span.verb { color: #888; }
                 @media (prefers-color-scheme: dark) {
