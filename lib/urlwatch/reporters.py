@@ -199,7 +199,7 @@ class HtmlReporter(ReporterBase):
                 table, thead, tbody { border: 1px solid #9a9a9a; }
                 .diff_next { border-left: 1px solid #9a9a9a; }
                 td.diff_header, td.diff_next { color: #6e7781; background-color: #f5f5f5; text-align: right; vertical-align: top; }
-                table { font-family: monospace; }
+                table { font-family: monospace; line-height: 1.5em; }
                 td, th { padding: 0 0.5em; }
                 h2 span.verb { color: #888; }
                 @media (prefers-color-scheme: dark) {
