@@ -188,7 +188,7 @@ class HtmlReporter(ReporterBase):
             <meta name="supported-color-schemes" content="light dark only">
             <style type="text/css">
                 :root { color-scheme: light dark; supported-color-schemes: light dark; }
-                body { font-family: sans-serif; line-height: 1.5em; }
+                body { font-family: sans-serif; }
                 .diff_add { background-color: #abf2bc; display: inline-block; }
                 .diff_sub { background-color: #ffd7d5; display: inline-block; }
                 .diff_chg { background-color: #f9e48b; display: inline-block; }
