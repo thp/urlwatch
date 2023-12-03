@@ -184,7 +184,10 @@ class HtmlReporter(ReporterBase):
             <title>urlwatch</title>
             <meta http-equiv="content-type" content="text/html; charset=utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta name="color-scheme" content="light dark">
+            <meta name="supported-color-schemes" content="light dark only">
             <style type="text/css">
+                :root { color-scheme: light dark; supported-color-schemes: light dark; }
                 body { font-family: sans-serif; }
                 .diff_add { background-color: #abf2bc; display: inline-block; }
                 .diff_sub { background-color: #ffd7d5; display: inline-block; }
@@ -207,6 +210,7 @@ class HtmlReporter(ReporterBase):
                     .diff_add { background-color: #1c4329; }
                     .diff_sub { background-color: #542527; }
                     .diff_chg { background-color: #907709; }
+                    .unified_nor { color: #ddd; }
                 }
             </style>
         </head><body>
