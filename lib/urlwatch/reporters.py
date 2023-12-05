@@ -705,7 +705,7 @@ class SlackReporter(TextReporter):
 
     def submit_chunk(self, webhook_url, text):
         logger.debug("Sending {} request with text: {}".format(self.__kind__, text))
-        post_data = {"text": text}
+        post_data = self.prepare_post_data(text)
         result = requests.post(webhook_url, json=post_data)
         try:
             if result.status_code == requests.codes.ok:
@@ -719,11 +719,34 @@ class SlackReporter(TextReporter):
                                                                                         result.content))
         return result
 
+    def prepare_post_data(self, text):
+        if self.config.get('rich_text', False):
+            return {
+                "blocks": [
+                    {
+                        "type": "rich_text",
+                        "elements": [
+                            {
+                                "type": "rich_text_preformatted",
+                                "elements": [
+                                    {"type": "text", "text": text}
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        else:
+            return {"text": text}
+
 
 class MattermostReporter(SlackReporter):
     """Send a message to a Mattermost channel"""
 
     __kind__ = 'mattermost'
+
+    def prepare_post_data(self, text):
+        return {"text": text}
 
 
 class DiscordReporter(TextReporter):
