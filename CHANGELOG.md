@@ -8,7 +8,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ### Added
 
-- Slack Reporter: `rich_text` config option for preformatted rich text
+- Slack Reporter: `rich_text` config option for preformatted rich text (#780, by vimagick)
 
 ### Changed
 
