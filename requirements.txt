@@ -3,5 +3,5 @@ minidb >= 2.0.6
 requests
 keyring
 appdirs
-lxml
+lxml < 5
 cssselect
