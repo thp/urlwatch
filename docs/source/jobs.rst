@@ -176,6 +176,7 @@ Optional keys for all job types
 - ``compared_versions``: Number of versions to compare for similarity
 - ``kind`` (redundant): Either ``url``, ``shell`` or ``browser``.  Automatically derived from the unique key (``url``, ``command`` or ``navigate``) of the job type
 - ``user_visible_url``: Different URL to show in reports (e.g. when watched URL is a REST API URL, and you want to show a webpage)
+- ``enabled``: Can be set to false to disable an individual job (default is ``true``)
 
 
 Setting keys for all jobs at once
