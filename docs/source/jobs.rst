@@ -60,6 +60,7 @@ Job-specific optional keys:
 - ``ignore_http_error_codes``: List of HTTP errors to ignore (see :ref:`advanced_topics`)
 - ``ignore_timeout_errors``: Do not report errors when the timeout is hit
 - ``ignore_too_many_redirects``: Ignore redirect loops (see :ref:`advanced_topics`)
+- ``ignore_incomplete_reads``: Ignore incomplete HTTP responses (see :ref:`advanced_topics`)
 
 (Note: ``url`` implies ``kind: url``)
 
