@@ -15,6 +15,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Fix documentation for watching Github tags and releases, again (#723)
 - Fix `--test-reporter` command-line option so `separate` configuration option is no longer ignored when sending test notifications (#772, by marunjar)
 - Fix line height and dark mode regression (#774 reported by kongomongo, PRs #777 and #778 by trevorshannon)
+- Fix pep8 test to ignore files in the site-packages directory for cases where the venv is in the project directory (#788 by jamstah)
 
 ## [2.28] -- 2023-05-03
 
