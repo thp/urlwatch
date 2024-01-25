@@ -68,6 +68,20 @@ class Urlwatch(object):
         if hasattr(self.urlwatch_config, 'migrate_urls'):
             self.urlwatch_config.migrate_cache(self)
 
+    def should_run(self, idx, job):
+        if not job.is_enabled():
+            return False
+
+        if self.urlwatch_config.tags:
+            # If we're using tags, check the job matches the tags
+            return job.matches_tags(self.urlwatch_config.tag_set)
+
+        # If we're using indexes, no indexes means all jobs
+        if self.urlwatch_config.idx_set:
+            return idx in self.urlwatch_config.idx_set
+
+        return True
+
     def check_directories(self):
         if not os.path.exists(self.urlwatch_config.config):
             self.config_storage.write_default_config(self.urlwatch_config.config)

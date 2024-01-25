@@ -78,8 +78,8 @@ def test_load_hooks_py():
 
 
 class ConfigForTest(CommandConfig):
-    def __init__(self, config, urls, cache, hooks, verbose):
-        super().__init__([], 'urlwatch', os.path.dirname(__file__), root, config, urls, hooks, cache, verbose)
+    def __init__(self, config, urls, cache, hooks, verbose, args=()):
+        super().__init__(args, 'urlwatch', os.path.dirname(__file__), root, config, urls, hooks, cache, verbose)
 
 
 @contextlib.contextmanager
@@ -108,6 +108,77 @@ def test_run_watcher():
 
             urlwatcher = Urlwatch(urlwatch_config, config_storage, cache_storage, urls_storage)
             urlwatcher.run_jobs()
+        finally:
+            cache_storage.close()
+
+
+def prepare_tags_test(args):
+    urls = os.path.join(here, 'data', 'jobs-with-tags.yaml')
+    config = os.path.join(here, 'data', 'urlwatch.yaml')
+    cache = os.path.join(here, 'data', 'cache.db')
+    hooks = ''
+
+    config_storage = YamlConfigStorage(config)
+    urls_storage = UrlsYaml(urls)
+    cache_storage = CacheMiniDBStorage(cache)
+
+    urlwatch_config = ConfigForTest(config, urls, cache, hooks, True, args=args)
+    urlwatcher = Urlwatch(urlwatch_config, config_storage, cache_storage, urls_storage)
+
+    return urlwatcher, cache_storage
+
+
+def test_tags_none():
+    with teardown_func():
+        urlwatcher, cache_storage = prepare_tags_test([])
+        try:
+            urlwatcher.run_jobs()
+
+            assert len(urlwatcher.report.job_states) == 3
+        finally:
+            cache_storage.close()
+
+
+def test_tags_empty():
+    with teardown_func():
+        urlwatcher, cache_storage = prepare_tags_test(['--tags'])
+        try:
+            urlwatcher.run_jobs()
+
+            assert len(urlwatcher.report.job_states) == 0
+        finally:
+            cache_storage.close()
+
+
+def test_tags_no_match():
+    with teardown_func():
+        urlwatcher, cache_storage = prepare_tags_test(['--tags', 'foo'])
+        try:
+            urlwatcher.run_jobs()
+
+            assert len(urlwatcher.report.job_states) == 0
+        finally:
+            cache_storage.close()
+
+
+def test_tags_single():
+    with teardown_func():
+        urlwatcher, cache_storage = prepare_tags_test(['--tags', 'arg'])
+        try:
+            urlwatcher.run_jobs()
+
+            assert len(urlwatcher.report.job_states) == 2
+        finally:
+            cache_storage.close()
+
+
+def test_tags_multiple():
+    with teardown_func():
+        urlwatcher, cache_storage = prepare_tags_test(['--tags', 'utc', 'local'])
+        try:
+            urlwatcher.run_jobs()
+
+            assert len(urlwatcher.report.job_states) == 2
         finally:
             cache_storage.close()
 
