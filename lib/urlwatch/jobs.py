@@ -196,7 +196,7 @@ class JobBase(object, metaclass=TrackSubClasses):
 
 class Job(JobBase):
     __required__ = ()
-    __optional__ = ('name', 'filter', 'max_tries', 'diff_tool', 'compared_versions', 'diff_filter', 'treat_new_as_changed', 'user_visible_url')
+    __optional__ = ('name', 'filter', 'max_tries', 'diff_tool', 'compared_versions', 'diff_filter', 'enabled', 'treat_new_as_changed', 'user_visible_url')
 
     # determine if hyperlink "a" tag is used in HtmlReporter
     def location_is_url(self):
@@ -204,6 +204,9 @@ class Job(JobBase):
 
     def pretty_name(self):
         return self.name if self.name else self.get_location()
+
+    def is_enabled(self):
+        return self.enabled is None or self.enabled
 
 
 class ShellJob(Job):

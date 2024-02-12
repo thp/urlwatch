@@ -82,8 +82,19 @@ def test_pep8_conformance():
     import pycodestyle
     style = pycodestyle.StyleGuide(ignore=['E501', 'E402', 'W503', 'E241'])
 
-    py_files = [y for x in os.walk(os.path.abspath('.')) for y in glob(os.path.join(x[0], '*.py'))]
-    result = style.check_files(py_files)
+    import site
+    site_packages = site.getsitepackages()
+
+    def py_files():
+        for dir, dirs, files in os.walk(os.path.abspath('.')):
+            if dir in site_packages:
+                dirs.clear()  # os.walk lets us modify the dirs list to prune the walk
+                files.clear()  # we also don't want to process files in the root of this excluded dir
+            for file in files:
+                if file.endswith('.py'):
+                    yield os.path.join(dir, file)
+
+    result = style.check_files(py_files())
     assert result.total_errors == 0, "Found #{0} code style errors".format(result.total_errors)
 
 
@@ -118,6 +129,27 @@ def test_run_watcher():
 
             urlwatcher = Urlwatch(urlwatch_config, config_storage, cache_storage, urls_storage)
             urlwatcher.run_jobs()
+        finally:
+            cache_storage.close()
+
+
+def test_disabled_job():
+    with teardown_func():
+        urls = os.path.join(here, 'data', 'disabled-job.yaml')
+        config = os.path.join(here, 'data', 'urlwatch.yaml')
+        cache = os.path.join(here, 'data', 'cache.db')
+        hooks = ''
+
+        config_storage = YamlConfigStorage(config)
+        urls_storage = UrlsYaml(urls)
+        cache_storage = CacheMiniDBStorage(cache)
+        try:
+            urlwatch_config = ConfigForTest(config, urls, cache, hooks, True)
+
+            urlwatcher = Urlwatch(urlwatch_config, config_storage, cache_storage, urls_storage)
+            urlwatcher.run_jobs()
+
+            assert len(urlwatcher.report.job_states) == 1
         finally:
             cache_storage.close()
 
