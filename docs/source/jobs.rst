@@ -169,7 +169,7 @@ Optional keys for all job types
 
 - ``name``: Human-readable name/label of the job
 - ``filter``: :doc:`filters` (if any) to apply to the output (can be tested with ``--test-filter``)
-- ``max_tries``: Number of times to retry fetching the resource
+- ``max_tries``: After this many sequential failed runs, the error will be reported rather than ignored
 - ``diff_tool``: Command to a custom tool for generating diff text
 - ``diff_filter``: :doc:`filters` (if any) to apply to the diff result (can be tested with ``--test-diff-filter``)
 - ``treat_new_as_changed``: Will treat jobs that don't have any historic data as ``CHANGED`` instead of ``NEW`` (and create a diff for new jobs)
