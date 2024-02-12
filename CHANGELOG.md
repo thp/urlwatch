@@ -6,6 +6,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ## UNRELEASED
 
+### Added
+
+- New `enabled` option for all jobs. Set to false to disable a job without needing to remove it or comment it out (Requested in #625 by snowman, contributed in #785 by jamstah)
+
 ### Changed
 
 - Remove EOL'd Python 3.7 (new minimum requirement is Python 3.8), add Python 3.12 testing
