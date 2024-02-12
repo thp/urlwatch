@@ -761,9 +761,9 @@ class LxmlParser:
         excluded_elems = None
         if self.filter_kind == 'css':
             selected_elems = CSSSelector(self.expression,
-                                         namespaces=self.namespaces).evaluate(root)
+                                         namespaces=self.namespaces)(root)
             excluded_elems = CSSSelector(self.exclude,
-                                         namespaces=self.namespaces).evaluate(root) if self.exclude else None
+                                         namespaces=self.namespaces)(root) if self.exclude else None
         elif self.filter_kind == 'xpath':
             selected_elems = root.xpath(self.expression, namespaces=self.namespaces)
             excluded_elems = root.xpath(self.exclude, namespaces=self.namespaces) if self.exclude else None

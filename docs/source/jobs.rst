@@ -169,13 +169,14 @@ Optional keys for all job types
 
 - ``name``: Human-readable name/label of the job
 - ``filter``: :doc:`filters` (if any) to apply to the output (can be tested with ``--test-filter``)
-- ``max_tries``: Number of times to retry fetching the resource
+- ``max_tries``: After this many sequential failed runs, the error will be reported rather than ignored
 - ``diff_tool``: Command to a custom tool for generating diff text
 - ``diff_filter``: :doc:`filters` (if any) to apply to the diff result (can be tested with ``--test-diff-filter``)
 - ``treat_new_as_changed``: Will treat jobs that don't have any historic data as ``CHANGED`` instead of ``NEW`` (and create a diff for new jobs)
 - ``compared_versions``: Number of versions to compare for similarity
 - ``kind`` (redundant): Either ``url``, ``shell`` or ``browser``.  Automatically derived from the unique key (``url``, ``command`` or ``navigate``) of the job type
 - ``user_visible_url``: Different URL to show in reports (e.g. when watched URL is a REST API URL, and you want to show a webpage)
+- ``enabled``: Can be set to false to disable an individual job (default is ``true``)
 
 
 Setting keys for all jobs at once

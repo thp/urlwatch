@@ -133,6 +133,27 @@ def test_run_watcher():
             cache_storage.close()
 
 
+def test_disabled_job():
+    with teardown_func():
+        urls = os.path.join(here, 'data', 'disabled-job.yaml')
+        config = os.path.join(here, 'data', 'urlwatch.yaml')
+        cache = os.path.join(here, 'data', 'cache.db')
+        hooks = ''
+
+        config_storage = YamlConfigStorage(config)
+        urls_storage = UrlsYaml(urls)
+        cache_storage = CacheMiniDBStorage(cache)
+        try:
+            urlwatch_config = ConfigForTest(config, urls, cache, hooks, True)
+
+            urlwatcher = Urlwatch(urlwatch_config, config_storage, cache_storage, urls_storage)
+            urlwatcher.run_jobs()
+
+            assert len(urlwatcher.report.job_states) == 1
+        finally:
+            cache_storage.close()
+
+
 def test_unserialize_shell_job_without_kind():
     job = JobBase.unserialize({
         'name': 'hoho',

@@ -1,0 +1,6 @@
+name: "1"
+url: "|echo job 1"
+enabled: false
+---
+name: "2"
+url: "|echo job 2"
