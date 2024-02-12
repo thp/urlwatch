@@ -455,7 +455,7 @@ class EMailReporter(TextReporter):
         else:
             logger.error('Invalid entry for method {method}'.format(method=self.config['method']))
 
-        reply_to = self.config.get('reply_to', self.config['from'])
+        reply_to = self.config.get('reply_to', '')
         if self.config['html']:
             body_html = '\n'.join(self.convert(HtmlReporter).submit())
 
