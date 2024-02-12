@@ -56,7 +56,7 @@ class Mailer(object):
         msg['To'] = to_email
         msg['Date'] = email.utils.formatdate()
         if (reply_to_email):
-          msg['Reply-To'] = reply_to_email
+            msg['Reply-To'] = reply_to_email
 
         return msg
 
@@ -67,7 +67,7 @@ class Mailer(object):
         msg['To'] = to_email
         msg['Date'] = email.utils.formatdate()
         if (reply_to_email):
-          msg['Reply-To'] = reply_to_email
+            msg['Reply-To'] = reply_to_email
 
         msg.attach(email.mime.text.MIMEText(body_text, 'plain', 'utf-8'))
         msg.attach(email.mime.text.MIMEText(body_html, 'html', 'utf-8'))
