@@ -101,6 +101,7 @@ DEFAULT_CONFIG = {
             'html': False,
             'to': '',
             'from': '',
+            'reply_to': '',
             'subject': '{count} changes: {jobs}',
             'method': 'smtp',
             'smtp': {
