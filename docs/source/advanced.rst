@@ -181,6 +181,12 @@ or ignore all HTTP errors if you like:
    url: https://example.com/
    ignore_http_error_codes: 4xx, 5xx
 
+You can also ignore incomplete reads:
+
+.. code-block:: yaml
+
+   url: "https://example.com/"
+   ignore_incomplete_reads: true
 
 Overriding the content encoding
 -------------------------------
