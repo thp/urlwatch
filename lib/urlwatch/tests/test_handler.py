@@ -145,7 +145,7 @@ def test_tags_empty():
         try:
             urlwatcher.run_jobs()
 
-            assert len(urlwatcher.report.job_states) == 0
+            assert len(urlwatcher.report.job_states) == 3
         finally:
             cache_storage.close()
 

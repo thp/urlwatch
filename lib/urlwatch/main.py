@@ -72,14 +72,15 @@ class Urlwatch(object):
         if not job.is_enabled():
             return False
 
-        if self.urlwatch_config.tags:
-            # If we're using tags, check the job matches the tags
+        # Tag mode and tag(s) were specified
+        if self.urlwatch_config.tags and self.urlwatch_config.tag_set:
             return job.matches_tags(self.urlwatch_config.tag_set)
 
-        # If we're using indexes, no indexes means all jobs
-        if self.urlwatch_config.idx_set:
+        # Index mode and index(es) were specified
+        if not self.urlwatch_config.tags and self.urlwatch_config.idx_set:
             return idx in self.urlwatch_config.idx_set
 
+        # Either mode, and no jobs were specified
         return True
 
     def check_directories(self):
