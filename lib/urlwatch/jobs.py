@@ -35,7 +35,7 @@ import os
 import re
 import subprocess
 import textwrap
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Set, FrozenSet
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -199,7 +199,7 @@ class Job(JobBase):
     __required__ = ()
     __optional__ = ('name', 'tags', 'filter', 'max_tries', 'diff_tool', 'compared_versions', 'diff_filter', 'enabled', 'treat_new_as_changed', 'user_visible_url')
 
-    def matches_tags(self, tags: set[str]):
+    def matches_tags(self, tags: Set[str]):
         return self.tags & tags
 
     # determine if hyperlink "a" tag is used in HtmlReporter
@@ -213,7 +213,7 @@ class Job(JobBase):
         return self.enabled is None or self.enabled
 
     @property
-    def tags(self) -> Optional[frozenset[str]]:
+    def tags(self) -> Optional[FrozenSet[str]]:
         return self._tags
 
     @tags.setter
