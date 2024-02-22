@@ -69,6 +69,7 @@ At the moment, the following reporters are built-in:
 - **prowl**: Send a detailed notification via prowlapp.com
 - **pushbullet**: Send summary via pushbullet.com
 - **pushover**: Send summary via pushover.net
+- **sendmail**: Pipe a message to the system sendmail command
 - **shell**: Pipe a message to a shell command
 - **slack**: Send a message to a Slack channel
 - **stdout**: Print summary on stdout (the console)
