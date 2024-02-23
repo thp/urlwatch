@@ -301,6 +301,7 @@ You can send email via the system's sendmail command provided by the MTA. You ne
       email:
         enabled: true
         from: 'postmaster@example.com'
+        to: 'recipient@bar.com'
         method: sendmail
 
 
