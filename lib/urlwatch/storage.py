@@ -278,7 +278,7 @@ class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
                 print('')
                 print('The file', file_edit, 'was NOT updated.')
                 user_input = input("Do you want to retry the same edit? (y/n)")
-                if user_input.lower()[0] == 'y':
+                if user_input.lower()[:1] == 'y':
                     continue
                 print('Your changes have been saved in', file_edit)
                 return 1
