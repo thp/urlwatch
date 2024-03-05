@@ -87,6 +87,7 @@ class JobState(object):
             self.tries = 0
         if self.job.compared_versions and self.job.compared_versions > 1:
             self.history_data = self.cache_storage.get_history_data(guid, self.job.compared_versions)
+        self.loaded = True
 
     def save(self):
         if self.new_data is None and self.exception is not None:
@@ -103,7 +104,7 @@ class JobState(object):
 
         try:
             try:
-                self.load()
+                assert self.loaded, "Job must be loaded before processing"
 
                 if self.old_data is None and getattr(self.job, 'treat_new_as_changed', False):
                     # Force creation of a diff for "NEW"ly found items by pretending we had an empty page before
