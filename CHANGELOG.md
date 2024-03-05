@@ -18,6 +18,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Remove EOL'd Python 3.7 (new minimum requirement is Python 3.8), add Python 3.12 testing
 - Adds optional `reply_to` option for email reporters (#794 by trevorshannon)
 - Replace the dead dependency `appdirs` with `platformdirs` (#811 by Maxime Werlen)
+- New concurrency test (#806 by Jamstah)
 
 ### Fixed
 
