@@ -12,6 +12,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - New option `ignore_incomplete_reads` (Requested in #725 by wschoot, contributed in #787 by wfrisch)
 - New option `wait_for` in browser jobs (Requested in #763 by yuis-ice, contributed in #810 by jamstah)
 - Added tags to jobs and the ability to select them at the command line (#789 by jamstah)
+- New filter `re.findall` (Requested in #804 by f0sh, contributed in #805 by jamstah)
 
 ### Changed
 
