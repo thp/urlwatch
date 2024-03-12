@@ -59,9 +59,14 @@ def run_jobs(urlwatcher):
     report = urlwatcher.report
 
     logger.debug('Processing %d jobs (out of %d)', len(jobs), len(urlwatcher.jobs))
+
+    job_states = [JobState(cache_storage, job) for job in jobs]
+    for job_state in job_states:
+        job_state.load()
+
     with contextlib.ExitStack() as exit_stack:
         for job_state in run_parallel(lambda job_state: job_state.process(),
-                                      (exit_stack.enter_context(JobState(cache_storage, job)) for job in jobs)):
+                                      (exit_stack.enter_context(job_state) for job_state in job_states)):
             logger.debug('Job finished: %s', job_state.job)
 
             if not job_state.job.max_tries:
