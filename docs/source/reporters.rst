@@ -364,7 +364,7 @@ The ``insecure_password`` key will be preferred over the data stored in
 the keyring. Please note that as the name says, storing the password as
 plaintext in the configuration is insecure and bad practice, but for an
 e-mail account that’s only dedicated for sending mails this might be a
-way. **Never ever use this with your your primary e-mail account!**
+way. **Never ever use this with your primary e-mail account!**
 Seriously! Create a throw-away GMail (or other) account just for sending
 out those e-mails or use local ``sendmail`` with a mail server
 configured instead of relying on SMTP and password auth.
