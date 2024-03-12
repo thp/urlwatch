@@ -61,7 +61,7 @@ The list of built-in reporters can be retrieved using::
 At the moment, the following reporters are built-in:
 
 - **discord**: Send a message to a Discord channel
-- **email**: Send summary via e-mail / SMTP
+- **email**: Send summary via e-mail / SMTP / sendmail
 - **ifttt**: Send summary via IFTTT
 - **mailgun**: Send e-mail via the Mailgun service
 - **matrix**: Send a message to a room using the Matrix protocol
@@ -289,6 +289,21 @@ public Matrix room, as the messages quickly become noisy:
      footer: false
      minimal: true
      enabled: true
+
+E-Mail via sendmail
+---------------------
+
+You can send email via the system's ``sendmail`` command provided by the MTA. You need to set ``method: sendmail`` in the config file:
+
+.. code:: yaml
+
+    report:
+      email:
+        enabled: true
+        from: 'postmaster@example.com'
+        to: 'recipient@bar.com'
+        method: sendmail
+
 
 E-Mail via GMail SMTP
 ---------------------
