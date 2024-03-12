@@ -95,16 +95,16 @@ class UrlwatchCommand:
         return 0
 
     def list_urls(self):
-        for idx, job in enumerate(self.urlwatcher.jobs):
+        for idx, job in enumerate(self.urlwatcher.jobs, 1):
             if self.urlwatch_config.verbose:
-                print('%d: %s' % (idx + 1, repr(job)))
+                print('%d: %s' % (idx, repr(job)))
             else:
                 pretty_name = job.pretty_name()
                 location = job.get_location()
                 if pretty_name != location:
-                    print('%d: %s ( %s )' % (idx + 1, pretty_name, location))
+                    print('%d: %s ( %s )' % (idx, pretty_name, location))
                 else:
-                    print('%d: %s' % (idx + 1, pretty_name))
+                    print('%d: %s' % (idx, pretty_name))
         return 0
 
     def _find_job(self, query):

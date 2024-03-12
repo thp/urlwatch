@@ -1,0 +1,17 @@
+---
+name: UTC
+command: date -u
+tags:
+  - arg
+  - utc
+---
+name: RFC
+command: date -R
+tags:
+  - arg
+  - rfc
+---
+name: Local
+command: date
+tags:
+  - local
