@@ -197,9 +197,9 @@ class JobBase(object, metaclass=TrackSubClasses):
 
 class Job(JobBase):
     __required__ = ()
-    __optional__ = ('name', 'tags', 'filter', 'max_tries', 'diff_tool', 'compared_versions', 'diff_filter', 'enabled', 'treat_new_as_changed', 'user_visible_url')
+    __optional__ = ('name', 'filter', 'max_tries', 'diff_tool', 'compared_versions', 'diff_filter', 'enabled', 'treat_new_as_changed', 'user_visible_url', 'tags')
 
-    def matches_tags(self, tags: Set[str]):
+    def matching_tags(self, tags: Set[str]) -> Set[str]:
         return self.tags & tags
 
     # determine if hyperlink "a" tag is used in HtmlReporter

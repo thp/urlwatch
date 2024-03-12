@@ -74,7 +74,7 @@ class Urlwatch(object):
 
         # Tag mode and tag(s) were specified
         if self.urlwatch_config.tags and self.urlwatch_config.tag_set:
-            return job.matches_tags(self.urlwatch_config.tag_set)
+            return job.matching_tags(self.urlwatch_config.tag_set)
 
         # Index mode and index(es) were specified
         if not self.urlwatch_config.tags and self.urlwatch_config.idx_set:

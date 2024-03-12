@@ -23,9 +23,9 @@ This manpage describes the CLI tool.
 
 positional arguments:
    JOB
-          indexes or tags of job(s) to run, depending on --tags.
-          If using indexes, they are as numbered according to the --list command.
-          If none are specified, then all jobs will be run.
+          indexes or tags of job(s) to run.
+          If --tags is set, each JOB is a tag,
+          if not, each JOB is an index numbered according to the --list command.
 
 optional arguments:
    -h, --help

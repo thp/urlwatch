@@ -110,6 +110,8 @@ class CommandConfig(BaseConfig):
         args = parser.parse_args(cmdline_args)
 
         if args.tags:
+            if not args.joblist:
+                raise SystemExit("No tags specified")
             self.tag_set = frozenset(args.joblist)
         else:
             try:

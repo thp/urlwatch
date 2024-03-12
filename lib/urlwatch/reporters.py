@@ -313,7 +313,7 @@ class TextReporter(ReporterBase):
             sep = (line_length * '=') or None
             yield from (part for part in itertools.chain(
                 (sep,),
-                ('%02d. %s' % (idx + 1, line) for idx, line in enumerate(summary)),
+                ('%02d. %s' % (idx, line) for idx, line in enumerate(summary, 1)),
                 (sep, ''),
             ) if part is not None)
 
@@ -860,7 +860,7 @@ class MarkdownReporter(ReporterBase):
         # The footer/summary lengths are the sum of the length of their parts
         # plus the space taken up by newlines.
         if summary:
-            summary = ['%d. %s' % (idx + 1, line) for idx, line in enumerate(summary)]
+            summary = ['%d. %s' % (idx, line) for idx, line in enumerate(summary, 1)]
             summary_len = sum(len(part) for part in summary) + len(summary) - 1
         else:
             summary_len = 0

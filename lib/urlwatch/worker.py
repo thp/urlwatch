@@ -55,7 +55,7 @@ def run_jobs(urlwatcher):
         raise ValueError(f'All job indices must be between 1 and {len(urlwatcher.jobs)}: {urlwatcher.urlwatch_config.joblist}')
     cache_storage = urlwatcher.cache_storage
     jobs = [job.with_defaults(urlwatcher.config_storage.config)
-            for (idx, job) in enumerate(urlwatcher.jobs)
+            for (idx, job) in enumerate(urlwatcher.jobs, 1)
             if urlwatcher.should_run(idx, job)
             ]
     report = urlwatcher.report

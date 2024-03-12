@@ -128,7 +128,7 @@ def prepare_tags_test(args):
     return urlwatcher, cache_storage
 
 
-def test_tags_none():
+def test_idxs_none():
     with teardown_func():
         urlwatcher, cache_storage = prepare_tags_test([])
         try:
@@ -139,15 +139,48 @@ def test_tags_none():
             cache_storage.close()
 
 
-def test_tags_empty():
+def test_idxs_zero():
     with teardown_func():
-        urlwatcher, cache_storage = prepare_tags_test(['--tags'])
+        urlwatcher, cache_storage = prepare_tags_test(['0'])
+        try:
+            with pytest.raises(ValueError):
+                urlwatcher.run_jobs()
+        finally:
+            cache_storage.close()
+
+
+def test_idxs_massive():
+    with teardown_func():
+        urlwatcher, cache_storage = prepare_tags_test(['99999'])
+        try:
+            with pytest.raises(ValueError):
+                urlwatcher.run_jobs()
+        finally:
+            cache_storage.close()
+
+
+def test_idxs_nan():
+    with teardown_func():
+        with pytest.raises(SystemExit):
+            ConfigForTest('', '', '', '', True, ['NaN'])
+
+
+def test_idxs_one():
+    with teardown_func():
+        urlwatcher, cache_storage = prepare_tags_test(['1'])
         try:
             urlwatcher.run_jobs()
 
-            assert len(urlwatcher.report.job_states) == 3
+            assert len(urlwatcher.report.job_states) == 1
+            assert urlwatcher.report.job_states[0].job.name == "UTC"
         finally:
             cache_storage.close()
+
+
+def test_tags_empty():
+    with teardown_func():
+        with pytest.raises(SystemExit):
+            ConfigForTest('', '', '', '', True, ['--tags'])
 
 
 def test_tags_no_match():
