@@ -293,7 +293,7 @@ public Matrix room, as the messages quickly become noisy:
 E-Mail via sendmail
 ---------------------
 
-You can send email via the system's sendmail command provided by the MTA. You need to set "method: sendmail" in the config file.
+You can send email via the system's ``sendmail`` command provided by the MTA. You need to set ``method: sendmail`` in the config file:
 
 .. code:: yaml
 
