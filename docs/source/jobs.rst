@@ -90,6 +90,9 @@ Job-specific optional keys:
 
 - ``wait_until``: Either ``load``, ``domcontentloaded``, ``networkidle``, or
   ``commit`` (see :ref:`advanced_topics`)
+- ``wait_for``: A CSS or XPath selector based on the
+  _`Playwright Locator`: https://playwright.dev/python/docs/locators#locate-by-css-or-xpath
+  spec. The job will wait for the default timeout of 30 seconds.
 - ``useragent``: ``User-Agent`` header used for requests (otherwise browser default is used)
 - ``browser``:  Either ``chromium``, ``chrome``, ``chrome-beta``, ``msedge``,
   ``msedge-beta``, ``msedge-dev``, ``firefox``, ``webkit`` (must be installed with ``playwright install``)
