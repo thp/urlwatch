@@ -15,7 +15,7 @@ Mandatory Packages
 -  `minidb <https://thp.io/2010/minidb/>`__
 -  `requests <http://python-requests.org/>`__
 -  `keyring <https://github.com/jaraco/keyring/>`__
--  `appdirs <https://github.com/ActiveState/appdirs>`__
+-  `platformdirs <https://github.com/platformdirs/platformdirs>`__
 -  `lxml <https://lxml.de>`__
 -  `cssselect <https://cssselect.readthedocs.io>`__
 
