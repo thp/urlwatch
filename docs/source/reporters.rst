@@ -61,7 +61,7 @@ The list of built-in reporters can be retrieved using::
 At the moment, the following reporters are built-in:
 
 - **discord**: Send a message to a Discord channel
-- **email**: Send summary via e-mail / SMTP
+- **email**: Send summary via e-mail / SMTP / sendmail
 - **ifttt**: Send summary via IFTTT
 - **mailgun**: Send e-mail via the Mailgun service
 - **matrix**: Send a message to a room using the Matrix protocol
@@ -290,6 +290,21 @@ public Matrix room, as the messages quickly become noisy:
      minimal: true
      enabled: true
 
+E-Mail via sendmail
+---------------------
+
+You can send email via the system's ``sendmail`` command provided by the MTA. You need to set ``method: sendmail`` in the config file:
+
+.. code:: yaml
+
+    report:
+      email:
+        enabled: true
+        from: 'postmaster@example.com'
+        to: 'recipient@bar.com'
+        method: sendmail
+
+
 E-Mail via GMail SMTP
 ---------------------
 
@@ -364,7 +379,7 @@ The ``insecure_password`` key will be preferred over the data stored in
 the keyring. Please note that as the name says, storing the password as
 plaintext in the configuration is insecure and bad practice, but for an
 e-mail account that’s only dedicated for sending mails this might be a
-way. **Never ever use this with your your primary e-mail account!**
+way. **Never ever use this with your primary e-mail account!**
 Seriously! Create a throw-away GMail (or other) account just for sending
 out those e-mails or use local ``sendmail`` with a mail server
 configured instead of relying on SMTP and password auth.
