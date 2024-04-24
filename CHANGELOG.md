@@ -26,6 +26,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Fix compatibility with lxml >= 5 which caused the CSS Selector filter to fail (#783 reported by jamesquilty, PR #786 by jamstah)
 - Fix pep8 test to ignore files in the site-packages directory for cases where the venv is in the project directory (#788 by jamstah)
 - Fix HTML diff table rendering for long line lengths (#793 by trevorshannon)
+- Fix IndexError after failed edit (#801 by jwilk)
 
 ## [2.28] -- 2023-05-03
 
