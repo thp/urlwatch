@@ -64,12 +64,13 @@ class CommandConfig(BaseConfig):
         self.parse_args(args)
 
     def parse_args(self, cmdline_args):
-
         parser = argparse.ArgumentParser(description=urlwatch.__doc__,
                                          formatter_class=argparse.RawDescriptionHelpFormatter)
-        parser.add_argument('joblist', metavar='JOB', type=int, nargs="*", help='index of job(s) to run, as numbered according to the --list command. If none specified, then all jobs will be run.')
+        parser.add_argument('joblist', metavar='JOB', type=str, nargs="*", help='indexes or tags of job(s) to run, depending on --tags. If using indexes, they are as numbered according to the --list command. If none are specified, then all jobs will be run.')
+        parser.add_argument('--tags', action='store_true', help='Use tags instead of indexes to select jobs to run')
         parser.add_argument('--version', action='version', version='%(prog)s {}'.format(urlwatch.__version__))
         parser.add_argument('-v', '--verbose', action='store_true', help='show debug output')
+
         group = parser.add_argument_group('files and directories')
         group.add_argument('--urls', metavar='FILE', help='read job list (URLs) from FILE',
                            default=self.urls)
@@ -95,10 +96,12 @@ class CommandConfig(BaseConfig):
         group.add_argument('--test-diff-filter', metavar='JOB',
                            help='test diff filter output of job by location or index (needs at least 2 snapshots)')
         group.add_argument('--dump-history', metavar='JOB', help='dump historical cached data for a job')
+
         group = parser.add_argument_group('interactive commands ($EDITOR/$VISUAL)')
         group.add_argument('--edit', action='store_true', help='edit URL/job list')
         group.add_argument('--edit-config', action='store_true', help='edit configuration file')
         group.add_argument('--edit-hooks', action='store_true', help='edit hooks script')
+
         group = parser.add_argument_group('miscellaneous')
         group.add_argument('--features', action='store_true', help='list supported jobs/filters/reporters')
         group.add_argument('--gc-cache', metavar='RETAIN_LIMIT', type=int, help='remove old cache entries, keeping the latest RETAIN_LIMIT (default: 1)',
@@ -106,6 +109,16 @@ class CommandConfig(BaseConfig):
 
         args = parser.parse_args(cmdline_args)
 
-        for i, arg in enumerate(vars(args)):
+        if args.tags:
+            if not args.joblist:
+                raise SystemExit("No tags specified")
+            self.tag_set = frozenset(args.joblist)
+        else:
+            try:
+                self.idx_set = frozenset(int(s) for s in args.joblist)
+            except ValueError as e:
+                parser.error(e)
+
+        for arg in vars(args):
             argval = getattr(args, arg)
             setattr(self, arg, argval)

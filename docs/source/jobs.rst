@@ -172,6 +172,7 @@ Optional keys for all job types
 -------------------------------
 
 - ``name``: Human-readable name/label of the job
+- ``tags``: Array of tags
 - ``filter``: :doc:`filters` (if any) to apply to the output (can be tested with ``--test-filter``)
 - ``max_tries``: After this many sequential failed runs, the error will be reported rather than ignored
 - ``diff_tool``: Command to a custom tool for generating diff text
