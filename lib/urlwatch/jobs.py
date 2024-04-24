@@ -413,7 +413,7 @@ class BrowserJob(Job):
 
     __required__ = ('navigate',)
 
-    __optional__ = ('wait_until', 'useragent', 'browser')
+    __optional__ = ('wait_until', 'wait_for', 'useragent', 'browser')
 
     def get_location(self):
         return self.user_visible_url or self.navigate
@@ -433,4 +433,9 @@ class BrowserJob(Job):
                 self.wait_until = 'networkidle'
 
             page.goto(self.navigate, wait_until=self.wait_until)
+
+            if self.wait_for:
+                locator = page.locator(self.wait_for)
+                locator.wait_for()
+
             return page.content()
