@@ -277,11 +277,10 @@ class BaseTextualFileStorage(BaseFileStorage, metaclass=ABCMeta):
                 print('======')
                 print('')
                 print('The file', file_edit, 'was NOT updated.')
-                user_input = input("Do you want to retry the same edit? (y/n)")
-                if user_input.lower()[0] == 'y':
-                    continue
-                print('Your changes have been saved in', file_edit)
-                return 1
+                user_input = input("Do you want to retry the same edit? (Y/n)")
+                if user_input.lower()[:1] == 'n':
+                    print('Your changes have been saved in', file_edit)
+                    return 1
 
         atomic_rename(file_edit, self.filename)
         print('Saving edit changes in', self.filename)

@@ -10,21 +10,25 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - New `enabled` option for all jobs. Set to false to disable a job without needing to remove it or comment it out (Requested in #625 by snowman, contributed in #785 by jamstah)
 - New option `ignore_incomplete_reads` (Requested in #725 by wschoot, contributed in #787 by wfrisch)
+- New option `wait_for` in browser jobs (Requested in #763 by yuis-ice, contributed in #810 by jamstah)
 - Added tags to jobs and the ability to select them at the command line (#789 by jamstah)
 
 ### Changed
 
 - Remove EOL'd Python 3.7 (new minimum requirement is Python 3.8), add Python 3.12 testing
 - Adds optional `reply_to` option for email reporters (#794 by trevorshannon)
+- Replace the dead dependency `appdirs` with `platformdirs` (#811 by Maxime Werlen)
 
 ### Fixed
 
+- `email` reporter: Allow multiple recipients for `sendmail` method (#797, by monperrus)
 - Fix documentation for watching Github tags and releases, again (#723)
 - Fix `--test-reporter` command-line option so `separate` configuration option is no longer ignored when sending test notifications (#772, by marunjar)
 - Fix line height and dark mode regression (#774 reported by kongomongo, PRs #777 and #778 by trevorshannon)
 - Fix compatibility with lxml >= 5 which caused the CSS Selector filter to fail (#783 reported by jamesquilty, PR #786 by jamstah)
 - Fix pep8 test to ignore files in the site-packages directory for cases where the venv is in the project directory (#788 by jamstah)
 - Fix HTML diff table rendering for long line lengths (#793 by trevorshannon)
+- Fix IndexError after failed edit (#801 by jwilk)
 
 ## [2.28] -- 2023-05-03
 
