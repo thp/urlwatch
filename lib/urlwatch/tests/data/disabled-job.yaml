@@ -1,6 +1,15 @@
 name: "1"
-url: "|echo job 1"
+command: "echo job 1"
 enabled: false
 ---
 name: "2"
-url: "|echo job 2"
+command: "echo job 2"
+---
+name: "3"
+command: "echo job 3"
+---
+name: "4"
+command: "echo job 4"
+---
+name: "5"
+command: "echo job 5"

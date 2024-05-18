@@ -232,7 +232,7 @@ def test_disabled_job():
             urlwatcher = Urlwatch(urlwatch_config, config_storage, cache_storage, urls_storage)
             urlwatcher.run_jobs()
 
-            assert len(urlwatcher.report.job_states) == 1
+            assert len(urlwatcher.report.job_states) == 4
         finally:
             cache_storage.close()
 

@@ -519,8 +519,8 @@ class CacheDirStorage(CacheStorage):
 
         return data, timestamp, None, None
 
-    def save(self, job, guid, data, timestamp, etag=None):
-        # Timestamp and ETag are always ignored
+    def save(self, job, guid, data, timestamp, tries, etag=None):
+        # Timestamp, tries and ETag are always ignored
         filename = self._get_filename(guid)
         with open(filename, 'w+') as fp:
             fp.write(data)
