@@ -76,6 +76,12 @@ job list management:
    --delete JOB
           delete job by location or index
 
+   --enable JOB
+          enable job by location or index
+
+   --disable JOB
+          delete job by location or index
+
    --change_location JOB NEW_LOCATION
           change the location of an existing job by location or index
 

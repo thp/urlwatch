@@ -199,6 +199,24 @@ class UrlwatchCommand:
                 print('Not found: %r' % (self.urlwatch_config.delete,))
                 save = False
 
+        if self.urlwatch_config.enable is not None:
+            job = self._find_job(self.urlwatch_config.enable)
+            if job is not None:
+                job.enabled = True
+                print(f'Enabled {job!r}')
+            else:
+                print(f'Not found: {self.urlwatch_config.enable!r}')
+                save = False
+
+        if self.urlwatch_config.disable is not None:
+            job = self._find_job(self.urlwatch_config.disable)
+            if job is not None:
+                job.enabled = False
+                print(f'Disabled {job!r}')
+            else:
+                print(f'Not found: {self.urlwatch_config.disable!r}')
+                save = False
+
         if self.urlwatch_config.add is not None:
             # Allow multiple specifications of filter=, so that multiple filters can be specified on the CLI
             items = [item.split('=', 1) for item in self.urlwatch_config.add.split(',')]
@@ -262,6 +280,8 @@ class UrlwatchCommand:
             sys.exit(self.list_urls())
         if (self.urlwatch_config.add is not None
                 or self.urlwatch_config.delete is not None
+                or self.urlwatch_config.enable is not None
+                or self.urlwatch_config.disable is not None
                 or self.urlwatch_config.change_location is not None):
             sys.exit(self.modify_urls())
 

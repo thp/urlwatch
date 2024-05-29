@@ -91,6 +91,8 @@ class CommandConfig(BaseConfig):
         group.add_argument('--list', action='store_true', help='list jobs')
         group.add_argument('--add', metavar='JOB', help='add job (key1=value1,key2=value2,...)')
         group.add_argument('--delete', metavar='JOB', help='delete job by location or index')
+        group.add_argument('--enable', metavar='JOB', help='enable job by location or index')
+        group.add_argument('--disable', metavar='JOB', help='disable job by location or index')
         group.add_argument('--change-location', metavar=('JOB', 'NEW_LOCATION'), nargs=2, help='change the location of an existing job by location or index')
         group.add_argument('--test-filter', metavar='JOB', help='test filter output of job by location or index')
         group.add_argument('--test-diff-filter', metavar='JOB',
