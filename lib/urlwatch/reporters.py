@@ -1134,3 +1134,33 @@ class ShellReporter(TextReporter):
         exitcode = process.wait()
         if exitcode != 0:
             logger.error('Shell reporter {} exited with {}'.format(cmd, exitcode))
+
+
+class GotifyReporter(MarkdownReporter):
+    """Send a message to a gotify server"""
+    MAX_LENGTH = 2**14
+
+    __kind__ = 'gotify'
+
+    def submit(self):
+        body_markdown = '\n'.join(super().submit(self.MAX_LENGTH))
+        if not body_markdown:
+            logger.debug('Not sending message to gotify server (no changes)')
+            return
+
+        server_url = self.config['server_url']
+        url = f'{server_url}/message'
+
+        token = self.config['token']
+        headers = {'Authorization': f'Bearer {token}'}
+
+        requests.post(url, headers=headers, json={
+            "extras": {
+                "client::display": {
+                    "contentType": "text/markdown"
+                }
+            },
+            'message': body_markdown,
+            'priority': self.config['priority'],
+            'title': self.config['title']
+        })
