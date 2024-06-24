@@ -35,7 +35,7 @@ import os
 import re
 import subprocess
 import textwrap
-from typing import Iterable, Optional, Set, FrozenSet
+from typing import Iterable, Optional, Set, FrozenSet, Sequence
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -220,6 +220,8 @@ class Job(JobBase):
     def tags(self, value: Optional[Iterable[str]]):
         if value is None:
             self._tags = None
+        elif isinstance(value, str):
+            self._tags = frozenset([str])
         else:
             self._tags = frozenset(value)
 
