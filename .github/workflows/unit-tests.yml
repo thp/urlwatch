@@ -32,7 +32,8 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --requirement requirements.txt
         python -m pip install pycodestyle==2.6.0 pytest
-        sudo apt install -y build-essential libpoppler-cpp-dev pkg-config python3-dev tesseract-ocr
+        sudo apt-get update
+        sudo apt-get install -y build-essential libpoppler-cpp-dev pkg-config python3-dev tesseract-ocr
         python -m pip install pdftotext docutils pygments pytesseract pillow jq
     - name: Test with pytest
       run: pytest -v
