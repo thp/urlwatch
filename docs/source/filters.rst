@@ -77,6 +77,7 @@ At the moment, the following filters are built-in:
 - **ical2text**: Convert `iCalendar`_ to plaintext
 - **ocr**: Convert text in images to plaintext using Tesseract OCR
 - **re.sub**: Replace text with regular expressions using Python's re.sub
+- **re.findall**: Find all non-overlapping matches using Python's re.findall
 - **reverse**: Reverse input items
 - **sha1sum**: Calculate the SHA-1 checksum of the content
 - **shellpipe**: Filter using a shell command
@@ -485,12 +486,13 @@ Alternatively, ``jq`` can be used for filtering:
    filter:
      - jq: '.[0].name'
 
-Remove or replace text using regular expressions
-------------------------------------------------
+Find, remove or replace text using regular expressions
+------------------------------------------------------
 
-Just like Python’s ``re.sub`` function, there’s the possibility to apply
-a regular expression and either remove of replace the matched text. The
-following example applies the filter 3 times:
+You can use ``re.sub`` and ``re.findall`` to apply regular expressions.
+
+``re.sub`` can be used to remove or replace all non-overlapping instances
+of matched text. The following example applies the filter 3 times:
 
 1. Just specifying a string as the value will replace the matches with
    the empty string.
@@ -499,11 +501,7 @@ following example applies the filter 3 times:
 3. You can use groups (``()``) and back-reference them with ``\1``
    (etc..) to put groups into the replacement string.
 
-All features are described in Python’s
-`re.sub <https://docs.python.org/3/library/re.html#re.sub>`__
-documentation (the ``pattern`` and ``repl`` values are passed to this
-function as-is, with the value of ``repl`` defaulting to the empty
-string).
+``repl`` defaults to the empty string, which will remove matched strings.
 
 .. code:: yaml
 
@@ -517,15 +515,42 @@ string).
            pattern: '</([^>]*)>'
            repl: '<END OF TAG \1>'
 
-If you want to enable certain flags (e.g. ``re.MULTILINE``) in the
-call, this is possible by inserting an "inline flag" documented in
-`flags in re.compile`_, here are some examples:
+``re.findall`` can be used to find all non-overlapping matches of a
+regular expression. Each match is output on its own line. The following
+example applies the filter twice:
+
+1. It uses a group (``()``) and back-reference (``\1``) to extract a
+   date from the input string.
+2. It breaks the numbers in the date out into separate lines.
+
+If ``repl`` is not specified, the full match will be included in the output.
+
+.. code:: yaml
+
+   url: https://example.com/regex-findall.html
+   filter:
+       - re.findall:
+           pattern: 'The next draw is on (\d{4}-\d{2}-\d{2}).'
+           repl: '\1'
+       - re.findall: '\d+'
+
+Note: When using HTML or XML, it is usually better to use CSS selectors or
+XPATH expressions. HTML and XML `cannot be parsed`_ properly using regular
+expressions. If the CSS selector or XPATH cannot provide the targeted
+selection required, using an ``html2text`` filter first then using
+``re.findall`` can be a good pattern.
+
+.. _`cannot be parsed`: https://stackoverflow.com/a/1732454/1047040
+
+If you want to enable flags (e.g. ``re.MULTILINE``) in ``re.sub``
+or ``re.findall`` filters, use an "inline flag", here are some
+examples:
 
 * ``re.MULTILINE``: ``(?m)`` (Makes ``^`` match start-of-line and ``$`` match end-of-line)
 * ``re.DOTALL``: ``(?s)`` (Makes ``.`` also match a newline)
 * ``re.IGNORECASE``: ``(?i)`` (Perform case-insensitive matching)
 
-.. _flags in re.compile: https://docs.python.org/3/library/re.html#re.compile
+.. _full re syntax: https://docs.python.org/3/library/re.html#regular-expression-syntax
 
 This allows you, for example, to remove all leading spaces (only
 space character and tab):
