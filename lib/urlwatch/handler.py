@@ -57,6 +57,7 @@ class JobState(object):
         self.timestamp = None
         self.current_timestamp = None
         self.exception = None
+        self.reported_count = 0
         self.traceback = None
         self.tries = 0
         self.etag = None
@@ -214,10 +215,10 @@ class Report(object):
         end = datetime.datetime.now()
         duration = (end - self.start)
 
-        ReporterBase.submit_all(self, self.job_states, duration)
+        return ReporterBase.submit_all(self, self.job_states, duration)
 
     def finish_one(self, name):
         end = datetime.datetime.now()
         duration = (end - self.start)
 
-        ReporterBase.submit_one(name, self, self.job_states, duration)
+        return ReporterBase.submit_one(name, self, self.job_states, duration)
