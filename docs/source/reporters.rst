@@ -214,6 +214,8 @@ When `colored` is true reports will be embedded in code section (with diff synta
 Gotify
 ------
 
+[Gotify](https://gotify.net/) is a server for sending and receiving messages in real-time through WebSockets.
+
 To push notifications to a gotify server you need an application token.
 
 You can create one for urlwatch like so:
