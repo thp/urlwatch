@@ -326,6 +326,32 @@ re_sub_multiline:
     One Line
     
     Another Line
+re_findall:
+  filter:
+    - re.findall: '-[a-z][a-z][a-z]-'
+  data: |-
+    Some-abc-things-def-on-ghi-this-line-and
+    some-jkl-more-mno-here
+  expected_result: |-
+    -abc-
+    -def-
+    -ghi-
+    -jkl-
+    -mno-
+re_findall_repl:
+  filter:
+    - re.findall:
+        pattern: '-([a-z])([a-z])([a-z])-'
+        repl: '\3\2\1'
+  data: |-
+    Some-abc-things-def-on-ghi-this-line-and
+    some-jkl-more-mno-here
+  expected_result: |-
+    cba
+    fed
+    ihg
+    lkj
+    onm
 strip:
   filter: strip
   data: "  The rose is red;   \n\nthe violet's blue.\nSugar is sweet,       \nand so are you.   "
