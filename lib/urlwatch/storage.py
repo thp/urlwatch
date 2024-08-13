@@ -157,7 +157,7 @@ DEFAULT_CONFIG = {
             'priority': 0,
             'server_url': '',
             'title': None,
-            'token': ''
+            'token': '',
         },
         'matrix': {
             'enabled': False,
