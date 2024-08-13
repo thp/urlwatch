@@ -15,6 +15,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Added tags to jobs and the ability to select them at the command line (#789 by jamstah)
 - New filter `re.findall` (Requested in #804 by f0sh, contributed in #805 by jamstah)
 - Added tags to jobs and the ability to select them at the command line (#789, #824 by jamstah)
+- New reporter: `gotify` (#823 by franco-righetti)
 
 ### Changed
 

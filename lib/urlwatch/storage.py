@@ -152,6 +152,13 @@ DEFAULT_CONFIG = {
             'webhook_url': '',
             'max_message_length': 2000,
         },
+        'gotify': {
+            'enabled': False,
+            'priority': 0,
+            'server_url': '',
+            'title': None,
+            'token': '',
+        },
         'matrix': {
             'enabled': False,
             'homeserver': '',
