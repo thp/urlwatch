@@ -1138,7 +1138,7 @@ class ShellReporter(TextReporter):
 
 class GotifyReporter(MarkdownReporter):
     """Send a message to a gotify server"""
-    MAX_LENGTH = 16*1024
+    MAX_LENGTH = 16 * 1024
 
     __kind__ = 'gotify'
 
