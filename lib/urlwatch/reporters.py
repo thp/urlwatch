@@ -1157,10 +1157,10 @@ class GotifyReporter(MarkdownReporter):
         requests.post(url, headers=headers, json={
             "extras": {
                 "client::display": {
-                    "contentType": "text/markdown"
-                }
+                    "contentType": "text/markdown",
+                },
             },
             'message': body_markdown,
             'priority': self.config['priority'],
-            'title': self.config['title']
+            'title': self.config['title'],
         })
