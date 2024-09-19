@@ -23,6 +23,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Adds optional `reply_to` option for email reporters (#794 by trevorshannon)
 - Replace the dead dependency `appdirs` with `platformdirs` (#811 by Maxime Werlen, #819 via e-dschungel)
 - New concurrency test (#806 by Jamstah)
+- `jobs.yaml` sanity checks now allows the file to be owned by `root` (#828)
 
 ### Fixed
 

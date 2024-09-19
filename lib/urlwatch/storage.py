@@ -317,14 +317,14 @@ class UrlsBaseFileStorage(BaseTextualFileStorage, metaclass=ABCMeta):
         dir_st = os.stat(dirname)
         if (dir_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
             shelljob_errors.append('%s is group/world-writable' % dirname)
-        if dir_st.st_uid != current_uid:
-            shelljob_errors.append('%s not owned by %s' % (dirname, get_current_user()))
+        if dir_st.st_uid not in (current_uid, 0):
+            shelljob_errors.append('%s not owned by %s or root' % (dirname, get_current_user()))
 
         file_st = os.stat(self.filename)
         if (file_st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0:
             shelljob_errors.append('%s is group/world-writable' % self.filename)
-        if file_st.st_uid != current_uid:
-            shelljob_errors.append('%s not owned by %s' % (self.filename, get_current_user()))
+        if file_st.st_uid not in (current_uid, 0):
+            shelljob_errors.append('%s not owned by %s or root' % (self.filename, get_current_user()))
 
         return shelljob_errors
 
