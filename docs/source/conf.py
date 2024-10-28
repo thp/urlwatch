@@ -23,11 +23,11 @@ sys.path.insert(0, os.path.join(ROOT, 'lib'))
 # -- Project information -----------------------------------------------------
 
 project = 'urlwatch'
-copyright = '2023 Thomas Perl'
+copyright = '2024 Thomas Perl'
 author = 'Thomas Perl'
 
 # The full version, including alpha/beta/rc tags
-release = '2.28'
+release = '2.29'
 
 
 # -- General configuration ---------------------------------------------------
