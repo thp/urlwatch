@@ -93,6 +93,7 @@ class CommandConfig(BaseConfig):
         group.add_argument('--delete', metavar='JOB', help='delete job by location or index')
         group.add_argument('--enable', metavar='JOB', help='enable job by location or index')
         group.add_argument('--disable', metavar='JOB', help='disable job by location or index')
+        group.add_argument('--prepare-jobs', action='store_true', help='run jobs without history')
         group.add_argument('--change-location', metavar=('JOB', 'NEW_LOCATION'), nargs=2, help='change the location of an existing job by location or index')
         group.add_argument('--test-filter', metavar='JOB', help='test filter output of job by location or index')
         group.add_argument('--test-diff-filter', metavar='JOB',
