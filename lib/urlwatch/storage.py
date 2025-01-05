@@ -567,6 +567,8 @@ class CacheMiniDBStorage(CacheStorage):
         self.db = minidb.Store(self.filename, debug=True, vacuum_on_close=False)
         self.db.register(CacheEntry)
 
+        self._cached_has_history_data_set = None
+
     def close(self):
         self.db.close()
         self.db = None
@@ -599,6 +601,15 @@ class CacheMiniDBStorage(CacheStorage):
                 if len(history) >= count:
                     break
         return history
+
+    def has_history_data(self, guid):
+        if not self._cached_has_history_data_set:
+            self._cached_has_history_data_set = frozenset(guid[0] for guid in
+                                                           list(CacheEntry.query(self.db, CacheEntry.c.guid,
+                                                                                 where=((CacheEntry.c.tries == 0)
+                                                                                        | (CacheEntry.c.tries == None)))  # noqa:E711
+                                                                ))
+        return guid in self._cached_has_history_data_set
 
     def save(self, job, guid, data, timestamp, tries, etag=None):
         self.db.save(CacheEntry(guid=guid, timestamp=timestamp, data=data, tries=tries, etag=etag))
@@ -687,6 +698,9 @@ class CacheRedisStorage(CacheStorage):
                     if len(history) >= count:
                         break
         return history
+
+    def has_history_data(self, guid):
+        return bool(self.get_history_data(guid))
 
     def save(self, job, guid, data, timestamp, tries, etag=None):
         r = {
