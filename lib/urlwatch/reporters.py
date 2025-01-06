@@ -28,6 +28,7 @@
 
 
 import asyncio
+from collections.abc import Mapping
 import difflib
 import re
 import email.utils
@@ -80,13 +81,20 @@ WDIFF_ADDED_RE = r'[{][+].*?[+][}]'
 WDIFF_REMOVED_RE = r'[\[][-].*?[-][]]'
 
 
+def filter_by_tags(job_states, tags):
+    if tags:
+        return [job_state for job_state in job_states if job_state.job.matching_tags(tags)]
+    return job_states
+
+
 class ReporterBase(object, metaclass=TrackSubClasses):
     __subclasses__ = {}
 
-    def __init__(self, report, config, job_states, duration):
+    def __init__(self, report, config, job_states, job_count_total, duration):
         self.report = report
         self.config = config
         self.job_states = job_states
+        self.job_count_total = job_count_total
         self.duration = duration
 
     def get_signature(self):
@@ -96,8 +104,10 @@ class ReporterBase(object, metaclass=TrackSubClasses):
                                                       copyright=urlwatch.__copyright__),
             'Website: {url}'.format(url=urlwatch.__url__),
             'Support urlwatch development: https://github.com/sponsors/thp',
-            'watched {count} URLs in {duration} seconds'.format(count=len(self.job_states),
-                                                                duration=self.duration.seconds),
+            'watched {total} URLs in {duration} seconds'.format(
+                count=len(self.job_states),
+                total=self.job_count_total,
+                duration=self.duration.seconds),
         )
 
     def convert(self, othercls):
@@ -106,7 +116,7 @@ class ReporterBase(object, metaclass=TrackSubClasses):
         else:
             config = {}
 
-        return othercls(self.report, config, self.job_states, self.duration)
+        return othercls(self.report, config, self.job_states, self.job_count_total, self.duration)
 
     @classmethod
     def get_base_config(cls, report):
@@ -123,35 +133,36 @@ class ReporterBase(object, metaclass=TrackSubClasses):
 
     @classmethod
     def submit_one(cls, name, report, job_states, duration):
-        subclass = cls.__subclasses__[name]
-        cfg = report.config['report'].get(name, {'enabled': False})
-        if cfg['enabled']:
-            base_config = subclass.get_base_config(report)
-            if base_config.get('separate', False):
-                for job_state in job_states:
-                    subclass(report, cfg, [job_state], duration).submit()
-            else:
-                subclass(report, cfg, job_states, duration).submit()
-        else:
-            raise ValueError('Reporter not enabled: {name}'.format(name=name))
-
-    @classmethod
-    def submit_all(cls, report, job_states, duration):
         any_enabled = False
-        for name, subclass in cls.__subclasses__.items():
-            cfg = report.config['report'].get(name, {})
+        subclass = cls.__subclasses__[name]
+        cfgs = report.config['report'].get(name, {'enabled': False})
+        if isinstance(cfgs, Mapping):
+            cfgs = [cfgs]
+
+        for cfg in cfgs:
             if cfg.get('enabled', False):
                 any_enabled = True
                 logger.info('Submitting with %s (%r)', name, subclass)
                 base_config = subclass.get_base_config(report)
+                matching_job_states = filter_by_tags(job_states, cfg.get("tags", []))
                 if base_config.get('separate', False):
-                    for job_state in job_states:
-                        subclass(report, cfg, [job_state], duration).submit()
+                    for job_state in matching_job_states:
+                        subclass(report, cfg, [job_state], len(job_states), duration).submit()
+                        job_state.reported_count = job_state.reported_count + 1
                 else:
-                    subclass(report, cfg, job_states, duration).submit()
+                    subclass(report, cfg, matching_job_states, len(job_states), duration).submit()
+                    for job_state in matching_job_states:
+                        job_state.reported_count = job_state.reported_count + 1
 
-        if not any_enabled:
-            logger.warning('No reporters enabled.')
+        return any_enabled
+
+    @classmethod
+    def submit_all(cls, report, job_states, duration):
+        any_enabled = False
+        for name in cls.__subclasses__.keys():
+            any_enabled = any_enabled | ReporterBase.submit_one(name, report, job_states, duration)
+
+        return any_enabled
 
     def submit(self):
         raise NotImplementedError()
