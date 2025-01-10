@@ -143,7 +143,7 @@ class UrlwatchCommand:
         return 0
 
     def prepare_jobs(self):
-        new_jobs = {*()}
+        new_jobs = set()
         for idx, job in enumerate(self.urlwatcher.jobs):
             has_history = self.urlwatcher.cache_storage.has_history_data(job.get_guid())
             if not has_history:
