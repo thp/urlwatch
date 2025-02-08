@@ -1113,11 +1113,13 @@ class ShellReporter(TextReporter):
     __kind__ = 'shell'
 
     def submit(self):
-        text = '\n'.join(super().submit()) + '\n'
+        text = '\n'.join(super().submit())
 
         if not text:
             logger.debug('Not calling shell reporter (no changes)')
             return
+
+        text = text + '\n'
 
         cmd = self.config['command']
 
