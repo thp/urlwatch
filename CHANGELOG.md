@@ -14,6 +14,10 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 - Remove EOL'd Python 3.8 (new minimum requirement is Python 3.9), add Python 3.13 testing
 
+### Fixed
+
+- Fix shell reporter running even when diff is empty (#837, by MarcPer)
+
 ## [2.29] -- 2024-10-28
 
 ### Added
