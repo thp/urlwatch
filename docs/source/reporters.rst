@@ -224,7 +224,7 @@ You can create one for urlwatch like so:
 2. Navigate to the “APPS” tab.
 3. Click on the “CREATE APPLICATION” button.
 4. Fill out the fields and press “CREATE”.
-6. Click on the eye icon of the newly created entry and copy the token.
+5. Click on the eye icon of the newly created entry and copy the token.
 
 Here is a sample configuration:
 
