@@ -475,7 +475,7 @@ and for Gitlab tags:
 
    url: https://gitlab.com/chinstrap/gammastep/-/tags
    filter:
-     - xpath: (//a[contains(@class,"item-title ref-name")])[1]
+     - xpath: (//*[@class="gl-font-bold"])[1]
      - html2text
 
 Alternatively, ``jq`` can be used for filtering:
