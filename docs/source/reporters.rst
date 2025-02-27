@@ -51,6 +51,34 @@ If the notification does not work, check your configuration and/or add
 the ``--verbose`` command-line option to show detailed debug logs.
 
 
+Common options
+--------------
+
+You can use a list of configurations under a reporter type to report
+different jobs with different configurations. You can select the jobs
+for each reporter by using tags.
+
+You can enable or disable a reporter by using the ``enabled`` option.
+
+For example:
+
+.. code:: yaml
+
+   telegram:
+   - bot_token: '999999999:3tOhy2CuZE0pTaCtszRfKpnagOG8IQbP5gf' # your bot api token
+     chat_id:
+       - '11111111'
+       - '22222222'
+     enabled: true
+     tags: [chat1]
+   - bot_token: '999999999:90jf403vnc09m0vi4s09t409jc09fj09sdc' # your bot api token
+     chat_id:
+       - '33333333'
+       - '44444444'
+     tags: [chat2]
+     enabled: true
+
+
 Built-in reporters
 ------------------
 
