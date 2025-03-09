@@ -17,6 +17,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Fixed
 
 - Fix shell reporter running even when diff is empty (#837, by MarcPer)
+- Filter for gitlab.com tags fixed (#839, by julianuu)
 
 ## [2.29] -- 2024-10-28
 
