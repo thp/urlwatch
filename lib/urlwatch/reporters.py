@@ -217,15 +217,22 @@ class HtmlReporter(ReporterBase):
         </head><body>
         """)
 
+        title_format = cfg.get('title', 'default')
+
         for job_state in self.report.get_filtered_job_states(self.job_states):
             job = job_state.job
 
             if job.location_is_url():
                 title = '<a href="{location}">{pretty_name}</a>'
-            elif job.pretty_name() != job.get_location():
-                title = '<span title="{location}">{pretty_name}</span>'
-            else:
+            elif title_format == "location":
                 title = '{location}'
+            elif title_format == "pretty":
+                title = '{pretty_name}'
+            else:  # default
+                if job.pretty_name() != job.get_location():
+                    title = '<span title="{location}">{pretty_name}</span>'
+                else:
+                    title = '{location}'
             title = '<h2><span class="verb">{verb}:</span> ' + title + '</h2>'
 
             yield SafeHtml(title).format(verb=job_state.verb,
@@ -292,14 +299,20 @@ class TextReporter(ReporterBase):
         line_length = cfg['line_length']
         show_details = cfg['details']
         show_footer = cfg['footer']
+        title_format = cfg.get('title', 'default')
 
         if cfg['minimal']:
             for job_state in self.report.get_filtered_job_states(self.job_states):
                 pretty_name = job_state.job.pretty_name()
                 location = job_state.job.get_location()
-                if pretty_name != location:
-                    location = '%s ( %s )' % (pretty_name, location)
-                yield ': '.join((job_state.verb.upper(), location))
+                if title_format == "location":
+                    title = location
+                elif title_format == "pretty":
+                    title = pretty_name
+                else:  # default
+                    if pretty_name != location:
+                        title = '%s ( %s )' % (pretty_name, location)
+                yield ': '.join((job_state.verb.upper(), title))
             return
 
         summary = []
@@ -337,16 +350,24 @@ class TextReporter(ReporterBase):
         return job_state.get_diff()
 
     def _format_output(self, job_state, line_length):
+        cfg = self.get_base_config(self.report)
+        title_format = cfg.get('title', 'default')
+
         summary_part = []
         details_part = []
 
         pretty_name = job_state.job.pretty_name()
         location = job_state.job.get_location()
-        if pretty_name != location:
-            location = '%s ( %s )' % (pretty_name, location)
+        if title_format == "location":
+            title = location
+        elif title_format == "pretty":
+            title = pretty_name
+        else:  # default
+            if pretty_name != location:
+                title = '%s ( %s )' % (pretty_name, location)
 
         pretty_summary = ': '.join((job_state.verb.upper(), pretty_name))
-        summary = ': '.join((job_state.verb.upper(), location))
+        summary = ': '.join((job_state.verb.upper(), title))
         content = self._format_content(job_state)
 
         summary_part.append(pretty_summary)
@@ -798,14 +819,20 @@ class MarkdownReporter(ReporterBase):
         cfg = self.get_base_config(self.report)
         show_details = cfg['details']
         show_footer = cfg['footer']
+        title_format = cfg.get('title', 'default')
 
         if cfg['minimal']:
             for job_state in self.report.get_filtered_job_states(self.job_states):
                 pretty_name = job_state.job.pretty_name()
                 location = job_state.job.get_location()
-                if pretty_name != location:
-                    location = '%s (%s)' % (pretty_name, location)
-                yield '* ' + ': '.join((job_state.verb.upper(), location))
+                if title_format == "location":
+                    title = location
+                elif title_format == "pretty":
+                    title = pretty_name
+                else:  # default
+                    if pretty_name != location:
+                        title = '%s (%s)' % (pretty_name, location)
+                yield '* ' + ': '.join((job_state.verb.upper(), title))
             return
 
         summary = []
@@ -964,16 +991,24 @@ class MarkdownReporter(ReporterBase):
         return job_state.get_diff()
 
     def _format_output(self, job_state):
+        cfg = self.get_base_config(self.report)
+        title_format = cfg.get('title', 'default')
+
         summary_part = []
         details_part = []
 
         pretty_name = job_state.job.pretty_name()
         location = job_state.job.get_location()
-        if pretty_name != location:
-            location = '%s (%s)' % (pretty_name, location)
+        if title_format == "location":
+            title = location
+        elif title_format == "pretty":
+            title = pretty_name
+        else:  # default
+            if pretty_name != location:
+                title = '%s (%s)' % (pretty_name, location)
 
         pretty_summary = ': '.join((job_state.verb.upper(), pretty_name))
-        summary = ': '.join((job_state.verb.upper(), location))
+        summary = ': '.join((job_state.verb.upper(), title))
         content = self._format_content(job_state)
 
         summary_part.append(pretty_summary)
