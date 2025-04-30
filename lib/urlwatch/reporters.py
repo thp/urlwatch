@@ -40,7 +40,7 @@ import functools
 import subprocess
 import uuid
 from lxml import etree
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 
 import requests
 
@@ -1206,7 +1206,12 @@ class AtomReporter(HtmlReporter):
 
         return etree.Element("feed", nsmap=self.NSMAP)
 
-    def _cmp_dict(self, a, b, exist):
+    def _write(self, feed):
+        with open(self.config['path'], 'wb') as f:
+            tree = etree.ElementTree(feed)
+            tree.write(f, encoding='utf-8', xml_declaration=True)
+
+    def _attrs_equal(self, a, b, exist):
         for k in a.keys() | b.keys():
             if (
                 k not in exist and a.get(k) != b.get(k) or
@@ -1220,13 +1225,13 @@ class AtomReporter(HtmlReporter):
         """A multi-tool for creating, updating, and deleting XML elements"""
 
         # find existing elements
-        skip = set()
+        present = set()
         if target not in ('text', 'raw'):
-            skip.add(target) # ignore the updated attribute
+            present.add(target) # ignore the updated attribute's value but check it exists
 
         elems = []
         for child in parent.iterchildren(tag):
-            if self._cmp_dict(child.attrib, attrs, skip):
+            if self._attrs_equal(child.attrib, attrs, present):
                 elems.append(child)
 
         # if value is None there's nothing to update or even a cleanup should be made
@@ -1279,9 +1284,10 @@ class AtomReporter(HtmlReporter):
         """UUID4 generator"""
         return f'urn:uuid:{uuid.uuid4()}'
 
-    def _tsfmt(self, dt):
+    def _tsfmt(self, ts):
         """Format the given timestamp as an ISO8601 UTC datetime"""
-        return datetime.fromtimestamp(dt).replace(microsecond=0).astimezone(UTC).isoformat()
+        return datetime.fromtimestamp(ts).replace(microsecond=0).\
+            astimezone(timezone.utc).isoformat()
 
     def _entry(self, feed, job_state, timestamp):
         """Entry construction"""
@@ -1318,7 +1324,7 @@ class AtomReporter(HtmlReporter):
         last = None
         now = int(datetime.now().timestamp())
         for job_state in self.report.get_filtered_job_states(self.job_states):
-            dt = job_state.timestamp or now
+            dt = job_state.timestamp or now # errors have no timestamp
             self._entry(feed, job_state, dt)
             last = max(dt, last or dt)
 
@@ -1334,6 +1340,4 @@ class AtomReporter(HtmlReporter):
             while len(items) > maxitems:
                 feed.remove(items.pop())
 
-        with open(self.config['path'], 'wb') as f:
-            tree = etree.ElementTree(feed)
-            tree.write(f, encoding='utf-8', xml_declaration=True)
+        self._write(feed)
