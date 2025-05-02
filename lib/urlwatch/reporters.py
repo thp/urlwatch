@@ -1178,6 +1178,20 @@ class AtomReporter(HtmlReporter):
 
     __kind__ = 'atom'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.feed = self._read()
+
+        if self.feed.find('./id') is None or self.config.get('id'):
+            self._declare(self.feed, 'id', default=self._mkuuid)
+
+        self._declare(self.feed, 'title')
+        self._declare(self.feed, 'subtitle')
+        self._declare(self.feed, 'link', target='href')
+        self._declare(self.feed, 'linkself', tag='link', target='href', rel='self')
+
+        self._write(self.feed)
+
     def _read(self):
         """
         Tries to load existing feed from the path given in configuration.
@@ -1226,7 +1240,7 @@ class AtomReporter(HtmlReporter):
 
         # find existing elements
         present = set()
-        if target not in ('text', 'raw'):
+        if target not in ('text', 'raw', 'cdata'):
             present.add(target) # ignore the updated attribute's value but check it exists
 
         elems = []
@@ -1258,9 +1272,12 @@ class AtomReporter(HtmlReporter):
         for elem in elems:
             if target == 'text':
                 elem.text = value
+            elif target == 'cdata':
+                elem.text = etree.CDATA(value)
             elif target == 'raw':
                 while len(elem) > 0:
                     elem.remove(elem[0])
+
                 elem.append(etree.XML(value))
             else:
                 elem.attrib[target] = value
@@ -1307,37 +1324,27 @@ class AtomReporter(HtmlReporter):
             e("summary", job.get_location())
 
         content = self._format_content(job_state, cfg['diff'])
-        e("content", str(content), target='raw', type='xhtml')
+        e("content", str(content), target='cdata', type='html')
         e("updated", self._tsfmt(timestamp))
 
     def submit(self):
-        feed = self._read()
-
-        if feed.find('./id') is None or self.config.get('id'):
-            self._declare(feed, 'id', default=self._mkuuid)
-
-        self._declare(feed, 'title')
-        self._declare(feed, 'subtitle')
-        self._declare(feed, 'link', target='href')
-        self._declare(feed, 'linkself', tag='link', target='href', rel='self')
-
         last = None
         now = int(datetime.now().timestamp())
         for job_state in self.report.get_filtered_job_states(self.job_states):
             dt = job_state.timestamp or now # errors have no timestamp
-            self._entry(feed, job_state, dt)
+            self._entry(self.feed, job_state, dt)
             last = max(dt, last or dt)
 
         if last is not None:
-             self._e(feed, "updated", self._tsfmt(last))
+             self._e(self.feed, "updated", self._tsfmt(last))
 
         maxitems = self.config.get('maxitems', 0)
         if maxitems < 0:
             logger.warning("atom: maxitems can't be negative")
         elif maxitems > 0:
-            items = feed.findall('./entry')
+            items = self.feed.findall('./entry')
             items.sort(key=self._entry_updated, reverse=True)
             while len(items) > maxitems:
-                feed.remove(items.pop())
+                self.feed.remove(items.pop())
 
-        self._write(feed)
+        self._write(self.feed)
