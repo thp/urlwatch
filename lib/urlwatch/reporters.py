@@ -177,8 +177,6 @@ class HtmlReporter(ReporterBase):
         yield from (str(part) for part in self._parts())
 
     def _parts(self):
-        cfg = self.get_base_config(self.report)
-
         yield SafeHtml("""<!DOCTYPE html>
         <html><head>
             <title>urlwatch</title>
@@ -217,7 +215,12 @@ class HtmlReporter(ReporterBase):
         </head><body>
         """)
 
-        title_format = cfg.get('title', 'default')
+        cfg = self.get_base_config(self.report)
+        title_format = cfg.get('title_format', 'default')
+
+        if title_format not in ("default", "location", "pretty"):
+            logger.warn(f'Invalid title format {title_format!r}, falling back to "default".')
+            title_format = "default"
 
         for job_state in self.report.get_filtered_job_states(self.job_states):
             job = job_state.job
@@ -299,7 +302,11 @@ class TextReporter(ReporterBase):
         line_length = cfg['line_length']
         show_details = cfg['details']
         show_footer = cfg['footer']
-        title_format = cfg.get('title', 'default')
+        title_format = cfg.get('title_format', 'default')
+
+        if title_format not in ("default", "location", "pretty"):
+            logger.warn(f'Invalid title format {title_format!r}, falling back to "default".')
+            title_format = "default"
 
         if cfg['minimal']:
             for job_state in self.report.get_filtered_job_states(self.job_states):
@@ -351,7 +358,7 @@ class TextReporter(ReporterBase):
 
     def _format_output(self, job_state, line_length):
         cfg = self.get_base_config(self.report)
-        title_format = cfg.get('title', 'default')
+        title_format = cfg.get('title_format', 'default')
 
         summary_part = []
         details_part = []
@@ -819,7 +826,11 @@ class MarkdownReporter(ReporterBase):
         cfg = self.get_base_config(self.report)
         show_details = cfg['details']
         show_footer = cfg['footer']
-        title_format = cfg.get('title', 'default')
+        title_format = cfg.get('title_format', 'default')
+
+        if title_format not in ("default", "location", "pretty"):
+            logger.warn(f'Invalid title format {title_format!r}, falling back to "default".')
+            title_format = "default"
 
         if cfg['minimal']:
             for job_state in self.report.get_filtered_job_states(self.job_states):
@@ -992,7 +1003,7 @@ class MarkdownReporter(ReporterBase):
 
     def _format_output(self, job_state):
         cfg = self.get_base_config(self.report)
-        title_format = cfg.get('title', 'default')
+        title_format = cfg.get('title_format', 'default')
 
         summary_part = []
         details_part = []
