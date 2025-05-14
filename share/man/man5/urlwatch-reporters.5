@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "URLWATCH-REPORTERS" "5" "Oct 28, 2024" "urlwatch " "urlwatch  Documentation"
+.TH "URLWATCH-REPORTERS" "5" "May 14, 2025" "" "urlwatch"
 .SH NAME
 urlwatch-reporters \- Reporters for change notifications
 .SH SYNOPSIS
@@ -35,27 +35,25 @@ urlwatch-reporters \- Reporters for change notifications
 urlwatch \-\-edit\-config
 .SH DESCRIPTION
 .sp
-By default \fBurlwatch(1)\fP prints out information about changes to standard
+By default \fB\X'tty: link https://manpages.debian.org/urlwatch(1)'\fI\%urlwatch(1)\fP <\fBhttps://manpages.debian.org/urlwatch(1)\fP>\X'tty: link'\fP prints out information about changes to standard
 output, which is your terminal if you run it interactively. If running
-via \fBcron(8)\fP or another scheduler service, it depends on how the scheduler
+via \fB\X'tty: link https://manpages.debian.org/cron(8)'\fI\%cron(8)\fP <\fBhttps://manpages.debian.org/cron(8)\fP>\X'tty: link'\fP or another scheduler service, it depends on how the scheduler
 is configured.
 .sp
 You can enable one or more additional reporters that are used to send
 change notifications. Please note that most reporters need additional
 dependencies installed.
 .sp
-See \fBurlwatch\-config(5)\fP for generic config settings.
+See \fB\X'tty: link https://manpages.debian.org/urlwatch-config(5)'\fI\%urlwatch\-config(5)\fP <\fBhttps://manpages.debian.org/urlwatch-config(5)\fP>\X'tty: link'\fP for generic config settings.
 .sp
 To send a test notification, use the \fB\-\-test\-reporter\fP command\-line option
 with the name of the reporter:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 urlwatch \-\-test\-reporter stdout
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -68,11 +66,9 @@ To test if your e\-mail reporter is configured correctly, you can use:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 urlwatch \-\-test\-reporter email
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -86,16 +82,16 @@ The list of built\-in reporters can be retrieved using:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 urlwatch \-\-features
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
 At the moment, the following reporters are built\-in:
 .INDENT 0.0
+.IP \(bu 2
+\fBatom\fP: Store summaries as Atom feed
 .IP \(bu 2
 \fBdiscord\fP: Send a message to a Discord channel
 .IP \(bu 2
@@ -127,14 +123,42 @@ At the moment, the following reporters are built\-in:
 .IP \(bu 2
 \fBxmpp\fP: Send a message using the XMPP Protocol
 .UNINDENT
+.SH ATOM
+.sp
+You can configure urlwatch to store changes in an Atom 1.0 feed.
+To enable this feature, run \fBurlwatch \-\-edit\-config\fP to edit your configuration
+file. Enable the Atom reporter and specify the path where the feed should be
+saved.
+.sp
+The available configuration options are:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.EX
+atom:
+  # REQUIRED: Writable path where the Atom feed will be stored
+  path: /var/www/html/feed.xml
+  # Optional: Unique feed ID (automatically generated if omitted)
+  id: \(dqurn:uuid:ffa6dc6e\-7436\-48f6\-bc99\-020ab1e7d429\(dq
+  # Optional: Title of the feed
+  title: \(dqURLWatch\(dq
+  # Optional: Subtitle of the feed
+  subtitle: \(dq\(dq
+  # Optional: URL of your site (no relation to the particular job)
+  link: \(dqhttps://www.example.com/\(dq
+  # Optional: URL of the feed itself
+  linkself: \(dqhttps://www.example.com/feed.xml\(dq
+.EE
+.UNINDENT
+.UNINDENT
 .SH PUSHOVER
 .sp
 You can configure urlwatch to send real time notifications about changes
-via \fI\%Pushover\fP <\fBhttps://pushover.net/\fP>\&. To enable this, ensure you have the
+via \X'tty: link https://pushover.net/'\fI\%Pushover\fP <\fBhttps://pushover.net/\fP>\X'tty: link'\&. To enable this, ensure you have the
 \fBchump\fP python package installed (see \fI\%Dependencies\fP). Then edit your config
 (\fBurlwatch \-\-edit\-config\fP) and enable pushover. You will also need to
 add to the config your Pushover user key and a unique app key (generated
-by registering urlwatch as an application on your \fI\%Pushover account\fP <\fBhttps://pushover.net/apps/build\fP>\&.
+by registering urlwatch as an application on your \X'tty: link https://pushover.net/apps/build'\fI\%Pushover account\fP <\fBhttps://pushover.net/apps/build\fP>\X'tty: link'\&.
 .sp
 You can send to a specific device by using the device name, as indicated
 when you add or view your list of devices in the Pushover console. For
@@ -150,23 +174,21 @@ other setting (including leaving the option unset) maps to \fBnormal\fP\&.
 .sp
 Pushbullet notifications are configured similarly to Pushover (see
 above). You’ll need to add to the config your Pushbullet Access Token,
-which you can generate at \fI\%https://www.pushbullet.com/#settings\fP
+which you can generate at \X'tty: link https://www.pushbullet.com/#settings'\fI\%https://www.pushbullet.com/#settings\fP\X'tty: link'
 .SH TELEGRAM
 .sp
 Telegram notifications are configured using the Telegram Bot API. For
 this, you’ll need a Bot API token and a chat id (see
-\fI\%https://core.telegram.org/bots\fP). Sample configuration:
+\X'tty: link https://core.telegram.org/bots'\fI\%https://core.telegram.org/bots\fP\X'tty: link'). Sample configuration:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 telegram:
   bot_token: \(aq999999999:3tOhy2CuZE0pTaCtszRfKpnagOG8IQbP5gf\(aq # your bot api token
   chat_id: \(aq88888888\(aq # the chat id where the messages should be sent
   enabled: true
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -176,14 +198,12 @@ By default notifications are not silent and no formatting is done.
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 telegram:
   # ...
   silent: true # message is sent silently
   monospace: true # display message as pre\-formatted code block
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -201,16 +221,14 @@ file as \fBchat_id\fP\&. You may add multiple chat IDs as a YAML list:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 telegram:
   bot_token: \(aq999999999:3tOhy2CuZE0pTaCtszRfKpnagOG8IQbP5gf\(aq # your bot api token
   chat_id:
     \- \(aq11111111\(aq
     \- \(aq22222222\(aq
   enabled: true
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -222,13 +240,11 @@ is a sample configuration:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 slack:
   webhook_url: \(aqhttps://hooks.slack.com/services/T50TXXXXXU/BDVYYYYYYY/PWTqwyFM7CcCfGnNzdyDYZ\(aq
   enabled: true
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -242,17 +258,15 @@ the webhook URL is different:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 mattermost:
   webhook_url: \(aqhttp://{your\-mattermost\-site}/hooks/XXXXXXXXXXXXXXXXXXXXXX\(aq
   enabled: true
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
-See \fI\%Incoming Webooks\fP <\fBhttps://developers.mattermost.com/integrate/incoming-webhooks/\fP>
+See \X'tty: link https://developers.mattermost.com/integrate/incoming-webhooks/'\fI\%Incoming Webooks\fP <\fBhttps://developers.mattermost.com/integrate/incoming-webhooks/\fP>\X'tty: link'
 in the Mattermost documentation for details.
 .SH DISCORD
 .sp
@@ -261,16 +275,14 @@ is a sample configuration:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 discord:
    webhook_url: \(aqhttps://discordapp.com/api/webhooks/11111XXXXXXXXXXX/BBBBYYYYYYYYYYYYYYYYYYYYYYYyyyYYYYYYYYYYYYYY\(aq
    enabled: true
    embed: true
    colored: true
    subject: \(aq{count} changes: {jobs}\(aq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -281,7 +293,7 @@ Embedded content might be easier to read and identify individual reports. Subjec
 When \fIcolored\fP is true reports will be embedded in code section (with diff syntax) to enable colors.
 .SH GOTIFY
 .sp
-[Gotify](\fI\%https://gotify.net/\fP) is a server for sending and receiving messages in real\-time through WebSockets.
+[Gotify](\X'tty: link https://gotify.net/'\fI\%https://gotify.net/\fP\X'tty: link') is a server for sending and receiving messages in real\-time through WebSockets.
 .sp
 To push notifications to a gotify server you need an application token.
 .sp
@@ -293,42 +305,39 @@ Log into your gotify server\(aqs Web\-UI.
 Navigate to the “APPS” tab.
 .IP 3. 3
 Click on the “CREATE APPLICATION” button.
+.IP 4. 3
+Fill out the fields and press “CREATE”.
+.IP 5. 3
+Click on the eye icon of the newly created entry and copy the token.
 .UNINDENT
-.sp
-4. Fill out the fields and press “CREATE”.
-6. Click on the eye icon of the newly created entry and copy the token.
 .sp
 Here is a sample configuration:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 gotify:
   enabled: true
   priority: 4
   server_url: \(dqhttp://127.0.0.1:8090\(dq
   title: null
   token: \(dqAa1yyikLFjEm35A\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .SH IFTTT
 .sp
 To configure IFTTT events, you need to retrieve your key from here:
 .sp
-\fI\%https://ifttt.com/maker_webhooks/settings\fP
+\X'tty: link https://ifttt.com/maker_webhooks/settings'\fI\%https://ifttt.com/maker_webhooks/settings\fP\X'tty: link'
 .sp
 The URL shown in \(dqAccount Info\(dq has the following format:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 https://maker.ifttt.com/use/{key}
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -337,14 +346,12 @@ this (you can pick any event name you want):
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ifttt:
   enabled: true
   key: aA12abC3D456efgHIjkl7m
   event: event_name_you_want
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -361,17 +368,17 @@ The event will contain three values in the posted JSON:
 These values will be passed on to the Action in your Recipe.
 .SH MATRIX
 .sp
-You can have notifications sent to you through the \fI\%Matrix protocol\fP <\fBhttps://matrix.org\fP>\&.
+You can have notifications sent to you through the \X'tty: link https://matrix.org'\fI\%Matrix protocol\fP <\fBhttps://matrix.org\fP>\X'tty: link'\&.
 .sp
 To achieve this, you first need to register a Matrix account for the bot
 on any homeserver.
 .sp
 You then need to acquire an access token and room ID, using the
-following instructions adapted from \fI\%this
-guide\fP <\fBhttps://t2bot.io/docs/access_tokens/\fP>:
+following instructions adapted from \X'tty: link https://t2bot.io/docs/access_tokens/'\fI\%this
+guide\fP <\fBhttps://t2bot.io/docs/access_tokens/\fP>\X'tty: link':
 .INDENT 0.0
 .IP 1. 3
-Open \fI\%Riot.im\fP <\fBhttps://riot.im/app/\fP> in a private browsing window
+Open \X'tty: link https://riot.im/app/'\fI\%Riot.im\fP <\fBhttps://riot.im/app/\fP>\X'tty: link' in a private browsing window
 .IP 2. 3
 Register/Log in as your bot, using its user ID and password.
 .IP 3. 3
@@ -395,15 +402,13 @@ Here is a sample configuration:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 matrix:
   homeserver: https://matrix.org
   access_token: \(dqYOUR_TOKEN_HERE\(dq
   room_id: \(dq!roomroomroom:matrix.org\(dq
   enabled: true
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -413,15 +418,13 @@ public Matrix room, as the messages quickly become noisy:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 markdown:
   details: false
   footer: false
   minimal: true
   enabled: true
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .SH E-MAIL VIA SENDMAIL
@@ -430,16 +433,14 @@ You can send email via the system\(aqs \fBsendmail\fP command provided by the MT
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 report:
   email:
     enabled: true
     from: \(aqpostmaster@example.com\(aq
     to: \(aqrecipient@bar.com\(aq
     method: sendmail
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .SH E-MAIL VIA GMAIL SMTP
@@ -448,7 +449,7 @@ You need to configure your GMail account to allow for “less secure”
 (password\-based) apps to login:
 .INDENT 0.0
 .IP 1. 3
-Go to \fI\%https://myaccount.google.com/\fP
+Go to \X'tty: link https://myaccount.google.com/'\fI\%https://myaccount.google.com/\fP\X'tty: link'
 .IP 2. 3
 Click on “Sign\-in & security”
 .IP 3. 3
@@ -465,11 +466,9 @@ Now, start the configuration editor:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 urlwatch \-\-edit\-config
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -477,8 +476,7 @@ These are the keys you need to configure:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 report:
   email:
     enabled: true
@@ -490,8 +488,7 @@ report:
       auth: true
       port: 587
       starttls: true
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -500,11 +497,9 @@ file. To store the password, run:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 urlwatch \-\-smtp\-login
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -523,15 +518,13 @@ If for whatever reason you cannot use a keyring to store your password
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 report:
   email:
     smtp:
       auth: true
       insecure_password: secret123
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -558,14 +551,12 @@ Here is a sample configuration:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 xmpp:
   enabled: true
   sender: \(dqBOT_ACCOUNT_NAME\(dq
   recipient: \(dqYOUR_ACCOUNT_NAME\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -588,7 +579,7 @@ the Prowl application installed on your iOS device.
 To create an API key for urlwatch:
 .INDENT 0.0
 .IP 1. 3
-Log into the Prowl website at \fI\%https://prowlapp.com/\fP
+Log into the Prowl website at \X'tty: link https://prowlapp.com/'\fI\%https://prowlapp.com/\fP\X'tty: link'
 .IP 2. 3
 Navigate to the “API Keys” tab.
 .IP 3. 3
@@ -605,16 +596,14 @@ Here is a sample configuration:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 prowl:
   enabled: true
   api_key: \(aq<your api key here>\(aq
   priority: 2
   application: \(aqurlwatch example\(aq
   subject: \(aq{count} changes: {jobs}\(aq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -625,7 +614,7 @@ to the event and shown as the source of the event in the Prowl App.
 .sp
 This is a simple reporter that pipes the text report notification to a
 command of your choice. The command is run using Python\(aqs
-\fI\%subprocess.Popen()\fP <\fBhttps://docs.python.org/3/library/subprocess.html#popen-constructor\fP> with \fBshell=False\fP (to avoid possibly\-unwanted
+\X'tty: link https://docs.python.org/3/library/subprocess.html#popen-constructor'\fI\%subprocess.Popen()\fP <\fBhttps://docs.python.org/3/library/subprocess.html#popen-constructor\fP>\X'tty: link' with \fBshell=False\fP (to avoid possibly\-unwanted
 shell expansion). Of course, you can create your own shell script that
 does shell expansion and other things, and call that from the \fBcommand\fP\&.
 .sp
@@ -644,14 +633,12 @@ For example, to simply append reports to a file, configure it like this:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 shell:
   enabled: true
   command: [\(aqtee\(aq, \(aq\-a\(aq, \(aq/path/to/log.txt\(aq]
   ignore_stdout: true
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .SH FILES
@@ -659,10 +646,10 @@ shell:
 \fB$XDG_CONFIG_HOME/urlwatch/urlwatch.yaml\fP
 .SH SEE ALSO
 .sp
-\fBurlwatch(1)\fP,
-\fBurlwatch\-config(5)\fP,
-\fBurlwatch\-intro(7)\fP,
-\fBurlwatch\-cookbook(7)\fP
+\fB\X'tty: link https://manpages.debian.org/urlwatch(1)'\fI\%urlwatch(1)\fP <\fBhttps://manpages.debian.org/urlwatch(1)\fP>\X'tty: link'\fP,
+\fB\X'tty: link https://manpages.debian.org/urlwatch-config(5)'\fI\%urlwatch\-config(5)\fP <\fBhttps://manpages.debian.org/urlwatch-config(5)\fP>\X'tty: link'\fP,
+\fB\X'tty: link https://manpages.debian.org/urlwatch-intro(7)'\fI\%urlwatch\-intro(7)\fP <\fBhttps://manpages.debian.org/urlwatch-intro(7)\fP>\X'tty: link'\fP,
+\fB\X'tty: link https://manpages.debian.org/urlwatch-cookbook(7)'\fI\%urlwatch\-cookbook(7)\fP <\fBhttps://manpages.debian.org/urlwatch-cookbook(7)\fP>\X'tty: link'\fP
 .SH COPYRIGHT
 2024 Thomas Perl
 .\" Generated by docutils manpage writer.
