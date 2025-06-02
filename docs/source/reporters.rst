@@ -313,6 +313,7 @@ public Matrix room, as the messages quickly become noisy:
 
    markdown:
      details: false
+     title_format: pretty
      footer: false
      minimal: true
      enabled: true
