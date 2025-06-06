@@ -200,6 +200,8 @@ class Job(JobBase):
     __optional__ = ('name', 'filter', 'max_tries', 'diff_tool', 'compared_versions', 'diff_filter', 'enabled', 'treat_new_as_changed', 'user_visible_url', 'tags')
 
     def matching_tags(self, tags: Set[str]) -> Set[str]:
+        if self.tags is None:
+            return False
         return self.tags & tags
 
     # determine if hyperlink "a" tag is used in HtmlReporter
@@ -221,7 +223,7 @@ class Job(JobBase):
         if value is None:
             self._tags = None
         elif isinstance(value, str):
-            self._tags = frozenset([str])
+            self._tags = frozenset([value])
         else:
             self._tags = frozenset(value)
 
