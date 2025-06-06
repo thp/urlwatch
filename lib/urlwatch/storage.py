@@ -198,6 +198,15 @@ DEFAULT_CONFIG = {
             'ignore_stdout': True,
             'ignore_stderr': False,
         },
+        'atom': {
+            'enabled': False,
+            'maxitems': 50,
+            'path': '/path/to/feed.xml',
+            'title': 'URLWatch Updates',
+            'subtitle': '',
+            'link': 'https://www.example.com/',
+            'linkself': 'https://www.example.com/feed.xml',
+        }
     },
 
     'job_defaults': {
