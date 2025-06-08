@@ -1241,7 +1241,7 @@ class AtomReporter(HtmlReporter):
         # find existing elements
         present = set()
         if target not in ('text', 'raw', 'cdata'):
-            present.add(target) # ignore the updated attribute's value but check it exists
+            present.add(target)  # ignore the updated attribute's value but check it exists
 
         elems = []
         for child in parent.iterchildren(tag):
@@ -1331,12 +1331,12 @@ class AtomReporter(HtmlReporter):
         last = None
         now = int(datetime.now().timestamp())
         for job_state in self.report.get_filtered_job_states(self.job_states):
-            dt = job_state.timestamp or now # errors have no timestamp
+            dt = job_state.timestamp or now  # errors have no timestamp
             self._entry(self.feed, job_state, dt)
             last = max(dt, last or dt)
 
         if last is not None:
-             self._e(self.feed, "updated", self._tsfmt(last))
+            self._e(self.feed, "updated", self._tsfmt(last))
 
         maxitems = self.config.get('maxitems', 0)
         if maxitems < 0:
