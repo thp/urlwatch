@@ -38,6 +38,9 @@ import time
 import html
 import functools
 import subprocess
+import uuid
+from lxml import etree
+from datetime import datetime, timezone
 
 import requests
 
@@ -1166,3 +1169,183 @@ class GotifyReporter(MarkdownReporter):
             'priority': self.config['priority'],
             'title': self.config['title'],
         })
+
+
+class AtomReporter(HtmlReporter):
+    """Store summaries as Atom feed"""
+
+    # https://validator.w3.org/feed/docs/atom.html
+    NSMAP = {None: "http://www.w3.org/2005/Atom"}
+
+    __kind__ = 'atom'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.feed = self._read()
+
+        if self.feed.find('./id') is None or self.config.get('id'):
+            self._declare(self.feed, 'id', default=self._mkuuid)
+
+        self._declare(self.feed, 'title')
+        self._declare(self.feed, 'subtitle')
+        self._declare(self.feed, 'link', target='href')
+        self._declare(self.feed, 'linkself', tag='link', target='href', rel='self')
+
+        self._write(self.feed)
+
+    def _read(self):
+        """
+        Tries to load existing feed from the path given in configuration.
+        If the feed can't be loaded, a new feed is created.
+        """
+        nspfx = f'{{{self.NSMAP[None]}}}'
+
+        try:
+            with open(self.config['path'], 'rb') as f:
+                tree = etree.parse(f)
+
+                # fix the namespaces
+                for elem in tree.iter():
+                    if hasattr(elem, 'tag') and elem.tag.startswith(nspfx):
+                        elem.tag = elem.tag[len(nspfx):]
+
+                root = tree.getroot()
+                if root.tag == 'feed':
+                    return root
+
+                logger.warning("%s: invalid atom feed", self.config['path'])
+        except etree.LxmlError as e:
+            logger.warning("failed to parse %s: %s", self.config['path'], e)
+        except FileNotFoundError:
+            pass
+
+        return etree.Element("feed", nsmap=self.NSMAP)
+
+    def _write(self, feed):
+        with open(self.config['path'], 'wb') as f:
+            tree = etree.ElementTree(feed)
+            tree.write(f, encoding='utf-8', xml_declaration=True)
+
+    def _attrs_equal(self, a, b, exist):
+        for k in a.keys() | b.keys():
+            if (
+                k not in exist and a.get(k) != b.get(k)
+                or k in exist and k not in a
+            ):
+                return False
+
+        return True
+
+    def _e(self, parent, tag, value, target='text', create=True, remove=True, single=True, **attrs):
+        """A multi-tool for creating, updating, and deleting XML elements"""
+
+        # find existing elements
+        present = set()
+        if target not in ('text', 'raw', 'cdata'):
+            present.add(target)  # ignore the updated attribute's value but check it exists
+
+        elems = []
+        for child in parent.iterchildren(tag):
+            if self._attrs_equal(child.attrib, attrs, present):
+                elems.append(child)
+
+        # if value is None there's nothing to update or even a cleanup should be made
+        if value is None:
+            while remove and elems:
+                parent.remove(elems.pop())
+            return
+
+        # if no elements exist, then create one or stop
+        if not elems:
+            if not create:
+                return
+
+            elem = etree.Element(tag, attrs)
+            parent.append(elem)
+            elems.append(elem)
+
+        # when there are multiple elements and single=True remove all existing
+        # elements except one
+        while single and len(elems) > 1:
+            parent.remove(elems.pop())
+
+        # finally, update the value
+        for elem in elems:
+            if target == 'text':
+                elem.text = value
+            elif target == 'cdata':
+                elem.text = etree.CDATA(value)
+            elif target == 'raw':
+                while len(elem) > 0:
+                    elem.remove(elem[0])
+
+                elem.append(etree.XML(value))
+            else:
+                elem.attrib[target] = value
+
+    def _declare(self, parent, name, target='text', tag=None, default=None, **attrs):
+        """Creates an element for the configuration parameter"""
+        value = self.config.get(name, None)
+        if not value:
+            value = default
+            if callable(value):
+                value = value()
+
+        self._e(parent, tag or name, value, target, **attrs)
+
+    def _entry_updated(self, entry):
+        """Tries to fetch the updated timestamp from the entry"""
+        updated = entry.find('./updated')
+        return updated is not None and updated.text or '2099-01-01T00:00:00Z'
+
+    def _mkuuid(self):
+        """UUID4 generator"""
+        return f'urn:uuid:{uuid.uuid4()}'
+
+    def _tsfmt(self, ts):
+        """Format the given timestamp as an ISO8601 UTC datetime"""
+        return datetime.fromtimestamp(ts).replace(microsecond=0).\
+            astimezone(timezone.utc).isoformat()
+
+    def _entry(self, feed, job_state, timestamp):
+        """Entry construction"""
+        job = job_state.job
+        cfg = self.get_base_config(self.report)
+
+        entry = etree.Element("entry")
+        feed.append(entry)
+        e = functools.partial(self._e, entry)
+
+        e("id", self._mkuuid())
+        e("title", f'{job_state.verb}: {job.pretty_name()}')
+
+        if job.location_is_url():
+            e("link", job.get_location(), target='href')
+        else:
+            e("summary", job.get_location())
+
+        content = self._format_content(job_state, cfg['diff'])
+        e("content", str(content), target='cdata', type='html')
+        e("updated", self._tsfmt(timestamp))
+
+    def submit(self):
+        last = None
+        now = int(datetime.now().timestamp())
+        for job_state in self.report.get_filtered_job_states(self.job_states):
+            dt = job_state.timestamp or now  # errors have no timestamp
+            self._entry(self.feed, job_state, dt)
+            last = max(dt, last or dt)
+
+        if last is not None:
+            self._e(self.feed, "updated", self._tsfmt(last))
+
+        maxitems = self.config.get('maxitems', 0)
+        if maxitems < 0:
+            logger.warning("atom: maxitems can't be negative")
+        elif maxitems > 0:
+            items = self.feed.findall('./entry')
+            items.sort(key=self._entry_updated, reverse=True)
+            while len(items) > maxitems:
+                self.feed.remove(items.pop())
+
+        self._write(self.feed)
