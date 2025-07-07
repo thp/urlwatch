@@ -1170,6 +1170,7 @@ class GotifyReporter(MarkdownReporter):
             'title': self.config['title'],
         })
 
+
 class AtomReporter(HtmlReporter):
     """Store summaries as Atom feed"""
 
@@ -1228,8 +1229,8 @@ class AtomReporter(HtmlReporter):
     def _attrs_equal(self, a, b, exist):
         for k in a.keys() | b.keys():
             if (
-                k not in exist and a.get(k) != b.get(k) or
-                k in exist and k not in a
+                k not in exist and a.get(k) != b.get(k)
+                or k in exist and k not in a
             ):
                 return False
 
