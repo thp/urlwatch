@@ -13,8 +13,8 @@
 
 |Build Status| |Packaging status| |PyPI version|
 
-.. |Build Status| image:: https://travis-ci.org/thp/urlwatch.svg
-   :target: https://travis-ci.org/thp/urlwatch
+.. |Build Status| image:: https://github.com/thp/urlwatch/actions/workflows/unit-tests.yml/badge.svg
+   :target: https://github.com/thp/urlwatch/actions/workflows/unit-tests.yml
 .. |Packaging status| image:: https://repology.org/badge/tiny-repos/urlwatch.svg
    :target: https://repology.org/metapackage/urlwatch/versions
 .. |PyPI version| image:: https://badge.fury.io/py/urlwatch.svg
