@@ -60,6 +60,7 @@ The list of built-in reporters can be retrieved using::
 
 At the moment, the following reporters are built-in:
 
+- **atom**: Store summaries as Atom feed
 - **discord**: Send a message to a Discord channel
 - **email**: Send summary via e-mail / SMTP / sendmail
 - **gotify**: Send a message to a gotify server
@@ -78,6 +79,33 @@ At the moment, the following reporters are built-in:
 
 .. To convert the "urlwatch --features" output, use:
    sed -e 's/^  \* \(.*\) - \(.*\)$/- **\1**: \2/'
+
+
+Atom
+----
+
+You can configure urlwatch to store changes in an Atom 1.0 feed.
+To enable this feature, run ``urlwatch --edit-config`` to edit your configuration
+file. Enable the Atom reporter and specify the path where the feed should be
+saved.
+
+The available configuration options are:
+
+.. code:: yaml
+
+   atom:
+     # REQUIRED: Writable path where the Atom feed will be stored
+     path: /var/www/html/feed.xml
+     # Optional: Unique feed ID (automatically generated if omitted)
+     id: "urn:uuid:ffa6dc6e-7436-48f6-bc99-020ab1e7d429"
+     # Optional: Title of the feed
+     title: "URLWatch"
+     # Optional: Subtitle of the feed
+     subtitle: ""
+     # Optional: URL of your site (no relation to the particular job)
+     link: "https://www.example.com/"
+     # Optional: URL of the feed itself
+     linkself: "https://www.example.com/feed.xml"
 
 
 Pushover
