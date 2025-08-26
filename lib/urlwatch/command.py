@@ -117,7 +117,7 @@ class UrlwatchCommand:
             except IndexError:
                 return None
         except ValueError:
-            return next((job for job in self.urlwatcher.jobs if job.get_location() == query), None)
+            return next((job for job in self.urlwatcher.jobs if query in [job.get_location(), job.name]), None)
 
     def _get_job(self, id):
         job = self._find_job(id)
