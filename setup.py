@@ -23,7 +23,7 @@ if sys.platform == 'win32':
 m['entry_points'] = {"console_scripts": ["urlwatch=urlwatch.cli:main"]}
 m['package_dir'] = {'': 'lib'}
 m['packages'] = ['urlwatch']
-m['python_requires'] = '>=3.6'
+m['python_requires'] = '>=3.9'
 m['data_files'] = [
     ('share/man/man1', [
         'share/man/man1/urlwatch.1',

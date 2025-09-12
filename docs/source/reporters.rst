@@ -63,6 +63,7 @@ At the moment, the following reporters are built-in:
 - **discord**: Send a message to a Discord channel
 - **email**: Send summary via e-mail / SMTP / sendmail
 - **gotify**: Send a message to a gotify server
+- **ntfy**: Send messages to a ntfy server
 - **ifttt**: Send summary via IFTTT
 - **mailgun**: Send e-mail via the Mailgun service
 - **matrix**: Send a message to a room using the Matrix protocol
@@ -236,6 +237,31 @@ Here is a sample configuration:
      server_url: "http://127.0.0.1:8090"
      title: null
      token: "Aa1yyikLFjEm35A"
+
+ntfy
+----
+
+[ntfy](https://ntfy.sh) is a server for sending and receiving notifications via HTTP.
+
+To configure it, you need to provide the topic URL that reports should be sent to.
+
+If the ntfy server requires authentication to publish to the topic, you need to supply an appropriate value for the `Authorization` header, as described in [the ntfy documentation](https://docs.ntfy.sh/publish/#authentication).
+
+ntfy supports assigning a priority to a message. You can specify a default priority for messages sent by urlwatch as well as individual priorities for `changed` or `new` URLs and ones with an `error`. Names for the different priorities are listed in [the ntfy documentation](https://docs.ntfy.sh/publish/#message-priority).
+
+Here is a sample configuration:
+
+.. code:: yaml
+
+   ntfy:
+     enabled: true
+     topic_url: "https://ntfy.sh/urlwatch"
+     authorization: "Basic ..."
+     priorities:
+       default: default
+       new: low
+       changed: max
+       error: high
 
 IFTTT
 -----

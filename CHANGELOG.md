@@ -9,6 +9,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Added
 
 - New command-line option `--prepare-jobs` to initialize new jobs or jobs without history (#831 by nille02)
+- New reporter: `ntfy` (#854 by fyrk)
 
 ### Changed
 
