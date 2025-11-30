@@ -1202,5 +1202,5 @@ class NtfyReporter(TextReporter):
                     data=content.encode(encoding='utf-8') if content is not None else None,
                 )
                 r.raise_for_status()
-            except:
+            except Exception:  # catch any error so other job states aren't affected if publishing fails
                 logger.exception(f"Failed to publish to ntfy topic '{topic_url}'")
