@@ -14,6 +14,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 ### Changed
 
 - Remove EOL'd Python 3.8 (new minimum requirement is Python 3.9), add Python 3.13 testing
+- Commands that reference a job by index or url (such as testing filters and modifying jobs) can now also reference by name (#846 by jamstah)
 
 ### Fixed
 
