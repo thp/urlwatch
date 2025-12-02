@@ -159,6 +159,14 @@ DEFAULT_CONFIG = {
             'title': None,
             'token': '',
         },
+        'ntfy': {
+            'enabled': False,
+            'topic_url': '',
+            'priorities': {
+                'default': 'default',
+            },
+            'authorization': None,
+        },
         'matrix': {
             'enabled': False,
             'homeserver': '',
