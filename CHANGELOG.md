@@ -25,6 +25,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Filter for gitlab.com tags fixed (#839, by julianuu)
 - Fix `TypeError` when jobs don't have tags (#843 by Maxime Werlen)
 - Fix `ResourceWarning` when running non-reporting commands (#865, reported by Hanno Böck)
+- Fix Markdown reporter length handling for unlimited and oversized output, preserving more content with a compact trim marker (#858 by PeterDaveHello)
 
 ## [2.29] -- 2024-10-28
 

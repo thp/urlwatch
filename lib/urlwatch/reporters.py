@@ -835,75 +835,134 @@ class MarkdownReporter(ReporterBase):
         if not show_details:
             details = None
 
-        trimmed_msg = "*Parts of the report were omitted due to message length.*\n"
-        max_length -= len(trimmed_msg)
-
-        trimmed, summary, details, footer = MarkdownReporter._render(
+        trimmed_marker, summary, details, footer = MarkdownReporter._render(
             max_length, summary, details, footer
         )
 
+        yield from MarkdownReporter._output_lines(
+            summary, details, trimmed_marker, footer, trailing_separator=max_length is None
+        )
+
+    @staticmethod
+    def _output_lines(summary=None, details=None, trimmed_marker="", footer=None, trailing_separator=False):
+        output = []
+
         if summary:
-            yield from summary
-            yield ''
+            output.extend(summary)
+            if details or trimmed_marker or footer or trailing_separator:
+                output.append('')
 
-        if show_details:
-            for header, body in details:
-                yield header
-                yield body
-                yield ''
+        if details:
+            for idx, (header, body) in enumerate(details):
+                output.extend((header, body))
+                if idx < len(details) - 1 or trimmed_marker or footer or trailing_separator:
+                    output.append('')
 
-        if trimmed:
-            yield trimmed_msg
+        if trimmed_marker:
+            output.append(trimmed_marker)
+            if summary and footer:
+                output.append('')
 
-        if summary and show_footer:
-            yield from footer
+        if summary and footer:
+            output.extend(footer)
+
+        return output
+
+    @staticmethod
+    def _output_length(output):
+        return sum(len(part) for part in output) + max(len(output) - 1, 0)
+
+    @staticmethod
+    def _join_up_to_length(lines, max_length):
+        if max_length <= 0:
+            return ""
+
+        output = []
+        for line in lines:
+            if output:
+                output.append('\n')
+                max_length -= 1
+                if max_length == 0:
+                    break
+
+            part = line[:max_length]
+            output.append(part)
+            max_length -= len(part)
+            if max_length == 0 or len(part) < len(line):
+                break
+
+        return ''.join(output)
 
     @classmethod
     def _render(cls, max_length, summary=None, details=None, footer=None):
         """Render the report components, trimming them if the available length is insufficient.
 
-        Returns a tuple (trimmed, summary, details, footer).
+        Returns a tuple (trimmed_marker, summary, details, footer).
 
-        The first element of the tuple indicates whether any part of the report
-        was omitted due to message length. The other elements are the
-        potentially trimmed report components.
+        The first element is a separate trim marker, or an empty string when the
+        report was not trimmed or the marker was appended to a shortened summary.
+        The other elements are the potentially trimmed report components.
         """
 
-        # The footer/summary lengths are the sum of the length of their parts
-        # plus the space taken up by newlines.
         if summary:
             summary = ['%d. %s' % (idx, line) for idx, line in enumerate(summary, 1)]
-            summary_len = sum(len(part) for part in summary) + len(summary) - 1
-        else:
-            summary_len = 0
 
-        if footer:
-            footer_len = sum(len(part) for part in footer) + len(footer) - 1
-        else:
-            footer_len = 0
+        details = details or []
 
         if max_length is None:
-            return (False, summary, details, footer)
+            rendered_details = [
+                (header, cls._format_details_body(body, None)[1]) for header, body in details
+            ]
+            return ("", summary, rendered_details, footer)
         else:
-            if summary_len > max_length:
-                return (True, [], [], "")
-            elif footer_len > max_length - summary_len:
-                return (True, summary, [], footer[:max_length - summary_len])
-            elif not details:
-                return (False, summary, [], footer)
-            else:
-                # Determine the space remaining after taking into account
-                # summary and footer.
-                remaining_len = max_length - summary_len - footer_len
-                headers_len = sum(len(header) for header, _ in details)
+            empty_details = [(header, "") for header, _ in details]
+            output = cls._output_lines(summary, empty_details, footer=footer)
+            wrapper_length = len("```diff\n\n```")
+            full_length = cls._output_length(output) + sum(
+                len(body) + wrapper_length for _, body in details
+            )
 
-                details_trimmed = False
+            if full_length <= max_length:
+                rendered_details = [
+                    (header, cls._format_details_body(body, None)[1]) for header, body in details
+                ]
+                return ("", summary, rendered_details, footer)
+
+            trimmed_marker = "[...]"
+            if len(trimmed_marker) > max_length:
+                trimmed_marker = ""
+
+            output = cls._output_lines(summary, trimmed_marker=trimmed_marker)
+            if cls._output_length(output) > max_length:
+                summary_length = max(max_length - len(trimmed_marker), 0)
+                summary_text = cls._join_up_to_length(summary or [], summary_length)
+                trimmed_summary = summary_text + trimmed_marker
+                return ("", trimmed_summary.split('\n') if trimmed_summary else [], [], "")
+
+            output = cls._output_lines(summary, trimmed_marker=trimmed_marker, footer=footer)
+            if cls._output_length(output) > max_length:
+                trimmed_footer = []
+                for footer_line in footer or []:
+                    output = cls._output_lines(
+                        summary, trimmed_marker=trimmed_marker, footer=trimmed_footer + [footer_line]
+                    )
+                    if cls._output_length(output) > max_length:
+                        break
+                    trimmed_footer.append(footer_line)
+                return (trimmed_marker, summary, [], trimmed_footer)
+            elif not details:
+                return (trimmed_marker, summary, [], footer)
+            else:
+                # Determine the space remaining after taking into account the
+                # summary, headers, separators, marker, and footer.
+                trimmed_details = [(header, "") for header, _ in details]
+                output = cls._output_lines(summary, trimmed_details, trimmed_marker, footer)
 
                 # First ensure we can show all the headers.
-                if headers_len > remaining_len:
-                    return (True, summary, [], footer)
+                if cls._output_length(output) > max_length:
+                    return (trimmed_marker, summary, [], footer)
                 else:
-                    remaining_len -= headers_len
+                    remaining_len = max_length - cls._output_length(output)
 
                     # Calculate approximate available length per item, shared
                     # equally between all details components.
@@ -914,16 +973,14 @@ class MarkdownReporter(ReporterBase):
 
                     for header, body in details:
                         # Calculate the available length for the body and render it
-                        avail_length = body_len_per_details - 1
+                        avail_length = body_len_per_details
 
-                        body_trimmed, body = cls._format_details_body(body, avail_length)
-
-                        if body_trimmed:
-                            details_trimmed = True
+                        _, body = cls._format_details_body(body, avail_length)
 
                         if len(body) <= body_len_per_details:
                             trimmed_details.append((header, body))
                         else:
+                            body = ""
                             trimmed_details.append((header, ""))
 
                         # If the current item's body did not use all of its
@@ -938,7 +995,7 @@ class MarkdownReporter(ReporterBase):
                         if unprocessed > 0:
                             body_len_per_details = remaining_len // unprocessed
 
-                    return (details_trimmed, summary, trimmed_details, footer)
+                    return (trimmed_marker, summary, trimmed_details, footer)
 
     @staticmethod
     def _format_details_body(s, max_length):
@@ -951,7 +1008,11 @@ class MarkdownReporter(ReporterBase):
         if max_length is None or len(s) + wrapper_length <= max_length:
             return False, "```diff\n{}\n```".format(s)
         else:
-            target_max_length = max_length - trim_message_length - wrapper_length
+            target_max_length = max_length - trim_message_length - wrapper_length - 1
+            if target_max_length < 0:
+                # Avoid treating the negative endpoint as an offset from the end of a large body.
+                return True, ""
+
             pos = s.rfind("\n", 0, target_max_length)
 
             if pos == -1:
