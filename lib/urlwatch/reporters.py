@@ -824,7 +824,8 @@ class MarkdownReporter(ReporterBase):
             details = None
 
         trimmed_msg = "*Parts of the report were omitted due to message length.*\n"
-        max_length -= len(trimmed_msg)
+        if max_length is not None:
+            max_length -= len(trimmed_msg)
 
         trimmed, summary, details, footer = MarkdownReporter._render(
             max_length, summary, details, footer
