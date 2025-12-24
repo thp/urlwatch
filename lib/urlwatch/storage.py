@@ -95,6 +95,15 @@ DEFAULT_CONFIG = {
             'color': True,
         },
 
+        'rss': {
+            'enabled': False,
+            'feed': {
+                'title': 'urlwatch',
+                'subtitle': 'Changes in my monitored URLs.',
+                'url': 'http://example.com',
+            },
+        },
+
         'email': {
             'enabled': False,
 
