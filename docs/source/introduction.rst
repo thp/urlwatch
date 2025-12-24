@@ -7,6 +7,8 @@ Introduction
 Quick Start
 -----------
 
+First, install urlwatch by following :doc:`installation`. Once installed:
+
 1. Run ``urlwatch`` once to migrate your old data or start fresh
 2. Use ``urlwatch --edit`` to customize jobs and filters (``urls.yaml``)
 3. Use ``urlwatch --edit-config`` to customize settings and reporters (``urlwatch.yaml``)
