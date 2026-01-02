@@ -1,5 +1,5 @@
 # https://hub.docker.com/_/python
-FROM python:3.12.0-alpine3.18
+FROM python:3.12.12-alpine3.23
 
 # Optional python modules for additional functionality
 # https://urlwatch.readthedocs.io/en/latest/dependencies.html#optional-packages
