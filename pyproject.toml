@@ -1,0 +1,100 @@
+[build-system]
+requires = ["hatchling>=1.20"]
+build-backend = "hatchling.build"
+
+[project]
+name = "urlwatch"
+dynamic = ["version"]
+description = "urlwatch monitors webpages for you"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.9"
+license = { file = "COPYING" }
+authors = [
+  { name = "Thomas Perl", email = "m@thp.io" }
+]
+
+dependencies = [
+  "minidb>=2.0.8",
+  "PyYAML",
+  "requests",
+  "keyring",
+  "platformdirs",
+  "lxml>=5.0.0",
+  "cssselect",
+  "colorama; platform_system == 'Windows'",
+]
+
+[project.urls]
+Homepage = "https://thp.io/2008/urlwatch/"
+Source = "https://github.com/thp/urlwatch"
+Issues = "https://github.com/thp/urlwatch/issues"
+
+[project.optional-dependencies]
+docs = ["Sphinx"]
+
+browser = ["playwright"]
+
+dev = [
+    "pytest",
+    "pytest-cov",
+    "mypy",
+    "ruff",
+    "build",
+    "twine",
+    "pycodestyle==2.14.0",
+    "docutils",
+]
+
+extras = [
+  "jq==1.11.0",
+  "pdftotext==3.0.0",
+  "pytesseract==0.3.13",
+  "Pillow",
+  "beautifulsoup4",
+  "jsbeautifier",
+  "cssbeautifier",
+]
+
+reporters = [
+  "chump",
+  "pushbullet.py",
+  "matrix_client",
+  "markdown2",
+  "aioxmpp",
+]
+
+[project.scripts]
+urlwatch = "urlwatch.cli:main"
+
+[tool.hatch.version]
+path = "lib/urlwatch/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/lib",
+  "/share",
+  "/docs",
+  "CHANGELOG.md",
+  "COPYING",
+  "update-manpages.sh",
+  "README.md",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["lib/urlwatch"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"share/man/man1" = "share/man/man1"
+"share/man/man5" = "share/man/man5"
+"share/man/man7" = "share/man/man7"
+"share/urlwatch/examples" = "share/urlwatch/examples"
+
+[tool.ruff]
+line-length = 120
+src = ["lib"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.pycodestyle]
+max-line-length = 120
