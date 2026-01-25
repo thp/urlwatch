@@ -432,7 +432,7 @@ class BrowserJob(Job):
 
     __required__ = ('navigate',)
 
-    __optional__ = ('wait_until', 'wait_for', 'useragent', 'browser')
+    __optional__ = ('wait_until', 'wait_for', 'useragent', 'browser', 'browser_path')
 
     def get_location(self):
         return self.user_visible_url or self.navigate
@@ -443,7 +443,7 @@ class BrowserJob(Job):
     def retrieve(self, job_state):
         from playwright.sync_api import sync_playwright
         with sync_playwright() as playwright:
-            browser = playwright[self.browser or "chromium"].launch()
+            browser = playwright[self.browser or "chromium"].launch(executable_path=self.browser_path)
             page = browser.new_page(user_agent=self.useragent)
 
             if self.wait_until in ('networkidle0', 'networkidle2'):

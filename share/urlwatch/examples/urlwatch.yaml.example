@@ -1,0 +1,33 @@
+# Example urlwatch.yaml
+# Controls global behaviour: what changes are reported, how reports are delivered,
+# and defaults applied to all jobs. Unlike urls.yaml, this is usually a single file.
+
+# Which job states appear in reports
+display:
+  error: true        # Failed jobs (network, HTTP, runtime errors)
+  new: true          # First run (no cached data yet)
+  unchanged: false   # Suppress unchanged content
+  empty-diff: false  # Suppress changes reduced to empty by diff filters
+
+# How reports are generated and delivered
+report:
+  stdout:
+    enabled: true
+    color: true
+  text:
+    details: true
+    footer: true
+    line_length: 75
+    diff: unified
+
+# Default settings applied by job type
+job_defaults:
+  all: {}
+  url: {}
+  shell: {}
+  browser:
+    # Use an existing system browser for all Playwright-based navigate jobs
+    # (avoids downloading Playwright-managed browsers).
+    #
+    # Can be overridden per job, or set to null to use Playwright defaults.
+    browser_path: "/usr/bin/chromium"

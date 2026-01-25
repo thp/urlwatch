@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "URLWATCH-JOBS" "5" "Oct 28, 2024" "urlwatch " "urlwatch  Documentation"
+.TH "URLWATCH-JOBS" "5" "Jan 25, 2026" "urlwatch " "urlwatch  Documentation"
 .SH NAME
 urlwatch-jobs \- Job types and configuration for urlwatch
 .SH SYNOPSIS
@@ -152,6 +152,8 @@ spec. The job will wait for the default timeout of 30 seconds.
 .IP \(bu 2
 \fBbrowser\fP:  Either \fBchromium\fP, \fBchrome\fP, \fBchrome\-beta\fP, \fBmsedge\fP,
 \fBmsedge\-beta\fP, \fBmsedge\-dev\fP, \fBfirefox\fP, \fBwebkit\fP (must be installed with \fBplaywright install\fP)
+.IP \(bu 2
+\fBbrowser_path\fP: Path to a custom browser executable for Playwright to use instead of its managed browser (e.g. \fB/usr/bin/chromium\fP)
 .UNINDENT
 .sp
 Because this job uses \fI\%Playwright\fP <\fBhttps://playwright.dev/python/\fP> to
