@@ -96,6 +96,7 @@ Job-specific optional keys:
 - ``useragent``: ``User-Agent`` header used for requests (otherwise browser default is used)
 - ``browser``:  Either ``chromium``, ``chrome``, ``chrome-beta``, ``msedge``,
   ``msedge-beta``, ``msedge-dev``, ``firefox``, ``webkit`` (must be installed with ``playwright install``)
+- ``browser_path``: Path to a custom browser executable for Playwright to use instead of its managed browser (e.g. ``/usr/bin/chromium``)
 
 Because this job uses Playwright_ to
 render the page in a headless browser instance, it uses massively more resources
