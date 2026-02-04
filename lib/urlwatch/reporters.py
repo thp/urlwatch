@@ -824,11 +824,24 @@ class MarkdownReporter(ReporterBase):
             details = None
 
         trimmed_msg = "*Parts of the report were omitted due to message length.*\n"
-        max_length -= len(trimmed_msg)
+        summary_raw = summary
+        details_raw = details
+        footer_raw = footer
 
         trimmed, summary, details, footer = MarkdownReporter._render(
-            max_length, summary, details, footer
+            max_length, summary_raw, details_raw, footer_raw
         )
+
+        trimmed_marker = trimmed_msg
+        if max_length is not None and trimmed:
+            if len(trimmed_marker) > max_length:
+                trimmed_marker = "[...]\n"
+                if len(trimmed_marker) > max_length:
+                    trimmed_marker = ""
+            reserved_length = max_length - len(trimmed_marker) if trimmed_marker else max_length
+            trimmed, summary, details, footer = MarkdownReporter._render(
+                reserved_length, summary_raw, details_raw, footer_raw
+            )
 
         if summary:
             yield from summary
@@ -840,8 +853,8 @@ class MarkdownReporter(ReporterBase):
                 yield body
                 yield ''
 
-        if trimmed:
-            yield trimmed_msg
+        if trimmed and trimmed_marker:
+            yield trimmed_marker
 
         if summary and show_footer:
             yield from footer
