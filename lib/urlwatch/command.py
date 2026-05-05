@@ -485,11 +485,13 @@ class UrlwatchCommand:
             sys.exit(0)
 
     def run(self):
-        self.check_edit_config()
-        self.check_smtp_login()
-        self.check_telegram_chats()
-        self.check_xmpp_login()
-        self.check_test_reporter()
-        self.handle_actions()
-        self.urlwatcher.run_jobs()
-        self.urlwatcher.close()
+        try:
+            self.check_edit_config()
+            self.check_smtp_login()
+            self.check_telegram_chats()
+            self.check_xmpp_login()
+            self.check_test_reporter()
+            self.handle_actions()
+            self.urlwatcher.run_jobs()
+        finally:
+            self.urlwatcher.close()
