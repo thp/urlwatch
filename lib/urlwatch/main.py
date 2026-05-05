@@ -107,7 +107,7 @@ class Urlwatch(object):
 
     def run_jobs(self):
         run_jobs(self)
+        self.report.finish()
 
     def close(self):
-        self.report.finish()
         self.cache_storage.close()
