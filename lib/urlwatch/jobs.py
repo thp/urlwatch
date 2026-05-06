@@ -280,9 +280,9 @@ class UrlJob(Job):
     __kind__ = 'url'
 
     __required__ = ('url',)
-    __optional__ = ('cookies', 'data', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy', 'https_proxy',
-                    'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding', 'timeout',
-                    'ignore_timeout_errors', 'ignore_too_many_redirects', 'ignore_incomplete_reads')
+    __optional__ = ('cookies', 'data', 'json', 'method', 'ssl_no_verify', 'ignore_cached', 'http_proxy',
+                    'https_proxy', 'headers', 'ignore_connection_errors', 'ignore_http_error_codes', 'encoding',
+                    'timeout', 'ignore_timeout_errors', 'ignore_too_many_redirects', 'ignore_incomplete_reads')
 
     CHARSET_RE = re.compile('text/(html|plain); charset=([^;]*)')
 
@@ -317,7 +317,10 @@ class UrlJob(Job):
         if self.data is not None:
             if self.method is None:
                 self.method = "POST"
-            headers['Content-type'] = 'application/x-www-form-urlencoded'
+            if self.json:
+                headers['Content-type'] = 'application/json'
+            else:
+                headers['Content-type'] = 'application/x-www-form-urlencoded'
             logger.info('Sending %s request to %s', self.method, self.url)
 
         if self.method is None:
@@ -347,7 +350,8 @@ class UrlJob(Job):
             timeout = self.timeout
 
         response = requests.request(url=self.url,
-                                    data=self.data,
+                                    data=None if self.json else self.data,
+                                    json=self.data if self.json else None,
                                     headers=headers,
                                     method=self.method,
                                     verify=(not self.ssl_no_verify),

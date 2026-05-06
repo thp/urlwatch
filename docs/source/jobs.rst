@@ -49,6 +49,7 @@ Job-specific optional keys:
 - ``cookies``: Cookies to send with the request (see :ref:`advanced_topics`)
 - ``method``: HTTP method to use (default: ``GET``)
 - ``data``: HTTP POST/PUT data
+- ``json``: If ``true``, serialize ``data`` as JSON and set ``Content-type`` to ``application/json`` (default: ``false``)
 - ``ssl_no_verify``: Do not verify SSL certificates (true/false)
 - ``ignore_cached``: Do not use cache control (ETag/Last-Modified) values (true/false)
 - ``http_proxy``: Proxy server to use for HTTP requests (might be http:// or socks5://)

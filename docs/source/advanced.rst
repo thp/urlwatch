@@ -445,6 +445,25 @@ allowing you to send arbitrary requests to the server:
       Content-type: application/json
     data: '{"foo": true}'
 
+
+Sending JSON data using POST
+----------------------------
+
+For JSON API endpoints, set ``json: true`` alongside ``data`` (as a native
+YAML mapping). urlwatch will serialize ``data`` to JSON and set
+``Content-type`` to ``application/json`` automatically. As with plain
+``data``, the HTTP method defaults to ``POST``:
+
+.. code-block:: yaml
+
+    name: "My JSON API Job"
+    url: http://example.com/api/query
+    json: true
+    data:
+      query: "status"
+      limit: 10
+      tags: ["foo", "bar"]
+
 .. only:: man
 
     See also
