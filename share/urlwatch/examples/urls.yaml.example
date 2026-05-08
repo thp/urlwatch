@@ -45,3 +45,23 @@ data:
   button: Search
   q: something
   category: 4
+---
+# Browser jobs using Playwright to render JavaScript-heavy pages
+# You can use 'navigate' instead of 'url' for pages that require JS rendering
+name: "Page requiring JavaScript (system browser)"
+navigate: "https://example.org/"
+browser: "chromium"
+# Specify a custom browser path instead of using Playwright's managed browser
+browser_path: "/usr/bin/chromium"
+---
+name: "Page using default Playwright browser"
+navigate: "https://example.com/"
+browser: "chromium"
+# browser_path not specified - uses Playwright's managed browser installation
+---
+# Override global browser_path setting (if configured in urlwatch.yaml)
+name: "Explicitly use Playwright managed browser"
+navigate: "https://example.io/"
+browser: "chromium"
+# Explicitly set to null to override any global default
+browser_path: null
