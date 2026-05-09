@@ -102,9 +102,11 @@ output in color, as well as HTML e-mail using ``sendmail``:
    report:
      text:
        details: true
+       title_format: location
        footer: true
        line_length: 75
      html:
+       title_format: pretty
        diff: unified
        separate: true
      email:
