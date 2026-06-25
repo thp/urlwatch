@@ -30,6 +30,7 @@
 
 import email.utils
 import hashlib
+import http
 import logging
 import os
 import re
@@ -74,6 +75,10 @@ class ShellError(Exception):
 
 class NotModifiedError(Exception):
     """Exception raised on HTTP 304 responses"""
+    ...
+
+class BrowserHttpError(Exception):
+    """Exception raised on non-ok HTTP status codes returned by browser"""
     ...
 
 
@@ -455,10 +460,19 @@ class BrowserJob(Job):
                 # Pyppetteer -> Playwright migration
                 self.wait_until = 'networkidle'
 
-            page.goto(self.navigate, wait_until=self.wait_until)
+            response = page.goto(self.navigate, wait_until=self.wait_until)
+            if not response.ok:
+                status = http.HTTPStatus(response.status)
+                raise BrowserHttpError(f'{status.value} {status.phrase}: {status.description}')
 
             if self.wait_for:
                 locator = page.locator(self.wait_for)
                 locator.wait_for()
 
             return page.content()
+
+    def format_error(self, exception, tb):
+        if isinstance(exception, BrowserHttpError):
+            # A full traceback is not necessary for this type of error.
+            return str(exception)
+        return tb
