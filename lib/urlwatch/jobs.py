@@ -77,6 +77,7 @@ class NotModifiedError(Exception):
     """Exception raised on HTTP 304 responses"""
     ...
 
+
 class BrowserHttpError(Exception):
     """Exception raised on non-ok HTTP status codes returned by browser"""
     ...
