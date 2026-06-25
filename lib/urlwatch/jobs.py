@@ -441,7 +441,7 @@ class BrowserJob(Job):
 
     __required__ = ('navigate',)
 
-    __optional__ = ('wait_until', 'wait_for', 'useragent', 'browser')
+    __optional__ = ('wait_until', 'wait_for', 'useragent', 'browser', 'raise_for_status')
 
     def get_location(self):
         return self.user_visible_url or self.navigate
@@ -461,7 +461,7 @@ class BrowserJob(Job):
                 self.wait_until = 'networkidle'
 
             response = page.goto(self.navigate, wait_until=self.wait_until)
-            if not response.ok:
+            if self.raise_for_status and not response.ok:
                 status = http.HTTPStatus(response.status)
                 raise BrowserHttpError(f'{status.value} {status.phrase}: {status.description}')
 

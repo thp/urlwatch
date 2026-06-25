@@ -11,6 +11,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - New command-line option `--prepare-jobs` to initialize new jobs or jobs without history (#831 by nille02)
 - New reporter: `ntfy` (#854 by fyrk)
 - New boolean `json` option for `url` jobs: serializes `data` as JSON and sets `Content-type: application/json` (contributed in #866 by Louis Sautier)
+- New `navigate` option `raise_for_status` to throw an error if HTTP response is not OK (#XXX by trevorshannon)
 
 ### Changed
 
