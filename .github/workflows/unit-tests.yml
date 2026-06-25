@@ -35,6 +35,6 @@ jobs:
         python -m pip install pycodestyle==2.14.0 pytest
         sudo apt-get update
         sudo apt-get install -y build-essential libpoppler-cpp-dev pkg-config python3-dev tesseract-ocr
-        python -m pip install pdftotext docutils pygments pytesseract pillow jq
+        python -m pip install pdftotext docutils pygments pytesseract pillow jq playwright
     - name: Test with pytest
       run: pytest -v
