@@ -3,6 +3,7 @@ from glob import glob
 
 from urlwatch.jobs import UrlJob, JobBase, ShellJob
 from urlwatch.storage import UrlsYaml, UrlsTxt
+from urlwatch.tests import utils
 
 import contextlib
 import pytest
@@ -12,6 +13,7 @@ import os
 
 from urlwatch import storage
 from urlwatch.config import CommandConfig
+from urlwatch.handler import JobState
 from urlwatch.storage import YamlConfigStorage, CacheMiniDBStorage
 from urlwatch.main import Urlwatch
 from urlwatch.util import import_module_from_source
@@ -331,3 +333,30 @@ def test_reset_tries_to_zero_when_successful():
             assert tries == 0
         finally:
             cache_storage.close()
+
+
+@pytest.mark.parametrize('status_code, ignore_http_error_codes, expect_error, expect_ignored', [
+    (404, '4xx', True, True),
+    (404, None, True, False),
+    (200, '4xx', False, False),
+    (200, None, False, False),
+])
+def test_browser_job_ignores_http_error(
+        monkeypatch, status_code, ignore_http_error_codes, expect_error, expect_ignored):
+    mock_playwright = utils.setup_mock_playwright_response('', status_code)
+    monkeypatch.setattr(
+        'playwright.sync_api.sync_playwright', mock_playwright)
+
+    cache = os.path.join(here, 'data', 'cache.db')
+    cache_storage = CacheMiniDBStorage(cache)
+    job_dict = {
+        'kind': 'browser',
+        'navigate': 'https://www.example.com',
+    }
+    if ignore_http_error_codes:
+        job_dict['ignore_http_error_codes'] = ignore_http_error_codes
+    job = JobBase.unserialize(job_dict)
+    job_state = JobState(cache_storage, job)
+    job_state.process()
+    assert bool(job_state.exception) == expect_error
+    assert job_state.error_ignored == expect_ignored

@@ -1,4 +1,4 @@
-from urlwatch.util import chunkstring
+from urlwatch.util import chunkstring, ignore_http_code
 
 import pytest
 
@@ -26,3 +26,25 @@ TESTDATA = [
 @pytest.mark.parametrize('string, length, numbering, output', TESTDATA)
 def test_chunkstring(string, length, numbering, output):
     assert list(chunkstring(string, length, numbering=numbering)) == output
+
+
+@pytest.mark.parametrize('ignore_list, status_code, expected', [
+    ('404', 404, True),
+    ('404', 200, False),
+    ('404', 500, False),
+    ('4xx', 404, True),
+    ('4xx', 403, True),
+    ('4xx', 500, False),
+    ('404,500', 404, True),
+    ('404,500', 500, True),
+    ('404,500', 403, False),
+    ([404, 500], 404, True),
+    ([404, 500], 500, True),
+    ([404, 500], 403, False),
+    (['404', '500'], 404, True),
+    (['404', '500'], 403, False),
+    (404, 404, True),
+    (404, 403, False),
+])
+def test_ignore_http_code(ignore_list, status_code, expected):
+    assert ignore_http_code(status_code, ignore_list) == expected

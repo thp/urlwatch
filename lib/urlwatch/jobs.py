@@ -44,7 +44,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import urlwatch
 
 from .filters import FilterBase
-from .util import TrackSubClasses
+from .util import TrackSubClasses, ignore_http_code
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -80,7 +80,9 @@ class NotModifiedError(Exception):
 
 class BrowserHttpError(Exception):
     """Exception raised on non-ok HTTP status codes returned by browser"""
-    ...
+    def __init__(self, message, status):
+        super().__init__(message)
+        self.status = status
 
 
 class JobBase(object, metaclass=TrackSubClasses):
@@ -411,7 +413,7 @@ class UrlJob(Job):
         if isinstance(exception, requests.exceptions.RequestException):
             # Instead of a full traceback, just show the HTTP error
             return str(exception)
-        return tb
+        super().format_error(exception, tb)
 
     def ignore_error(self, exception):
         if isinstance(exception, requests.exceptions.ConnectionError) and self.ignore_connection_errors:
@@ -424,14 +426,7 @@ class UrlJob(Job):
             return True
         elif isinstance(exception, requests.exceptions.HTTPError):
             status_code = exception.response.status_code
-            ignored_codes = []
-            if isinstance(self.ignore_http_error_codes, int) and self.ignore_http_error_codes == status_code:
-                return True
-            elif isinstance(self.ignore_http_error_codes, str):
-                ignored_codes = [s.strip().lower() for s in self.ignore_http_error_codes.split(',')]
-            elif isinstance(self.ignore_http_error_codes, list):
-                ignored_codes = [str(s).strip().lower() for s in self.ignore_http_error_codes]
-            return str(status_code) in ignored_codes or '%sxx' % (status_code // 100) in ignored_codes
+            return ignore_http_code(status_code, self.ignore_http_error_codes)
         return False
 
 
@@ -442,7 +437,7 @@ class BrowserJob(Job):
 
     __required__ = ('navigate',)
 
-    __optional__ = ('wait_until', 'wait_for', 'useragent', 'browser', 'raise_for_status')
+    __optional__ = ('wait_until', 'wait_for', 'useragent', 'browser', 'ignore_http_error_codes')
 
     def get_location(self):
         return self.user_visible_url or self.navigate
@@ -462,9 +457,9 @@ class BrowserJob(Job):
                 self.wait_until = 'networkidle'
 
             response = page.goto(self.navigate, wait_until=self.wait_until)
-            if self.raise_for_status and not response.ok:
+            if not response.ok:
                 status = http.HTTPStatus(response.status)
-                raise BrowserHttpError(f'{status.value} {status.phrase}: {status.description}')
+                raise BrowserHttpError(f'{status.value} {status.phrase}: {status.description}', status)
 
             if self.wait_for:
                 locator = page.locator(self.wait_for)
@@ -476,4 +471,9 @@ class BrowserJob(Job):
         if isinstance(exception, BrowserHttpError):
             # A full traceback is not necessary for this type of error.
             return str(exception)
-        return tb
+        super().format_error(exception, tb)
+
+    def ignore_error(self, exception):
+        if isinstance(exception, BrowserHttpError):
+            return ignore_http_code(exception.status.value, self.ignore_http_error_codes)
+        return False
