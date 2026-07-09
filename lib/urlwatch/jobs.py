@@ -44,7 +44,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import urlwatch
 
 from .filters import FilterBase
-from .util import TrackSubClasses, ignore_http_code
+from .util import TrackSubClasses, should_ignore_http_code
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -199,7 +199,7 @@ class JobBase(object, metaclass=TrackSubClasses):
     def format_error(self, exception, tb):
         return tb
 
-    def ignore_error(self, exception):
+    def should_ignore_error(self, exception) -> bool:
         return False
 
 
@@ -415,7 +415,7 @@ class UrlJob(Job):
             return str(exception)
         super().format_error(exception, tb)
 
-    def ignore_error(self, exception):
+    def should_ignore_error(self, exception) -> bool:
         if isinstance(exception, requests.exceptions.ConnectionError) and self.ignore_connection_errors:
             return True
         if isinstance(exception, requests.exceptions.Timeout) and self.ignore_timeout_errors:
@@ -426,7 +426,7 @@ class UrlJob(Job):
             return True
         elif isinstance(exception, requests.exceptions.HTTPError):
             status_code = exception.response.status_code
-            return ignore_http_code(status_code, self.ignore_http_error_codes)
+            return should_ignore_http_code(status_code, self.ignore_http_error_codes)
         return False
 
 
@@ -473,7 +473,7 @@ class BrowserJob(Job):
             return str(exception)
         super().format_error(exception, tb)
 
-    def ignore_error(self, exception):
+    def should_ignore_error(self, exception) -> bool:
         if isinstance(exception, BrowserHttpError):
-            return ignore_http_code(exception.status.value, self.ignore_http_error_codes)
+            return should_ignore_http_code(exception.status.value, self.ignore_http_error_codes)
         return False

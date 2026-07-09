@@ -1,4 +1,4 @@
-from urlwatch.util import chunkstring, ignore_http_code
+from urlwatch.util import chunkstring, should_ignore_http_code
 
 import pytest
 
@@ -46,5 +46,5 @@ def test_chunkstring(string, length, numbering, output):
     (404, 404, True),
     (404, 403, False),
 ])
-def test_ignore_http_code(ignore_list, status_code, expected):
-    assert ignore_http_code(status_code, ignore_list) == expected
+def test_should_ignore_http_code(ignore_list, status_code, expected):
+    assert should_ignore_http_code(status_code, ignore_list) == expected

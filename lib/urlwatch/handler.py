@@ -125,7 +125,7 @@ class JobState(object):
                 # job has a chance to format and ignore its error
                 self.exception = e
                 self.traceback = self.job.format_error(e, traceback.format_exc())
-                self.error_ignored = self.job.ignore_error(e)
+                self.error_ignored = self.job.should_ignore_error(e)
                 if not (self.error_ignored or isinstance(e, NotModifiedError)):
                     self.tries += 1
                     logger.debug('Increasing number of tries to %i for %s', self.tries, self.job)

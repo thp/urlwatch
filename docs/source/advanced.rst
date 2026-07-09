@@ -167,18 +167,18 @@ the ``ignore_connection_errors`` key in the job list configuration file:
    ignore_connection_errors: true
 
 Similarly, you might want to ignore some (temporary) HTTP errors on the
-server side. This can be done for ``url`` or ``navigate`` jobs:
+server side. This can be done for ``url`` or ``browser`` jobs:
 
 .. code-block:: yaml
 
-   url: https://example.com/  # navigate job also ok here
+   url: https://example.com/  # can be 'navigate:' for browser jobs
    ignore_http_error_codes: 408, 429, 500, 502, 503, 504
 
 or ignore all HTTP errors if you like:
 
 .. code-block:: yaml
 
-   url: https://example.com/  # navigate job also ok here
+   url: https://example.com/  # can be 'navigate:' for browser jobs
    ignore_http_error_codes: 4xx, 5xx
 
 You can also ignore incomplete reads:
