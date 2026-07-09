@@ -207,10 +207,8 @@ class Job(JobBase):
     __required__ = ()
     __optional__ = ('name', 'filter', 'max_tries', 'diff_tool', 'compared_versions', 'diff_filter', 'enabled', 'treat_new_as_changed', 'user_visible_url', 'tags')
 
-    def matching_tags(self, tags: Set[str]) -> Set[str]:
-        if self.tags is None:
-            return False
-        return self.tags & tags
+    def matching_tags(self, tags: Iterable[str]) -> Set[str]:
+        return self.tags.intersection(tags)
 
     # determine if hyperlink "a" tag is used in HtmlReporter
     def location_is_url(self):

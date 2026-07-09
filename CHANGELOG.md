@@ -11,11 +11,12 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - New command-line option `--prepare-jobs` to initialize new jobs or jobs without history (#831 by nille02)
 - New reporter: `ntfy` (#854 by fyrk)
 - New boolean `json` option for `url` jobs: serializes `data` as JSON and sets `Content-type: application/json` (contributed in #866 by Louis Sautier)
+- Allow reporters to be specified multiple times (#822 by jamstah)
 - `navigate` jobs now report errors for HTTP error responses by default. Optional `ignore_http_error_codes` can suppress these reported errors. (#868 by trevorshannon)
 
 ### Changed
 
-- Remove EOL'd Python 3.8 (new minimum requirement is Python 3.9), add Python 3.13 and 3.14 testing
+- Remove EOL'd Python 3.8 and 3.9 (new minimum requirement is Python 3.10), add Python 3.13 and 3.14 testing
 
 ### Fixed
 
@@ -32,6 +33,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Command line options to enable and disable jobs (Requested in #813 by gapato, contributed in #820 by jamstah)
 - New option `ignore_incomplete_reads` (Requested in #725 by wschoot, contributed in #787 by wfrisch)
 - New option `wait_for` in browser jobs (Requested in #763 by yuis-ice, contributed in #810 by jamstah)
+- Added tags to jobs and the ability to select them at the command line (#789 by jamstah)
 - New filter `re.findall` (Requested in #804 by f0sh, contributed in #805 by jamstah)
 - Added tags to jobs and the ability to select them at the command line (#789, #824 by jamstah)
 - New reporter: `gotify` (#823 by franco-righetti)

@@ -397,6 +397,9 @@ class UrlwatchCommand:
 
         report.finish_one(name)
 
+        if not report.reporters_enabled:
+            raise ValueError(f'Reporter not enabled: {name}')
+
         sys.exit(0)
 
     def check_smtp_login(self):
