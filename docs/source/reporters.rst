@@ -51,6 +51,34 @@ If the notification does not work, check your configuration and/or add
 the ``--verbose`` command-line option to show detailed debug logs.
 
 
+Common options
+--------------
+
+The following configuration options can be applied to any reporter:
+
+* ``enabled``: Disable or enable a reporter
+* ``tags``: A list of tags that will be selected by this reporter
+
+Configuring multiple reporters of the same type
+-----------------------------------------------
+
+You can configure one reporter type to run multiple times by using a list of
+reporter configurations instead of a single reporter configuration in the
+config file. You can select the jobs for each reporter by using tags.
+
+For example:
+
+.. code:: yaml
+
+   slack:
+     - webhook_url: 'https://hooks.slack.com/services/AAAAAAAAAA/BBBBBBBBBB/CCCCCCCCCCCCCCCCCCCCCC'
+       tags: ["personal"]
+       enabled: true
+     - webhook_url: 'https://hooks.slack.com/services/XXXXXXXXXX/YYYYYYYYYY/ZZZZZZZZZZZZZZZZZZZZZZ'
+       tags: ["team"]
+       enabled: true
+
+
 Built-in reporters
 ------------------
 
