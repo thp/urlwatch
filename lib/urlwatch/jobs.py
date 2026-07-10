@@ -411,7 +411,7 @@ class UrlJob(Job):
         if isinstance(exception, requests.exceptions.RequestException):
             # Instead of a full traceback, just show the HTTP error
             return str(exception)
-        super().format_error(exception, tb)
+        return super().format_error(exception, tb)
 
     def should_ignore_error(self, exception) -> bool:
         if isinstance(exception, requests.exceptions.ConnectionError) and self.ignore_connection_errors:
@@ -469,7 +469,7 @@ class BrowserJob(Job):
         if isinstance(exception, BrowserHttpError):
             # A full traceback is not necessary for this type of error.
             return str(exception)
-        super().format_error(exception, tb)
+        return super().format_error(exception, tb)
 
     def should_ignore_error(self, exception) -> bool:
         if isinstance(exception, BrowserHttpError):
