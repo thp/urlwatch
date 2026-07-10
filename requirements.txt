@@ -5,3 +5,4 @@ keyring
 platformdirs
 lxml
 cssselect
+feedgen
