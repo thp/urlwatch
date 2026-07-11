@@ -97,6 +97,8 @@ Job-specific optional keys:
 - ``useragent``: ``User-Agent`` header used for requests (otherwise browser default is used)
 - ``browser``:  Either ``chromium``, ``chrome``, ``chrome-beta``, ``msedge``,
   ``msedge-beta``, ``msedge-dev``, ``firefox``, ``webkit`` (must be installed with ``playwright install``)
+- ``executable_path``: Path to a custom browser executable to launch instead of the
+  bundled Playwright build (for example a specific Firefox build); combine with ``browser``
 - ``ignore_http_error_codes``: List of HTTP errors to ignore (see :ref:`advanced_topics`)
 
 Because this job uses Playwright_ to
