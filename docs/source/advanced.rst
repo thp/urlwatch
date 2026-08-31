@@ -363,6 +363,13 @@ This option will also change the behavior of ``--test-diff-filter``, and allow
 testing the diff filter if only a single version of the page has been
 retrieved.
 
+Showing content of ``NEW`` jobs
+-------------------------------
+
+For reporters that display a diff, setting the ``new`` option to ``true``,
+in the reporter configuration, they display the new data instead of nothing.
+
+This is an alternative to the ``treat_new_as_changed`` job option above.
 
 Monitoring the same URL in multiple jobs
 ----------------------------------------

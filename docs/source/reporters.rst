@@ -108,6 +108,15 @@ At the moment, the following reporters are built-in:
 .. To convert the "urlwatch --features" output, use:
    sed -e 's/^  \* \(.*\) - \(.*\)$/- **\1**: \2/'
 
+NEW jobs
+--------
+
+For reporters that display a diff, setting the ``new`` option to ``true``,
+in the reporter configuration, they display the new data instead of nothing.
+
+This currently includes the ``text``, ``markdown`` and ``html`` reporters.
+
+All of the reporters that use the output of these reporters will be affected.
 
 Pushover
 --------

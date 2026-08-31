@@ -244,7 +244,7 @@ class HtmlReporter(ReporterBase):
                                          location=job.get_location(),
                                          pretty_name=job.pretty_name())
 
-            content = self._format_content(job_state, cfg['diff'])
+            content = self._format_content(job_state, cfg['diff'], cfg['new'])
             if content is not None:
                 yield content
 
@@ -268,12 +268,15 @@ class HtmlReporter(ReporterBase):
 
         return str(SafeHtml('<span class="unified_nor">' + result + '</span>')).splitlines()
 
-    def _format_content(self, job_state, difftype):
+    def _format_content(self, job_state, difftype, new):
         if job_state.verb == 'error':
             return SafeHtml('<pre style="text-color: red;">{error}</pre>').format(error=job_state.traceback.strip())
 
         if job_state.verb == 'unchanged':
             return SafeHtml('<pre>{old_data}</pre>').format(old_data=job_state.old_data)
+
+        if job_state.verb == 'new' and job_state.old_data is None and job_state.new_data is not None and new:
+            return SafeHtml('<pre>{new_data}</pre>').format(new_data=job_state.new_data)
 
         if job_state.old_data in (None, job_state.new_data):
             return SafeHtml('...')
@@ -304,6 +307,7 @@ class TextReporter(ReporterBase):
         line_length = cfg['line_length']
         show_details = cfg['details']
         show_footer = cfg['footer']
+        new = cfg['new']
 
         if cfg['minimal']:
             for job_state in self.report.get_filtered_job_states(self.job_states):
@@ -317,7 +321,7 @@ class TextReporter(ReporterBase):
         summary = []
         details = []
         for job_state in self.report.get_filtered_job_states(self.job_states):
-            summary_part, details_part = self._format_output(job_state, line_length)
+            summary_part, details_part = self._format_output(job_state, line_length, new)
             summary.extend(summary_part)
             details.extend(details_part)
 
@@ -336,19 +340,22 @@ class TextReporter(ReporterBase):
             yield '-- '
             yield from self.get_signature()
 
-    def _format_content(self, job_state):
+    def _format_content(self, job_state, new):
         if job_state.verb == 'error':
             return job_state.traceback.strip()
 
         if job_state.verb == 'unchanged':
             return job_state.old_data
 
+        if job_state.verb == 'new' and job_state.old_data is None and job_state.new_data is not None and new:
+            return job_state.new_data
+
         if job_state.old_data in (None, job_state.new_data):
             return None
 
         return job_state.get_diff()
 
-    def _format_output(self, job_state, line_length):
+    def _format_output(self, job_state, line_length, new):
         summary_part = []
         details_part = []
 
@@ -359,7 +366,7 @@ class TextReporter(ReporterBase):
 
         pretty_summary = ': '.join((job_state.verb.upper(), pretty_name))
         summary = ': '.join((job_state.verb.upper(), location))
-        content = self._format_content(job_state)
+        content = self._format_content(job_state, new)
 
         summary_part.append(pretty_summary)
 
@@ -810,6 +817,7 @@ class MarkdownReporter(ReporterBase):
         cfg = self.get_base_config(self.report)
         show_details = cfg['details']
         show_footer = cfg['footer']
+        new = cfg['new']
 
         if cfg['minimal']:
             for job_state in self.report.get_filtered_job_states(self.job_states):
@@ -823,7 +831,7 @@ class MarkdownReporter(ReporterBase):
         summary = []
         details = []
         for job_state in self.report.get_filtered_job_states(self.job_states):
-            summary_part, details_part = self._format_output(job_state)
+            summary_part, details_part = self._format_output(job_state, new)
             summary.extend(summary_part)
             details.extend(details_part)
 
@@ -963,19 +971,22 @@ class MarkdownReporter(ReporterBase):
 
             return True, "{}\n```diff\n{}\n```".format(trim_message, s)
 
-    def _format_content(self, job_state):
+    def _format_content(self, job_state, new):
         if job_state.verb == 'error':
             return job_state.traceback.strip()
 
         if job_state.verb == 'unchanged':
             return job_state.old_data
 
+        if job_state.verb == 'new' and job_state.old_data is None and job_state.new_data is not None and new:
+            return job_state.new_data
+
         if job_state.old_data in (None, job_state.new_data):
             return None
 
         return job_state.get_diff()
 
-    def _format_output(self, job_state):
+    def _format_output(self, job_state, new):
         summary_part = []
         details_part = []
 
@@ -986,7 +997,7 @@ class MarkdownReporter(ReporterBase):
 
         pretty_summary = ': '.join((job_state.verb.upper(), pretty_name))
         summary = ': '.join((job_state.verb.upper(), location))
-        content = self._format_content(job_state)
+        content = self._format_content(job_state, new)
 
         summary_part.append(pretty_summary)
 

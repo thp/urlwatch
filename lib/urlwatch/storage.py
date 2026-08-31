@@ -76,6 +76,7 @@ DEFAULT_CONFIG = {
             'footer': True,
             'minimal': False,
             'separate': False,
+            'new': False,
         },
 
         'markdown': {
@@ -83,11 +84,13 @@ DEFAULT_CONFIG = {
             'footer': True,
             'minimal': False,
             'separate': False,
+            'new': False,
         },
 
         'html': {
             'diff': 'unified',  # "unified" or "table"
             'separate': False,
+            'new': False,
         },
 
         'stdout': {
