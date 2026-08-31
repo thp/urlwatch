@@ -4,6 +4,11 @@ Deprecated Features
 As features are deprecated and cleaned up, they are documented
 here with steps to update your configuration for replacements.
 
+``treat_new_as_changed`` job option (since UNRELEASED)
+------------------------------------------------------
+
+Job option ``treat_new_as_changed`` is replaced by reporter option ``report_new``.
+
 
 ``networkidle0`` and ``networkidle2`` for ``wait_until`` in browser jobs (since 2.28)
 -------------------------------------------------------------------------------------

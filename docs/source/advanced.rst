@@ -345,24 +345,12 @@ It can take one of four values (see `wait_until docs`_ of Playwright):
 .. _`wait_until docs`: https://playwright.dev/python/docs/api/class-page#page-goto-option-wait-until
 
 
-Treating ``NEW`` jobs as ``CHANGED``
-------------------------------------
+Showing content of ``NEW`` jobs
+-------------------------------
 
-In some cases (e.g. when the ``diff_tool`` or ``diff_filter`` executes some
-external command as a side effect that should also run for the initial page
-state), you can set the ``treat_new_as_changed`` to ``true``, which will make
-the job report as ``CHANGED`` instead of ``NEW`` the first time it is retrieved
-(and the diff will be reported, too).
-
-.. code-block:: yaml
-
-   url: http://example.com/initialpage.html
-   treat_new_as_changed: true
-
-This option will also change the behavior of ``--test-diff-filter``, and allow
-testing the diff filter if only a single version of the page has been
-retrieved.
-
+For reporters that display a diff, setting the ``report_new`` option to ``true``,
+in the reporter configuration, they display the new data instead of nothing,
+when reporting the output of the first/initial job result.
 
 Monitoring the same URL in multiple jobs
 ----------------------------------------
