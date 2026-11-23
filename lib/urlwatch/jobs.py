@@ -446,7 +446,9 @@ class BrowserJob(Job):
     def retrieve(self, job_state):
         from playwright.sync_api import sync_playwright
         with sync_playwright() as playwright:
-            launch_kwargs = {'executable_path': self.executable_path} if self.executable_path else {}
+            launch_kwargs = {}
+            if self.executable_path:
+                launch_kwargs['executable_path'] = self.executable_path
             browser = playwright[self.browser or "chromium"].launch(**launch_kwargs)
             page = browser.new_page(user_agent=self.useragent)
 

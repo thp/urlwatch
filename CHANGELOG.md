@@ -13,6 +13,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - New boolean `json` option for `url` jobs: serializes `data` as JSON and sets `Content-type: application/json` (contributed in #866 by Louis Sautier)
 - Allow reporters to be specified multiple times (#822 by jamstah)
 - `navigate` jobs now report errors for HTTP error responses by default. Optional `ignore_http_error_codes` can suppress these reported errors. (#868 by trevorshannon)
+- `executable_path` setting for `browser` jobs to use a custom browser executable (by Federico Elia)
 
 ### Changed
 
