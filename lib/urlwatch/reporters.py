@@ -802,6 +802,10 @@ class DiscordReporter(TextReporter):
         return result
 
 
+class Diff(str):
+    pass
+
+
 class MarkdownReporter(ReporterBase):
 
     __kind__ = 'markdown'
@@ -942,14 +946,22 @@ class MarkdownReporter(ReporterBase):
 
     @staticmethod
     def _format_details_body(s, max_length):
-        wrapper_length = len("```diff\n\n```")
-
-        # Message to print when the diff is too long.
-        trim_message = "*diff trimmed*"
-        trim_message_length = len(trim_message)
+        # trim_message is printed when the diff is too long.
+        if isinstance(s, Diff):
+            wrapper = "```diff\n{}\n```"
+            wrapper_length = len("```diff\n\n```")
+            wrapper_trimmed = "{}\n```diff\n{}\n```"
+            trim_message = "*diff trimmed*"
+            trim_message_length = len(trim_message)
+        else:
+            wrapper = "```\n{}\n```"
+            wrapper_length = len("```\n\n```")
+            wrapper_trimmed = "{}\n```\n{}\n```"
+            trim_message = "*trimmed*"
+            trim_message_length = len(trim_message)
 
         if max_length is None or len(s) + wrapper_length <= max_length:
-            return False, "```diff\n{}\n```".format(s)
+            return False, wrapper.format(s)
         else:
             target_max_length = max_length - trim_message_length - wrapper_length
             pos = s.rfind("\n", 0, target_max_length)
@@ -961,7 +973,7 @@ class MarkdownReporter(ReporterBase):
                 # Multiple lines, cut off extra lines.
                 s = s[0:pos]
 
-            return True, "{}\n```diff\n{}\n```".format(trim_message, s)
+            return True, wrapper_trimmed.format(trim_message, s)
 
     def _format_content(self, job_state):
         if job_state.verb == 'error':
@@ -973,7 +985,7 @@ class MarkdownReporter(ReporterBase):
         if job_state.old_data in (None, job_state.new_data):
             return None
 
-        return job_state.get_diff()
+        return Diff(job_state.get_diff())
 
     def _format_output(self, job_state):
         summary_part = []
