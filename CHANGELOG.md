@@ -17,6 +17,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 
 ### Changed
 
+- Replaced `treat_new_as_changed` job option with `report_new` reporter option (#872 by pabs3)
 - Remove EOL'd Python 3.8 and 3.9 (new minimum requirement is Python 3.10), add Python 3.13 and 3.14 testing
 - Commands that reference a job by index or url (such as testing filters and modifying jobs) can now also reference by name (#846 by jamstah)
 
@@ -26,6 +27,7 @@ The format mostly follows [Keep a Changelog](http://keepachangelog.com/en/1.0.0/
 - Filter for gitlab.com tags fixed (#839, by julianuu)
 - Fix `TypeError` when jobs don't have tags (#843 by Maxime Werlen)
 - Fix `ResourceWarning` when running non-reporting commands (#865, reported by Hanno Böck)
+- Fix markdown reporter incorrect diff indicators in non-diff output
 
 ## [2.29] -- 2024-10-28
 

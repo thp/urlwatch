@@ -20,6 +20,7 @@ report:
     to: ''
   html:
     diff: unified
+    report_new: true
   pushover:
     app: ''
     device: null
@@ -33,6 +34,7 @@ report:
     details: true
     footer: true
     line_length: 75
+    report_new: true
 job_defaults:
   all: {}
   shell: {}

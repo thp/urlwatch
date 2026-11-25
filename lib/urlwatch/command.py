@@ -177,11 +177,6 @@ class UrlwatchCommand:
     def test_diff_filter(self, id):
         job, history_data = self._resolve_job_history(id)
 
-        if len(history_data) and getattr(job, 'treat_new_as_changed', False):
-            # Insert empty history entry, so first snapshot is diffed against the empty string
-            _, first_timestamp = history_data[0]
-            history_data.insert(0, ('', first_timestamp))
-
         if len(history_data) < 2:
             print('Not enough historic data available (need at least 2 different snapshots)')
             return 1

@@ -106,11 +106,6 @@ class JobState(object):
             try:
                 self.load()
 
-                if self.old_data is None and getattr(self.job, 'treat_new_as_changed', False):
-                    # Force creation of a diff for "NEW"ly found items by pretending we had an empty page before
-                    self.old_data = ''
-                    self.timestamp = None
-
                 data = self.job.retrieve(self)
 
                 # Apply automatic filters first
@@ -172,6 +167,13 @@ class JobState(object):
         return '\n'.join(difflib.unified_diff(self.old_data.splitlines(),
                                               self.new_data.splitlines(),
                                               '@', '@', timestamp_old, timestamp_new, lineterm=''))
+
+    def is_new(self):
+        return (
+            self.verb == 'new'
+            and self.old_data is None
+            and self.new_data is not None
+        )
 
 
 class Report(object):
